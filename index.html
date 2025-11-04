@@ -357,29 +357,41 @@
                     timestamp: new Date().toISOString()
                 };
 
+                // Timeout de 1 minuto
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 60000);
+
                 const response = await fetch('https://n8n.upperfy.com.br/webhook/2f97bdf7-22ff-451a-bdee-clockfy01', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
                 });
 
-                const data = await response.json();
+                clearTimeout(timeoutId);
 
-                if (data === true || data.success === true || response.ok) {
+                // Verifica o código de status HTTP
+                if (response.status === 200) {
                     showMessage('✓ Ponto registrado com sucesso!', 'success');
                     form.reset();
                     capturedPhoto = null;
                     photoPreview.style.display = 'none';
                     photoBtn.textContent = '📷 Tirar Foto';
                     photoBtn.style.background = '#F93D00';
+                } else if (response.status === 401) {
+                    showMessage('❌ Registro de ponto não autorizado', 'error');
                 } else {
-                    showMessage('Erro ao registrar ponto. Tente novamente.', 'error');
+                    showMessage('⚠️ Sem resposta, fale com o seu gestor', 'error');
                 }
             } catch (error) {
                 console.error('Erro:', error);
-                showMessage('Erro de conexão. Verifique sua internet e tente novamente.', 'error');
+                if (error.name === 'AbortError') {
+                    showMessage('⚠️ Sem resposta, fale com o seu gestor', 'error');
+                } else {
+                    showMessage('Erro de conexão. Verifique sua internet e tente novamente.', 'error');
+                }
             } finally {
                 submitBtn.disabled = false;
                 btnText.style.display = 'inline';
