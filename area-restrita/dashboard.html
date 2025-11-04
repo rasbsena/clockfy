@@ -1,254 +1,233 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Área do Cliente - Upperfy</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23270949' d='M50,5L25,35h50L50,5z'/%3E%3Ccircle fill='%23f93d00' cx='50' cy='60' r='35'/%3E%3Ccircle fill='%23270949' cx='50' cy='60' r='28'/%3E%3Ccircle fill='%23fff' cx='50' cy='60' r='23'/%3E%3Cline x1='50' y1='40' x2='50' y2='43' stroke='%23270949' stroke-width='1.5'/%3E%3Cline x1='73' y1='60' x2='70' y2='60' stroke='%23270949' stroke-width='1.5'/%3E%3Cline x1='50' y1='80' x2='50' y2='77' stroke='%23270949' stroke-width='1.5'/%3E%3Cline x1='27' y1='60' x2='30' y2='60' stroke='%23270949' stroke-width='1.5'/%3E%3Ccircle fill='%23f93d00' cx='50' cy='60' r='15'/%3E%3Ctext x='50' y='67' font-family='Arial' font-size='18' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upperfy - Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23270949' d='M50,5L25,35h50L50,5z'/%3E%3Ccircle fill='%23f93d00' cx='50' cy='60' r='35'/%3E%3Ccircle fill='%23270949' cx='50' cy='60' r='28'/%3E%3Ccircle fill='%23fff' cx='50' cy='60' r='23'/%3E%3Cline x1='50' y1='40' x2='50' y2='43' stroke='%23270949' stroke-width='1.5'/%3E%3Cline x1='73' y1='60' x2='70' y2='60' stroke='%23270949' stroke-width='1.5'/%3E%3Cline x1='50' y1='80' x2='50' y2='77' stroke='%23270949' stroke-width='1.5'/%3E%3Cline x1='27' y1='60' x2='30' y2='60' stroke='%23270949' stroke-width='1.5'/%3E%3Ccircle fill='%23f93d00' cx='50' cy='60' r='15'/%3E%3Ctext x='50' y='67' font-family='Arial' font-size='18' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <style>
-    :root {
-      --roxo-escuro: #270949;
-      --roxo-medio: #87148C;
-      --roxo-vivo: #4F1295;
-      --laranja-vibrante: #FF3D00;
-      --laranja-claro: #FF9200;
-      --branco: #FFFFFF;
-      --cinza: #dcdcdc;
-      --bg-gradiente: linear-gradient(135deg, var(--roxo-escuro), var(--roxo-vivo), var(--roxo-medio));
-    }
+    <style>
+        :root {
+            --roxo-escuro: #270949;
+            --roxo-medio: #87148C;
+            --roxo-vivo: #4F1295;
+            --laranja: #F93D00;
+            --branco: #fff;
+            --cinza-card: #E0E0E0;
+        }
 
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background: var(--bg-gradiente);
-      background-size: 200% 200%;
-      animation: gradientShift 20s ease infinite;
-      color: var(--branco);
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, var(--roxo-escuro) 0%, var(--roxo-vivo) 50%, var(--roxo-medio) 100%);
+            background-size: 200% 200%;
+            animation: bgShift 15s ease infinite;
+            min-height: 100vh;
+            color: var(--branco);
+            overflow-x: hidden;
+        }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 2rem;
-    }
+        @keyframes bgShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 60px;
+        }
 
-    .logo svg {
-      width: 40px;
-      height: 40px;
-    }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-    .brand {
-      font-size: 1.5rem;
-      font-weight: 700;
-    }
+        .brand img {
+            width: 50px;
+            height: auto;
+        }
 
-    .brand span {
-      color: var(--laranja-vibrante);
-    }
+        .brand h1 {
+            font-size: 26px;
+            font-weight: 700;
+        }
 
-    .logout-btn {
-      background: var(--laranja-vibrante);
-      color: var(--branco);
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: 0.3s;
-    }
+        .brand h1 span {
+            color: var(--laranja);
+        }
 
-    .logout-btn:hover {
-      background: var(--laranja-claro);
-      transform: translateY(-2px);
-    }
+        .logout-btn {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: var(--branco);
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
 
-    main {
-      flex: 1;
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
 
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      text-align: center;
-    }
+        main {
+            padding: 20px 60px 60px;
+        }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 1.5rem;
-      width: 100%;
-      max-width: 1000px;
-      margin-top: 1rem;
-    }
+        h2 {
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
 
-    .card {
-      position: relative;
-      border-radius: 12px;
-      overflow: hidden;
-      cursor: pointer;
-      height: 180px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 25px;
+        }
 
-    .card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    }
+        .app-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
 
-    /* Liberados */
-    .card.unlocked {
-      background: linear-gradient(135deg, var(--laranja-vibrante), var(--laranja-claro));
-    }
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
 
-    .card.unlocked h2 {
-      color: #fff;
-      font-weight: 700;
-      font-size: 1.2rem;
-      text-align: center;
-    }
+        .app-card img {
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
 
-    /* Bloqueados */
-    .card.locked {
-      background: #bbb;
-      cursor: not-allowed;
-      position: relative;
-      overflow: hidden;
-    }
+        .app-card h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--branco);
+        }
 
-    .card.locked::before {
-      content: "";
-      position: absolute;
-      top: -150%;
-      left: -150%;
-      width: 400%;
-      height: 400%;
-      background: radial-gradient(rgba(255,255,255,0.2), transparent 70%);
-      animation: pulse 5s infinite;
-      transform: rotate(25deg);
-    }
+        /* Cards bloqueados */
+        .app-card.locked {
+            background: var(--cinza-card);
+            color: #666;
+            cursor: default;
+        }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 0.2; }
-      50% { opacity: 0.5; }
-    }
+        .app-card.locked img {
+            opacity: 0.4;
+        }
 
-    .card.locked::after {
-      content: "🔒 Não liberado";
-      position: absolute;
-      font-weight: 600;
-      color: #333;
-      background: rgba(255, 255, 255, 0.85);
-      font-size: 14px;
-      border-radius: 8px;
-      padding: 6px 10px;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      transition: background 0.3s, color 0.3s;
-    }
+        .app-card.locked::after {
+            content: "🔒";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            font-size: 28px;
+            transform: translate(-50%, -50%);
+            color: #555;
+        }
 
-    .card.locked:hover::after {
-      background: rgba(255, 255, 255, 1);
-      color: #000;
-    }
+        .app-card.locked h3 {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #777;
+        }
 
-    footer {
-      text-align: center;
-      padding: 1rem;
-      font-size: 0.9rem;
-      opacity: 0.7;
-    }
+        footer {
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+            margin-top: 60px;
+        }
 
-    @media (max-width: 500px) {
-      .grid { gap: 1rem; }
-      .card { height: 140px; }
-    }
-  </style>
+        @media (max-width: 768px) {
+            header { padding: 20px 25px; }
+            main { padding: 20px 25px 40px; }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <div class="logo">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-        <path fill="#270949" d="M50,5L25,35h50L50,5z"/>
-        <circle fill="#f93d00" cx="50" cy="60" r="35"/>
-        <circle fill="#270949" cx="50" cy="60" r="28"/>
-        <circle fill="#fff" cx="50" cy="60" r="23"/>
-      </svg>
-      <div class="brand">Upper<span>fy</span></div>
-    </div>
-    <button class="logout-btn" onclick="logout()">Sair</button>
-  </header>
+    <header>
+        <div class="brand">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 350'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23270949;%7D.cls-2%7Bfill:%23f93d00;%7D.cls-3%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M250,15L150,135h200L250,15z'/%3E%3Ccircle class='cls-2' cx='250' cy='240' r='110'/%3E%3Ccircle class='cls-1' cx='250' cy='240' r='90'/%3E%3Ccircle class='cls-3' cx='250' cy='240' r='75'/%3E%3Cg%3E%3Cline class='cls-1' x1='250' y1='175' x2='250' y2='185' stroke='%23270949' stroke-width='2'/%3E%3Cline class='cls-1' x1='315' y1='240' x2='305' y2='240' stroke='%23270949' stroke-width='2'/%3E%3Cline class='cls-1' x1='250' y1='305' x2='250' y2='295' stroke='%23270949' stroke-width='2'/%3E%3Cline class='cls-1' x1='185' y1='240' x2='195' y2='240' stroke='%23270949' stroke-width='2'/%3E%3C/g%3E%3Ccircle class='cls-2' cx='250' cy='240' r='50'/%3E%3Ctext x='250' y='260' font-family='Arial, sans-serif' font-size='50' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E" alt="Upperfy Logo">
+            <h1>Upper<span>fy</span></h1>
+        </div>
+        <button class="logout-btn" id="logoutBtn">Sair</button>
+    </header>
 
-  <main>
-    <h1>Seus sistemas</h1>
-    <div class="grid">
-      <!-- Liberados -->
-      <div class="card unlocked" onclick="window.location.href='clockfyregistro.html'"><h2>Clockfy</h2></div>
-      <div class="card unlocked" onclick="window.location.href='https://chat.upperfy.com.br'"><h2>UpperChat</h2></div>
-      <div class="card unlocked" onclick="window.location.href='https://crm.upperfy.com.br'"><h2>UpperCRM</h2></div>
+    <main>
+        <h2>Seus Aplicativos</h2>
+        <div class="apps-grid">
+            <!-- 3 liberados -->
+            <div class="app-card" onclick="window.location.href='/area-restrita/clockfyregistro/'">
+                <img src="CLOCKFY LOGO (5).png" alt="Clockfy">
+                <h3>Clockfy</h3>
+            </div>
+            <div class="app-card" onclick="window.location.href='https://chat.upperfy.com.br'">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/Orange_chat_icon.svg" alt="Upperchat">
+                <h3>Upperchat</h3>
+            </div>
+            <div class="app-card" onclick="window.location.href='https://crm.upperfy.com.br'">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/CRM_icon.svg" alt="UpperCRM">
+                <h3>UpperCRM</h3>
+            </div>
 
-      <!-- Não liberados -->
-      <div class="card locked"></div>
-      <div class="card locked"></div>
-      <div class="card locked"></div>
-      <div class="card locked"></div>
-      <div class="card locked"></div>
-      <div class="card locked"></div>
-      <div class="card locked"></div>
-      <div class="card locked"></div>
-      <div class="card locked"></div>
-      <div class="card locked"></div>
-      <div class="card locked"></div>
-      <div class="card locked"></div>
-      <div class="card locked"></div>
-      <div class="card locked"></div>
-    </div>
-  </main>
+            <!-- 18 bloqueados -->
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+            <div class="app-card locked"><h3>Não liberado</h3></div>
+        </div>
+    </main>
 
-  <footer>
-    © 2025 Upperfy - Todos os direitos reservados
-  </footer>
+    <footer>
+        © 2025 Upperfy — Todos os direitos reservados
+    </footer>
 
-  <script>
-    // 🔒 Verificação de login
-    const token = localStorage.getItem('token');
-    if (!token) {
-      window.location.href = "../index.html";
-    }
+    <script>
+        // Verifica autenticação
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/index.html';
+        }
 
-    // 🚪 Logout
-    function logout() {
-      localStorage.clear();
-      window.location.href = "../index.html";
-    }
-  </script>
+        // Botão de sair
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('usuario');
+            window.location.href = '/index.html';
+        });
+    </script>
 </body>
 </html>
