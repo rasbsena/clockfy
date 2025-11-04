@@ -248,7 +248,9 @@
                     <img id="previewImg" src="" alt="Preview">
                 </div>
 
-                <input type="file" id="cameraInput" accept="image/*" capture="user">
+                <input type="file" id="cameraInput" accept="image/*" capture="user" style="display: none;">
+                <video id="video" autoplay playsinline style="display: none; width: 100%; max-width: 300px; border-radius: 12px; margin-bottom: 15px;"></video>
+                <canvas id="canvas" style="display: none;"></canvas>
 
                 <button type="button" class="btn btn-primary" id="photoBtn">
                     📷 Tirar Foto
@@ -272,6 +274,8 @@
 
     <script>
         let capturedPhoto = null;
+        let stream = null;
+        let isVideoActive = false;
 
         const pinInput = document.getElementById('pin');
         const cameraInput = document.getElementById('cameraInput');
@@ -283,23 +287,46 @@
         const btnText = document.getElementById('btnText');
         const loader = document.getElementById('loader');
         const message = document.getElementById('message');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
 
-        photoBtn.addEventListener('click', () => {
-            cameraInput.click();
-        });
-
-        cameraInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    capturedPhoto = event.target.result;
-                    previewImg.src = capturedPhoto;
-                    photoPreview.style.display = 'block';
-                    photoBtn.textContent = '✓ Foto Capturada - Tirar Novamente';
-                    photoBtn.style.background = '#22c55e';
-                };
-                reader.readAsDataURL(file);
+        photoBtn.addEventListener('click', async () => {
+            if (isVideoActive) {
+                // Capturar foto
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0);
+                capturedPhoto = canvas.toDataURL('image/jpeg', 0.8);
+                
+                previewImg.src = capturedPhoto;
+                photoPreview.style.display = 'block';
+                
+                // Parar a câmera
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                }
+                video.style.display = 'none';
+                isVideoActive = false;
+                photoBtn.textContent = '✓ Foto Capturada - Tirar Novamente';
+                photoBtn.style.background = '#22c55e';
+            } else {
+                // Abrir câmera
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: 'user' },
+                        audio: false 
+                    });
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    isVideoActive = true;
+                    photoBtn.textContent = '📸 Capturar Foto';
+                    photoPreview.style.display = 'none';
+                } catch (error) {
+                    console.error('Erro ao acessar câmera:', error);
+                    showMessage('Erro ao acessar a câmera. Verifique as permissões.', 'error');
+                }
             }
         });
 
@@ -371,6 +398,13 @@
                 }, 5000);
             }
         }
+
+        // Limpar stream ao fechar a página
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
     </script>
 </body>
 </html>
