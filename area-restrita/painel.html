@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clockfy - Painel</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23270949' d='M50,5L25,35h50L50,5z'/%3E%3Ccircle fill='%23f93d00' cx='50' cy='60' r='35'/%3E%3Ccircle fill='%23270949' cx='50' cy='60' r='28'/%3E%3Ccircle fill='%23fff' cx='50' cy='60' r='23'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root{
+      --roxo-escuro:#270949; --roxo-medio:#87148C; --roxo-vivo:#4F1295;
+      --laranja:#F93D00; --laranja-esc:#e03800; --branco:#fff;
+      --vidro: rgba(39,9,73,0.6);
+    }
+    body{
+      font-family:'Montserrat',sans-serif;
+      background: linear-gradient(135deg,#270949 0%,#1a0430 100%);
+      min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+      color:#fff;
+    }
+    .wrap{ width:100%; max-width:1100px; }
+    .topbar{
+      display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;
+    }
+    .btn{
+      border:none; border-radius:10px; padding:10px 16px; font-weight:700; cursor:pointer; transition:.25s;
+      display:inline-flex; align-items:center; gap:10px;
+    }
+    .btn-primary{ background:var(--laranja); color:#fff; }
+    .btn-primary:hover{ background:var(--laranja-esc); box-shadow:0 6px 18px rgba(249,61,0,.35); transform:translateY(-2px); }
+    .btn-ghost{ background:transparent; color:#fff; border:2px solid rgba(255,255,255,.2); }
+    .btn-ghost:hover{ background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.35); }
+    .cards{
+      display:grid; grid-template-columns:1.2fr .8fr; gap:20px;
+    }
+    .card{
+      background:var(--vidro); border-radius:20px; padding:22px; backdrop-filter: blur(10px);
+      box-shadow:0 8px 32px rgba(0,0,0,.4); border:1px solid rgba(249,61,0,.08);
+    }
+    .header{
+      display:flex; align-items:center; gap:12px; margin-bottom:6px;
+    }
+    .title{ font-size:26px; font-weight:700; }
+    .subtitle{ color:#a8a8a8; font-size:14px; margin-bottom:22px; }
+    .grid-3{
+      display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:14px;
+    }
+    .mini{
+      background:rgba(255,255,255,.06); border-radius:14px; padding:12px 12px 6px; border:1px solid rgba(255,255,255,.08);
+    }
+    .mini h4{ font-size:12px; font-weight:600; color:#cfcfcf; margin-bottom:6px; }
+    .mini .big{ font-size:22px; font-weight:800; }
+    .form-row{
+      display:grid; grid-template-columns:1fr 1fr auto; gap:12px; align-items:end; margin-top:8px;
+    }
+    label{ display:block; font-size:13px; font-weight:600; margin-bottom:8px; }
+    select, input{
+      width:100%; padding:14px; border-radius:12px; border:2px solid rgba(255,255,255,.12);
+      background:rgba(20,5,35,.85); color:#fff;
+    }
+    .loader{
+      width:18px; height:18px; border:3px solid rgba(255,255,255,.25); border-top-color:#fff; border-radius:50%;
+      animation:spin .9s linear infinite; display:none;
+    }
+    @keyframes spin{ to{ transform:rotate(360deg); } }
+    .message{ margin-top:14px; display:none; padding:12px; border-radius:10px; font-size:14px; }
+    .ok{ background:rgba(34,197,94,.18); border:1px solid rgba(34,197,94,.35); color:#86efac; }
+    .err{ background:rgba(239,68,68,.18); border:1px solid rgba(239,68,68,.35); color:#fca5a5; }
+    .charts{
+      display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:12px;
+    }
+    canvas{ width:100%; height:180px; }
+    .footer{
+      text-align:center; margin-top:22px; color:#777; font-size:12px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+    }
+    .brand svg{ width:36px; height:36px; }
+    .brand .logo-text{ font-size:22px; font-weight:800; }
+    .logo-text span{ color:var(--laranja); }
+  </style>
+</head>
+<body>
+  <!-- 🔒 Proteção de acesso -->
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = "../index.html";
+  </script>
+
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+          <path fill="#270949" d="M50,5L25,35h50L50,5z"/>
+          <circle fill="#f93d00" cx="50" cy="60" r="35"/>
+          <circle fill="#270949" cx="50" cy="60" r="28"/>
+          <circle fill="#fff" cx="50" cy="60" r="23"/>
+        </svg>
+        <div class="logo-text">Clock<span>fy</span> • Painel</div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-ghost" onclick="window.location.href='dashboard.html'">⬅ Voltar</button>
+        <button class="btn btn-primary" onclick="logout()">Sair</button>
+      </div>
+    </div>
+
+    <div class="cards">
+      <!-- Lado esquerdo: formulário + gráficos -->
+      <section class="card">
+        <div class="header">
+          <h1 class="title">Espelho de Ponto (PDF)</h1>
+        </div>
+        <p class="subtitle">Escolha o período e gere seu PDF do espelho de ponto. O arquivo é enviado pelo n8n.</p>
+
+        <form id="reportForm">
+          <div class="form-row">
+            <div>
+              <label for="mes">Mês</label>
+              <select id="mes" required>
+                <option value="">Selecione</option>
+                <option value="01">Janeiro</option><option value="02">Fevereiro</option>
+                <option value="03">Março</option><option value="04">Abril</option>
+                <option value="05">Maio</option><option value="06">Junho</option>
+                <option value="07">Julho</option><option value="08">Agosto</option>
+                <option value="09">Setembro</option><option value="10">Outubro</option>
+                <option value="11">Novembro</option><option value="12">Dezembro</option>
+              </select>
+            </div>
+            <div>
+              <label for="ano">Ano</label>
+              <input id="ano" type="number" min="2023" max="2099" step="1" placeholder="2025" required/>
+            </div>
+            <div>
+              <button id="btnGerar" class="btn btn-primary" type="submit">
+                <span id="btnText">Gerar PDF</span>
+                <span class="loader" id="btnLoad"></span>
+              </button>
+            </div>
+          </div>
+          <div id="msg" class="message"></div>
+        </form>
+
+        <div class="grid-3">
+          <div class="mini">
+            <h4>Total de horas (mês)</h4>
+            <div class="big" id="kpiHoras">—</div>
+          </div>
+          <div class="mini">
+            <h4>Minutos de atraso</h4>
+            <div class="big" id="kpiAtraso">—</div>
+          </div>
+          <div class="mini">
+            <h4>Saldo de horas</h4>
+            <div class="big" id="kpiSaldo">—</div>
+          </div>
+        </div>
+
+        <div class="charts">
+          <canvas id="chartHoras"></canvas>
+          <canvas id="chartAtraso"></canvas>
+          <canvas id="chartSaldo"></canvas>
+        </div>
+      </section>
+
+      <!-- Lado direito: Atalhos -->
+      <aside class="card">
+        <h2 class="title" style="font-size:20px;">Atalhos</h2>
+        <div class="subtitle">Ações rápidas relacionadas ao seu ponto</div>
+
+        <div style="display:grid; gap:10px;">
+          <button class="btn btn-ghost" onclick="window.location.href='clockfyregistro.html'">🕐 Bater ponto</button>
+          <button class="btn btn-ghost" onclick="window.location.href='https://clockfy.upperfy.com.br/painel'">👤 Ver meu perfil</button>
+          <button class="btn btn-ghost" onclick="window.location.href='dashboard.html'">🏠 Ir para o Dashboard</button>
+        </div>
+
+        <div class="footer">Desenvolvido por Upperfy</div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    function logout(){ localStorage.clear(); window.location.href="../index.html"; }
+
+    // ====== CONFIGURAÇÃO n8n (integração futura) ======
+    // Coloque aqui o seu webhook do n8n quando estiver pronto:
+    const WEBHOOK_RELATORIO = "https://n8n.upperfy.com.br/webhook/SEU-WEBHOOK-RELATORIO"; // TODO: atualizar
+
+    const reportForm = document.getElementById('reportForm');
+    const mes = document.getElementById('mes');
+    const ano = document.getElementById('ano');
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('btnGerar');
+    const btnText = document.getElementById('btnText');
+    const btnLoad = document.getElementById('btnLoad');
+
+    // ====== CHARTS ======
+    let chartHoras, chartAtraso, chartSaldo;
+
+    function randomMock(){
+      const dias = Array.from({length: 30}, (_,i)=> i+1);
+      const horas = dias.map(()=> +(6 + Math.random()*3).toFixed(1)); // 6 a 9h
+      const atraso = dias.map(()=> Math.floor(Math.random()*16)); // 0 a 15 min
+      const saldo = dias.map(()=> +( (Math.random()*2-1).toFixed(1) )); // -1 a +1 h
+      return {dias, horas, atraso, saldo};
+    }
+
+    function kpisFrom(data){
+      const totHoras = data.horas.reduce((a,b)=>a+b,0);
+      const minAtraso = data.atraso.reduce((a,b)=>a+b,0);
+      const saldoH = data.saldo.reduce((a,b)=>a+b,0);
+      document.getElementById('kpiHoras').textContent = totHoras.toFixed(1) + ' h';
+      document.getElementById('kpiAtraso').textContent = minAtraso + ' min';
+      document.getElementById('kpiSaldo').textContent = (saldoH>=0?'+':'') + saldoH.toFixed(1) + ' h';
+    }
+
+    function buildCharts(data){
+      const common = {
+        responsive:true,
+        plugins:{ legend:{ display:false } },
+        scales:{ x:{ ticks:{ color:'#ddd'}}, y:{ ticks:{ color:'#ddd'} } }
+      };
+      if(chartHoras) chartHoras.destroy();
+      if(chartAtraso) chartAtraso.destroy();
+      if(chartSaldo) chartSaldo.destroy();
+
+      chartHoras = new Chart(document.getElementById('chartHoras'),{
+        type:'bar',
+        data:{ labels:data.dias, datasets:[{ label:'Horas', data:data.horas }]},
+        options:{...common, plugins:{legend:{display:false}}, }
+      });
+
+      chartAtraso = new Chart(document.getElementById('chartAtraso'),{
+        type:'bar',
+        data:{ labels:data.dias, datasets:[{ label:'Atraso (min)', data:data.atraso }]},
+        options: common
+      });
+
+      chartSaldo = new Chart(document.getElementById('chartSaldo'),{
+        type:'line',
+        data:{ labels:data.dias, datasets:[{ label:'Saldo (h)', data:data.saldo, tension:.25 }]},
+        options: common
+      });
+    }
+
+    // Inicializa com mock para visualização
+    const mock = randomMock();
+    buildCharts(mock);
+    kpisFrom(mock);
+
+    // ====== Download helper ======
+    function downloadFromBase64(base64, filename){
+      const byteChars = atob(base64);
+      const byteNumbers = new Array(byteChars.length);
+      for(let i=0;i<byteChars.length;i++){ byteNumbers[i] = byteChars.charCodeAt(i); }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], {type:"application/pdf"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function setLoading(v){
+      if(v){ btn.disabled=true; btnText.style.display='none'; btnLoad.style.display='inline-block'; }
+      else { btn.disabled=false; btnText.style.display='inline'; btnLoad.style.display='none'; }
+    }
+    function showMsg(text, type='ok'){
+      msg.textContent = text;
+      msg.className = 'message ' + (type==='ok'?'ok':'err');
+      msg.style.display='block';
+    }
+
+    // ====== Envio do formulário ======
+    reportForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      if(!mes.value || !ano.value){ showMsg('Selecione mês e ano.', 'err'); return; }
+
+      setLoading(true); msg.style.display='none';
+
+      // --------- INTEGRAÇÃO REAL (quando n8n estiver pronto) ----------
+      // try {
+      //   const response = await fetch(WEBHOOK_RELATORIO, {
+      //     method:'POST',
+      //     headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+      //     body: JSON.stringify({ mes: mes.value, ano: ano.value })
+      //   });
+      //   const data = await response.json();
+      //   // Esperado: { pdfBase64: "...", charts: { dias, horas, atraso, saldo }, kpis: {...} }
+      //   if(!response.ok) throw new Error(data?.message || 'Falha ao gerar PDF');
+      //   if(data.charts){ buildCharts(data.charts); kpisFrom(data.charts); }
+      //   if(data.pdfBase64){ downloadFromBase64(data.pdfBase64, `espelho_${ano.value}-${mes.value}.pdf`); }
+      //   showMsg('PDF gerado com sucesso! O download iniciará automaticamente.');
+      // } catch(err){
+      //   console.error(err); showMsg('Erro ao gerar PDF. Tente novamente.', 'err');
+      // } finally { setLoading(false); }
+      // ---------------------------------------------------------------
+
+      // ====== MODO MOCK (visualização inicial) ======
+      try{
+        // Atualiza gráficos com outro mock para simular retorno do n8n
+        const novo = randomMock(); buildCharts(novo); kpisFrom(novo);
+
+        // PDF fake (base64). Quando integrar, substitua por data.pdfBase64 vindo do n8n.
+        const fakePdfText = `%PDF-1.4\n%âãÏÓ\n1 0 obj<< /Type /Catalog /Pages 2 0 R >>endobj\n2 0 obj<< /Type /Pages /Kids [3 0 R] /Count 1 >>endobj\n3 0 obj<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 200] /Contents 4 0 R >>endobj\n4 0 obj<< /Length 55 >>stream\nBT /F1 18 Tf 50 150 Td (Espelho de Ponto - MOCK) Tj ET\nendstream endobj\nxref 0 5\n0000000000 65535 f \ntrailer<< /Root 1 0 R /Size 5 >>\nstartxref\n0\n%%EOF`;
+        const base64 = btoa(unescape(encodeURIComponent(fakePdfText)));
+        downloadFromBase64(base64, `espelho_${ano.value}-${mes.value}.pdf`);
+        showMsg('PDF (mock) gerado! O download iniciou automaticamente.');
+      } catch(err){
+        console.error(err); showMsg('Erro ao gerar mock. Tente novamente.', 'err');
+      } finally {
+        setLoading(false);
+      }
+    });
+  </script>
+</body>
+</html>
