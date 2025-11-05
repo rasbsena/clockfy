@@ -963,13 +963,15 @@
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(localStorageData)
+          body: JSON.stringify(localStorageData),
+          mode: 'cors'
         });
 
         console.log('Resposta do N8N recebida:', response.status);
 
         if (!response.ok) {
-          throw new Error('Erro ao buscar dados do N8N');
+          console.error('Erro na resposta do N8N:', response.status, response.statusText);
+          throw new Error(`Erro ao buscar dados do N8N: ${response.status}`);
         }
 
         const data = await response.json();
@@ -993,12 +995,14 @@
 
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
+        console.error('Detalhes do erro:', error.message);
         
-        alert('Erro ao carregar seus dados. Por favor, recarregue a página.');
-        
+        // Esconder loading mesmo com erro
         setTimeout(() => {
           loadingOverlay.classList.add('hidden');
-        }, 1000);
+        }, 500);
+        
+        alert('Erro ao carregar seus dados. Detalhes: ' + error.message + '\n\nPor favor, verifique o console e recarregue a página.');
       }
     }
 
