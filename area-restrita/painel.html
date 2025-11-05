@@ -562,6 +562,125 @@
       font-size: 12px;
     }
 
+    /* MODAL POPUP */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-content {
+      background: var(--vidro);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      border: 1px solid rgba(249, 61, 0, 0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.show .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-text {
+      color: #cfcfcf;
+      font-size: 14px;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .modal-warning {
+      background: rgba(249, 61, 0, 0.15);
+      border: 1px solid rgba(249, 61, 0, 0.4);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 20px;
+      color: #fca5a5;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-link {
+      background: rgba(255, 255, 255, 0.06);
+      border: 2px solid rgba(249, 61, 0, 0.3);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 20px;
+      word-break: break-all;
+      font-size: 13px;
+      color: var(--laranja);
+      font-weight: 600;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .modal-btn-primary {
+      background: var(--laranja);
+      color: #fff;
+    }
+
+    .modal-btn-primary:hover {
+      background: var(--laranja-esc);
+      transform: translateY(-2px);
+    }
+
+    .modal-btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .modal-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
     @media (max-width: 1200px) {
       body {
         padding-left: 20px;
@@ -765,6 +884,34 @@
     </div>
   </div>
 
+  <!-- Modal de URL do Espelho -->
+  <div class="modal-overlay" id="modalURL">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>📄</span>
+        <span>Espelho de Ponto Gerado</span>
+      </div>
+      <p class="modal-text" id="modalMessage">
+        Seu espelho de ponto foi gerado com sucesso!
+      </p>
+      <div class="modal-warning">
+        <span>⚠️</span>
+        <span>Este link é temporário e expirará em breve.</span>
+      </div>
+      <div class="modal-link" id="modalLink">
+        https://clockfy.upperfy.com.br/espelhos/...
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-primary" onclick="abrirURL()">
+          🔗 Abrir Link
+        </button>
+        <button class="modal-btn modal-btn-secondary" onclick="fecharModal()">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ========== CONFIGURAÇÃO ==========
     const N8N_WEBHOOK_URL = 'https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-painelclockfy';
@@ -780,20 +927,18 @@
 
     // ========== VARIÁVEIS GLOBAIS ==========
     let chartHoras, chartAtraso, chartSaldo;
-    let dashboardData = null; // Dados vindos do N8N
+    let dashboardData = null;
+    let urlEspelhoAtual = '';
 
     // ========== INICIALIZAÇÃO ==========
     async function initializePage() {
       try {
         console.log('Iniciando carregamento dos dados do N8N...');
         
-        // Obter nome do funcionário do localStorage
         const nome = localStorage.getItem('nome') || localStorage.getItem('username') || 'Usuário';
         
-        // Atualizar UI com nome
         document.getElementById('userName').textContent = nome;
         
-        // Criar avatar com iniciais
         const initials = nome.split(' ')
           .filter(word => word.length > 0)
           .slice(0, 2)
@@ -801,7 +946,6 @@
           .join('');
         document.getElementById('userAvatar').textContent = initials;
 
-        // Coletar todos os dados do localStorage
         const localStorageData = {};
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
@@ -810,7 +954,6 @@
 
         console.log('Enviando dados para o N8N:', localStorageData);
 
-        // Enviar dados para n8n e aguardar resposta
         const response = await fetch(N8N_WEBHOOK_URL, {
           method: 'POST',
           headers: {
@@ -828,24 +971,19 @@
         const data = await response.json();
         console.log('Dados do N8N:', data);
         
-        // Armazenar dados globalmente
         dashboardData = data;
 
-        // Verificar se temos os dados necessários
         if (data.chartData && data.resumo) {
           console.log('Renderizando gráficos e KPIs com dados do N8N');
           
-          // Criar gráficos com dados reais
           createCharts(data.chartData);
           
-          // Atualizar KPIs com dados reais
           updateKPIs(data.resumo);
         } else {
           console.warn('Dados incompletos recebidos do N8N');
           throw new Error('Dados incompletos do servidor');
         }
 
-        // Esconder loading
         setTimeout(() => {
           loadingOverlay.classList.add('hidden');
         }, 500);
@@ -853,28 +991,24 @@
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
         
-        // Mostrar mensagem de erro ao usuário
         alert('Erro ao carregar seus dados. Por favor, recarregue a página.');
         
-        // Manter loading visível em caso de erro
-        // ou redirecionar para login
         setTimeout(() => {
           loadingOverlay.classList.add('hidden');
         }, 1000);
       }
     }
 
-    // ========== ATUALIZAÇÃO DE KPIs (com dados de resumo) ==========
+    // ========== ATUALIZAÇÃO DE KPIs ==========
     function updateKPIs(resumo) {
       console.log('Atualizando KPIs com:', resumo);
       
-      // Usar dados de resumo vindos do N8N
       document.getElementById('kpiTotalHoras').textContent = resumo.total_horas_mes || '—';
       document.getElementById('kpiAtraso').textContent = resumo.total_atraso_min + ' min' || '—';
       document.getElementById('kpiSaldo').textContent = resumo.saldo_total || '—';
     }
 
-    // ========== CRIAÇÃO DOS GRÁFICOS (com dados de chartData) ==========
+    // ========== CRIAÇÃO DOS GRÁFICOS ==========
     function createCharts(chartData) {
       console.log('Criando gráficos com:', chartData);
       
@@ -896,12 +1030,10 @@
         }
       };
 
-      // Destruir gráficos existentes se houver
       if (chartHoras) chartHoras.destroy();
       if (chartAtraso) chartAtraso.destroy();
       if (chartSaldo) chartSaldo.destroy();
 
-      // Chart Horas
       chartHoras = new Chart(document.getElementById('chartHoras'), {
         type: 'bar',
         data: {
@@ -917,7 +1049,6 @@
         options: chartOptions
       });
 
-      // Chart Atraso
       chartAtraso = new Chart(document.getElementById('chartAtraso'), {
         type: 'bar',
         data: {
@@ -933,7 +1064,6 @@
         options: chartOptions
       });
 
-      // Chart Saldo
       chartSaldo = new Chart(document.getElementById('chartSaldo'), {
         type: 'line',
         data: {
@@ -1022,7 +1152,44 @@
       }
     }
 
-    // ========== SUBMISSÃO DO FORMULÁRIO (para gerar espelho de ponto) ==========
+    // ========== FUNÇÕES DO MODAL ==========
+    function abrirModalURL(url, mensagem = '', isError = false) {
+      urlEspelhoAtual = url;
+      
+      const modal = document.getElementById('modalURL');
+      const modalMessage = document.getElementById('modalMessage');
+      const modalLink = document.getElementById('modalLink');
+      
+      if (isError) {
+        modalMessage.textContent = 'Seu download teve algum erro? Clique no link abaixo para visualizar:';
+      } else {
+        modalMessage.textContent = mensagem || 'Seu espelho de ponto foi gerado com sucesso!';
+      }
+      
+      modalLink.textContent = url;
+      
+      modal.classList.add('show');
+    }
+
+    function fecharModal() {
+      const modal = document.getElementById('modalURL');
+      modal.classList.remove('show');
+    }
+
+    function abrirURL() {
+      if (urlEspelhoAtual) {
+        window.open(urlEspelhoAtual, '_blank');
+        fecharModal();
+      }
+    }
+
+    document.getElementById('modalURL').addEventListener('click', (e) => {
+      if (e.target.id === 'modalURL') {
+        fecharModal();
+      }
+    });
+
+    // ========== SUBMISSÃO DO FORMULÁRIO ==========
     reportForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -1038,14 +1205,12 @@
       message.style.display = 'none';
 
       try {
-        // Coletar todos os dados do localStorage
         const localStorageData = {};
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
           localStorageData[key] = localStorage.getItem(key);
         }
 
-        // Enviar localStorage + dados do formulário para n8n
         const response = await fetch(N8N_ESPELHO_URL, {
           method: 'POST',
           headers: {
@@ -1064,15 +1229,28 @@
 
         const data = await response.json();
         
-        // Fazer download do PDF
-        if (data.pdfBase64) {
-          downloadPDF(data.pdfBase64, `espelho-ponto-${year}-${month}.pdf`);
-        }
+        if (data.status === 'success') {
+          if (data.pdfBase64) {
+            try {
+              downloadPDF(data.pdfBase64, `espelho-ponto-${year}-${month}.pdf`);
+            } catch (error) {
+              console.error('Erro ao fazer download:', error);
+            }
+          }
 
-        // Exibir mensagem de status
-        const statusType = data.status === 'success' ? 'success' : 'error';
-        const mensagem = data.mensagem || 'PDF gerado com sucesso!';
-        showMessage(mensagem, statusType);
+          showMessage(data.mensagem || 'Espelho de ponto gerado com sucesso!', 'success');
+
+          if (data.urlEspelho) {
+            abrirModalURL(data.urlEspelho, data.mensagem);
+          }
+
+        } else {
+          showMessage(data.mensagem || 'Erro ao gerar relatório. Tente novamente.', 'error');
+          
+          if (data.urlEspelho) {
+            abrirModalURL(data.urlEspelho, data.mensagem, true);
+          }
+        }
 
       } catch (error) {
         console.error('Erro:', error);
