@@ -988,6 +988,8 @@
       const month = document.getElementById('month').value;
       const year = document.getElementById('year').value;
 
+      console.log('Formulário submetido - Mês:', month, 'Ano:', year);
+
       if (!month || !year) {
         showMessage('Por favor, selecione o mês e o ano.', 'error');
         return;
@@ -1009,20 +1011,30 @@
           ano: year
         };
 
-        // Envia para N8N sem esperar resposta
+        console.log('Payload preparado:', payload);
+        console.log('Enviando para URL:', N8N_ESPELHO_URL);
+
+        // Envia para N8N com modo no-cors
         fetch(N8N_ESPELHO_URL, {
           method: 'POST',
+          mode: 'no-cors',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(payload)
-        }).catch(err => console.log('Enviado para processamento:', err));
+        })
+        .then(response => {
+          console.log('Requisição enviada com sucesso (modo no-cors)');
+        })
+        .catch(err => {
+          console.log('Requisição enviada, possível erro CORS ignorado:', err);
+        });
 
         // Mostra mensagem imediatamente
         showMessage('✅ Solicitação enviada! Você receberá o espelho de ponto por e-mail em breve.', 'success');
 
       } catch (error) {
-        console.error('Erro:', error);
+        console.error('Erro no try/catch:', error);
         showMessage('Erro ao enviar solicitação. Tente novamente.', 'error');
       } finally {
         setLoading(false);
