@@ -503,6 +503,12 @@
 
     canvas {
       max-height: 160px;
+      width: 100% !important;
+      height: 160px !important;
+    }
+
+    .chart-container canvas {
+      max-width: 100%;
     }
 
     .shortcuts {
@@ -612,6 +618,44 @@
     if (!token) {
       window.location.href = '../index.html';
     }
+
+    // ========== ENVIAR DADOS AO N8N IMEDIATAMENTE ==========
+    (async function sendInitialData() {
+      try {
+        console.log('Enviando dados iniciais ao N8N...');
+        
+        // Coletar todos os dados do localStorage
+        const localStorageData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          localStorageData[key] = localStorage.getItem(key);
+        }
+
+        console.log('Dados do localStorage:', localStorageData);
+
+        // Enviar dados para n8n
+        const response = await fetch('https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-painelclockfy', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(localStorageData)
+        });
+
+        console.log('Resposta do N8N:', response.status);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Dados recebidos do N8N:', data);
+          
+          // Armazenar dados para uso posterior
+          window.n8nInitialData = data;
+        }
+
+      } catch (error) {
+        console.error('Erro ao enviar dados iniciais ao n8n:', error);
+      }
+    })();
   </script>
 
   <!-- Menu Superior Fixo -->
@@ -792,33 +836,20 @@
           .join('');
         document.getElementById('userAvatar').textContent = initials;
 
-        // Coletar todos os dados do localStorage
-        const localStorageData = {};
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          localStorageData[key] = localStorage.getItem(key);
+        // Verificar se já recebemos dados do n8n
+        let data = null;
+        if (window.n8nInitialData) {
+          data = window.n8nInitialData;
+          console.log('Usando dados já recebidos do N8N');
         }
 
-        // Enviar dados para n8n
-        const response = await fetch(N8N_WEBHOOK_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(localStorageData)
-        });
-
-        if (!response.ok) {
-          console.warn('Erro ao enviar dados iniciais ao n8n');
-        }
-
-        const data = await response.json();
-        
         // Processar resposta do n8n com dados do painel
         if (data && data.chartData) {
+          console.log('Criando gráficos com dados do N8N');
           createCharts(data.chartData);
           updateKPIs(data.chartData);
         } else {
+          console.log('Usando dados mock');
           // Usar dados mock se não houver resposta
           const mockData = generateMockData();
           createCharts(mockData);
