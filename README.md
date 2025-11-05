@@ -1,2 +1,2 @@
 # clockfy
-URL = https://rasbsena.github.io/clockfy
+URL = https://clockfy.upperfy.com.br
