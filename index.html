@@ -457,13 +457,89 @@
 
                 // Verificar se autenticação foi bem-sucedida
                 if (data.autenticado === true) {
-                    // Salvar dados no localStorage
+                    // Limpar qualquer dado anterior do localStorage
+                    localStorage.clear();
+
+                    // Salvar TODAS as informações do payload no localStorage
+                    
+                    // 1. Status de autenticação
+                    localStorage.setItem('autenticado', 'true');
+                    
+                    // 2. Token (se existir)
                     if (data.token) {
                         localStorage.setItem('token', data.token);
                     }
+                    
+                    // 3. ID do funcionário (ESSENCIAL)
+                    if (data.id_funcionario || data.idFuncionario || data.funcionario_id) {
+                        const funcionarioId = data.id_funcionario || data.idFuncionario || data.funcionario_id;
+                        localStorage.setItem('id_funcionario', funcionarioId);
+                    }
+                    
+                    // 4. ID da empresa (ESSENCIAL)
+                    if (data.id_empresa || data.idEmpresa || data.empresa_id) {
+                        const empresaId = data.id_empresa || data.idEmpresa || data.empresa_id;
+                        localStorage.setItem('id_empresa', empresaId);
+                    }
+                    
+                    // 5. Dados do usuário (objeto completo)
                     if (data.usuario) {
                         localStorage.setItem('usuario', JSON.stringify(data.usuario));
+                        
+                        // Extrair campos específicos do usuário para acesso rápido
+                        if (data.usuario.nome) {
+                            localStorage.setItem('usuario_nome', data.usuario.nome);
+                        }
+                        if (data.usuario.email) {
+                            localStorage.setItem('usuario_email', data.usuario.email);
+                        }
+                        if (data.usuario.telefone) {
+                            localStorage.setItem('usuario_telefone', data.usuario.telefone);
+                        }
+                        if (data.usuario.foto_perfil || data.usuario.fotoPerfil) {
+                            const foto = data.usuario.foto_perfil || data.usuario.fotoPerfil;
+                            localStorage.setItem('usuario_foto', foto);
+                        }
+                        if (data.usuario.cargo) {
+                            localStorage.setItem('usuario_cargo', data.usuario.cargo);
+                        }
                     }
+                    
+                    // 6. Dados da empresa (objeto completo)
+                    if (data.empresa) {
+                        localStorage.setItem('empresa', JSON.stringify(data.empresa));
+                        
+                        // Extrair campos específicos da empresa para acesso rápido
+                        if (data.empresa.nome || data.empresa.razao_social) {
+                            const nomeEmpresa = data.empresa.nome || data.empresa.razao_social;
+                            localStorage.setItem('empresa_nome', nomeEmpresa);
+                        }
+                        if (data.empresa.logo) {
+                            localStorage.setItem('empresa_logo', data.empresa.logo);
+                        }
+                    }
+                    
+                    // 7. Permissões/roles (se existir)
+                    if (data.permissoes || data.roles) {
+                        const permissoes = data.permissoes || data.roles;
+                        localStorage.setItem('permissoes', JSON.stringify(permissoes));
+                    }
+                    
+                    // 8. Qualquer outro campo adicional do payload
+                    // Armazenar o payload completo para referência futura
+                    localStorage.setItem('login_payload', JSON.stringify(data));
+                    
+                    // 9. Data/hora do login
+                    localStorage.setItem('login_timestamp', new Date().toISOString());
+
+                    // Log para debug (remover em produção)
+                    console.log('Dados salvos no localStorage:', {
+                        autenticado: localStorage.getItem('autenticado'),
+                        id_funcionario: localStorage.getItem('id_funcionario'),
+                        id_empresa: localStorage.getItem('id_empresa'),
+                        usuario_nome: localStorage.getItem('usuario_nome'),
+                        empresa_nome: localStorage.getItem('empresa_nome')
+                    });
 
                     // Feedback visual de sucesso
                     btnText.textContent = 'Sucesso! Redirecionando...';
@@ -474,7 +550,7 @@
                     }, 800);
                 } else {
                     // Mostrar erro de autenticação
-                    showError('E-mail ou senha inválidos');
+                    showError(data.mensagem || 'E-mail ou senha inválidos');
                     setLoadingState(false);
                 }
             } catch (error) {
@@ -519,6 +595,21 @@
 
         senhaInput.addEventListener('input', () => {
             errorMessage.classList.remove('show');
+        });
+
+        /* ========================================
+           VERIFICAR SE JÁ ESTÁ LOGADO
+           Se já houver autenticação válida, redirecionar automaticamente
+           ======================================== */
+        window.addEventListener('DOMContentLoaded', () => {
+            const autenticado = localStorage.getItem('autenticado');
+            const idFuncionario = localStorage.getItem('id_funcionario');
+            
+            // Se já estiver autenticado e tiver ID de funcionário, redirecionar
+            if (autenticado === 'true' && idFuncionario) {
+                console.log('Usuário já autenticado, redirecionando...');
+                window.location.href = '/area-restrita/dashboard.html';
+            }
         });
     </script>
 </body>
