@@ -787,15 +787,15 @@
       try {
         console.log('Iniciando carregamento dos dados do N8N...');
         
-        const nome = localStorage.getItem('nome') || localStorage.getItem('username') || 'Usuário';
+        // CORREÇÃO: Buscar usuario_nome ao invés de nome
+        const nome = localStorage.getItem('usuario_nome') || 'Usuário';
         
-        document.getElementById('userName').textContent = nome;
+        // Extrair primeiro nome
+        const primeiroNome = nome.split(' ')[0];
+        document.getElementById('userName').textContent = primeiroNome;
         
-        const initials = nome.split(' ')
-          .filter(word => word.length > 0)
-          .slice(0, 2)
-          .map(word => word[0].toUpperCase())
-          .join('');
+        // Avatar com inicial do primeiro nome
+        const initials = primeiroNome.charAt(0).toUpperCase();
         document.getElementById('userAvatar').textContent = initials;
 
         const localStorageData = {};
