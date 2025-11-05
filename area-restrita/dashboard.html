@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Área do Cliente - Upperfy</title>
+  <title>Dashboard - Upperfy</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23270949' d='M50,5L25,35h50L50,5z'/%3E%3Ccircle fill='%23f93d00' cx='50' cy='60' r='35'/%3E%3Ccircle fill='%23270949' cx='50' cy='60' r='28'/%3E%3Ccircle fill='%23fff' cx='50' cy='60' r='23'/%3E%3Cline x1='50' y1='40' x2='50' y2='43' stroke='%23270949' stroke-width='1.5'/%3E%3Cline x1='73' y1='60' x2='70' y2='60' stroke='%23270949' stroke-width='1.5'/%3E%3Cline x1='50' y1='80' x2='50' y2='77' stroke='%23270949' stroke-width='1.5'/%3E%3Cline x1='27' y1='60' x2='30' y2='60' stroke='%23270949' stroke-width='1.5'/%3E%3Ccircle fill='%23f93d00' cx='50' cy='60' r='15'/%3E%3Ctext x='50' y='67' font-family='Arial' font-size='18' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23270949;%7D.cls-2%7Bfill:%23ff3d00;%7D.cls-3%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M140,180 L140,120 Q140,50 200,50 L200,50 Q260,50 260,120 L260,180' stroke='%23270949' stroke-width='28' fill='none' stroke-linecap='round'/%3E%3Crect class='cls-2' x='100' y='170' width='200' height='180' rx='25'/%3E%3Ccircle class='cls-3' cx='200' cy='250' r='30'/%3E%3Crect class='cls-3' x='185' y='250' width='30' height='60' rx='8'/%3E%3C/svg%3E">
 
   <style>
     :root {
@@ -20,6 +20,12 @@
       --cinza: #dcdcdc;
       --cinza-escuro: #555;
       --bg-gradiente: linear-gradient(135deg, var(--roxo-escuro), var(--roxo-vivo), var(--roxo-medio));
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
     body {
@@ -45,71 +51,132 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 2rem;
+      padding: 1.5rem 2rem;
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
     }
 
     .logo {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
-    .logo svg {
-      width: 40px;
-      height: 40px;
+    .logo img {
+      width: 45px;
+      height: 45px;
     }
 
     .brand {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       font-weight: 700;
+      color: var(--branco);
     }
 
-    .brand span {
-      color: var(--laranja-vibrante);
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 16px;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .user-menu:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .user-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: var(--laranja-vibrante);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: white;
+    }
+
+    .user-name {
+      font-weight: 600;
+      font-size: 14px;
     }
 
     .logout-btn {
       background: var(--laranja-vibrante);
       color: var(--branco);
       border: none;
-      padding: 10px 20px;
+      padding: 10px 24px;
       border-radius: 8px;
       cursor: pointer;
       font-weight: 600;
+      font-size: 14px;
       transition: 0.3s;
+      font-family: 'Montserrat', sans-serif;
     }
 
     .logout-btn:hover {
       background: var(--laranja-claro);
       transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 61, 0, 0.4);
     }
 
     main {
       flex: 1;
-      padding: 2rem;
+      padding: 2.5rem 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
+    .welcome-section {
+      width: 100%;
+      max-width: 1200px;
+      margin-bottom: 2rem;
+    }
+
+    .welcome-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .welcome-subtitle {
+      font-size: 1rem;
+      opacity: 0.9;
+      font-weight: 400;
+    }
+
+    .systems-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      width: 100%;
+      max-width: 1200px;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1.5rem;
       width: 100%;
-      max-width: 1000px;
-      margin-top: 1rem;
+      max-width: 1200px;
     }
 
     .card {
       position: relative;
       background: rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
+      border-radius: 16px;
       overflow: hidden;
       cursor: pointer;
       transition: transform 0.3s, box-shadow 0.3s;
@@ -117,15 +184,16 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      backdrop-filter: blur(10px);
     }
 
     .card:hover {
       transform: translateY(-6px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
     }
 
     .card.locked {
-      background: #aaa;
+      background: rgba(100, 100, 100, 0.3);
       cursor: not-allowed;
     }
 
@@ -133,12 +201,12 @@
       content: "🔒 Não liberado";
       position: absolute;
       font-weight: 600;
-      color: #333;
-      background: rgba(255, 255, 255, 0.85);
-      font-size: 14px;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.6);
+      font-size: 13px;
       border-radius: 8px;
-      padding: 6px 10px;
-      bottom: 10px;
+      padding: 8px 12px;
+      bottom: 12px;
       left: 50%;
       transform: translateX(-50%);
     }
@@ -150,43 +218,78 @@
     .card.unlocked h2 {
       color: #fff;
       font-weight: 700;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       text-align: center;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
     footer {
       text-align: center;
-      padding: 1rem;
-      font-size: 0.9rem;
+      padding: 1.5rem;
+      font-size: 0.85rem;
       opacity: 0.7;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 1rem;
+      }
+
+      .header-right {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .welcome-title {
+        font-size: 1.8rem;
+      }
+
+      .grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      }
     }
   </style>
 </head>
 <body>
   <header>
     <div class="logo">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-        <path fill="#270949" d="M50,5L25,35h50L50,5z"/>
-        <circle fill="#f93d00" cx="50" cy="60" r="35"/>
-        <circle fill="#270949" cx="50" cy="60" r="28"/>
-        <circle fill="#fff" cx="50" cy="60" r="23"/>
-      </svg>
-      <div class="brand">Upper<span>fy</span></div>
+      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23270949;%7D.cls-2%7Bfill:%23ff3d00;%7D.cls-3%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M140,180 L140,120 Q140,50 200,50 L200,50 Q260,50 260,120 L260,180' stroke='%23270949' stroke-width='28' fill='none' stroke-linecap='round'/%3E%3Crect class='cls-2' x='100' y='170' width='200' height='180' rx='25'/%3E%3Ccircle class='cls-3' cx='200' cy='250' r='30'/%3E%3Crect class='cls-3' x='185' y='250' width='30' height='60' rx='8'/%3E%3C/svg%3E" alt="Upperfy Logo">
+      <div class="brand">Upperfy</div>
     </div>
-    <button class="logout-btn" onclick="logout()">Sair</button>
+    <div class="header-right">
+      <div class="user-menu" onclick="window.location.href='meuperfil.html'">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <span class="user-name" id="userName">Meu Perfil</span>
+      </div>
+      <button class="logout-btn" onclick="logout()">Sair</button>
+    </div>
   </header>
 
   <main>
-    <h1>Seus sistemas</h1>
-    <div class="grid">
-      <!-- Liberados -->
-      <div class="card unlocked" onclick="window.location.href='clockfyregistro.html'"><h2>Clockfy</h2></div>
-      <div class="card unlocked" onclick="window.location.href='https://chat.upperfy.com.br'"><h2>UpperChat</h2></div>
-      <div class="card unlocked" onclick="window.location.href='https://crm.upperfy.com.br'"><h2>UpperCRM</h2></div>
+    <div class="welcome-section">
+      <h1 class="welcome-title" id="welcomeTitle">Bem-vindo!</h1>
+      <p class="welcome-subtitle" id="welcomeSubtitle">Acesse seus sistemas disponíveis</p>
+    </div>
 
-      <!-- Não liberados (simulação estilo Netflix) -->
-      <div class="card locked"></div>
-      <div class="card locked"></div>
+    <h2 class="systems-title">Seus sistemas</h2>
+    
+    <div class="grid">
+      <!-- Sistemas Liberados -->
+      <div class="card unlocked" onclick="acessarSistema('clockfy', 'clockfyregistro.html')">
+        <h2>Clockfy</h2>
+      </div>
+      <div class="card unlocked" onclick="acessarSistema('upperchat', 'https://chat.upperfy.com.br')">
+        <h2>UpperChat</h2>
+      </div>
+      <div class="card unlocked" onclick="acessarSistema('uppercrm', 'https://crm.upperfy.com.br')">
+        <h2>UpperCRM</h2>
+      </div>
+
+      <!-- Sistemas Não Liberados -->
       <div class="card locked"></div>
       <div class="card locked"></div>
       <div class="card locked"></div>
@@ -207,16 +310,120 @@
   </footer>
 
   <script>
-    // 🔒 Verificação de login (protege a página)
-    const token = localStorage.getItem('token');
-    if (!token) {
-      window.location.href = "../index.html";
+    // ========================================
+    // DADOS DO USUÁRIO E EMPRESA (localStorage)
+    // ========================================
+    const autenticado = localStorage.getItem('autenticado');
+    const idFuncionario = localStorage.getItem('id_funcionario');
+    const idEmpresa = localStorage.getItem('id_empresa');
+    const usuarioNome = localStorage.getItem('usuario_nome');
+    const usuarioEmail = localStorage.getItem('usuario_email');
+    const empresaNome = localStorage.getItem('empresa_nome');
+
+    // ========================================
+    // 🔒 VERIFICAÇÃO DE AUTENTICAÇÃO
+    // ========================================
+    if (autenticado !== 'true' || !idFuncionario || !idEmpresa) {
+      console.log('Usuário não autenticado. Redirecionando...');
+      window.location.href = '../index.html';
     }
 
-    // 🚪 Logout
+    // ========================================
+    // 👤 PERSONALIZAÇÃO DA INTERFACE
+    // ========================================
+    window.addEventListener('DOMContentLoaded', () => {
+      // Atualizar título de boas-vindas
+      const welcomeTitle = document.getElementById('welcomeTitle');
+      const welcomeSubtitle = document.getElementById('welcomeSubtitle');
+      const userName = document.getElementById('userName');
+      const userAvatar = document.getElementById('userAvatar');
+
+      if (usuarioNome) {
+        const primeiroNome = usuarioNome.split(' ')[0];
+        welcomeTitle.textContent = `Bem-vindo, ${primeiroNome}!`;
+        userName.textContent = primeiroNome;
+        
+        // Avatar com inicial do nome
+        userAvatar.textContent = primeiroNome.charAt(0).toUpperCase();
+      }
+
+      if (empresaNome) {
+        welcomeSubtitle.textContent = `${empresaNome} - Acesse seus sistemas disponíveis`;
+      }
+
+      // Log de debug (remover em produção)
+      console.log('Dados do usuário:', {
+        id_funcionario: idFuncionario,
+        id_empresa: idEmpresa,
+        nome: usuarioNome,
+        email: usuarioEmail,
+        empresa: empresaNome
+      });
+    });
+
+    // ========================================
+    // 🔗 FUNÇÃO PARA ACESSAR SISTEMAS
+    // Prepara dados para envio ao n8n quando necessário
+    // ========================================
+    function acessarSistema(sistema, url) {
+      // Dados que podem ser enviados ao n8n para registro de acesso
+      const dadosAcesso = {
+        id_funcionario: idFuncionario,
+        id_empresa: idEmpresa,
+        sistema: sistema,
+        timestamp: new Date().toISOString()
+      };
+
+      // Log de acesso (pode ser enviado ao n8n via webhook)
+      console.log('Acessando sistema:', dadosAcesso);
+
+      // Redirecionar para o sistema
+      window.location.href = url;
+
+      // TODO: Se quiser registrar acessos no n8n, descomentar:
+      /*
+      fetch('https://n8n.upperfy.com.br/webhook/seu-webhook-registro-acesso', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dadosAcesso)
+      });
+      */
+    }
+
+    // ========================================
+    // 🚪 FUNÇÃO DE LOGOUT
+    // ========================================
     function logout() {
-      localStorage.clear();
-      window.location.href = "../index.html";
+      if (confirm('Deseja realmente sair?')) {
+        // Registrar logout (opcional - enviar ao n8n)
+        const dadosLogout = {
+          id_funcionario: idFuncionario,
+          id_empresa: idEmpresa,
+          timestamp: new Date().toISOString()
+        };
+        
+        console.log('Logout realizado:', dadosLogout);
+
+        // Limpar localStorage
+        localStorage.clear();
+        
+        // Redirecionar para login
+        window.location.href = '../index.html';
+      }
+    }
+
+    // ========================================
+    // 📊 FUNÇÃO AUXILIAR: Obter dados para n8n
+    // Use essa função sempre que precisar enviar dados ao n8n
+    // ========================================
+    function obterDadosUsuario() {
+      return {
+        id_funcionario: idFuncionario,
+        id_empresa: idEmpresa,
+        usuario_nome: usuarioNome,
+        usuario_email: usuarioEmail,
+        empresa_nome: empresaNome
+      };
     }
   </script>
 </body>
