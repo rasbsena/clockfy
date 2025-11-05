@@ -235,6 +235,7 @@
                     timestamp: new Date().toISOString(),
                     
                     // Dados do usuário logado (do localStorage)
+                    autenticado: autenticado, // ✅ ADICIONADO
                     id_funcionario: idFuncionario,
                     id_empresa: idEmpresa,
                     usuario_nome: usuarioNome,
@@ -244,6 +245,7 @@
                 };
 
                 console.log('Enviando registro de ponto para n8n:', {
+                    autenticado: autenticado, // ✅ ADICIONADO NO LOG
                     id_funcionario: idFuncionario,
                     id_empresa: idEmpresa,
                     usuario: usuarioNome,
