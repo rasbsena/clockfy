@@ -1,79 +1,1089 @@
-<!-- ...código anterior inalterado... -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clockfy - Painel de Espelho de Ponto</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23270949' d='M50,5L25,35h50L50,5z'/%3E%3Ccircle fill='%23f93d00' cx='50' cy='60' r='35'/%3E%3Ccircle fill='%23270949' cx='50' cy='60' r='28'/%3E%3Ccircle fill='%23fff' cx='50' cy='60' r='23'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-<script>
-  // ========== CONFIGURAÇÃO ==========
-  const N8N_WEBHOOK_URL = 'https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-painelclockfy';
-  const N8N_ESPELHO_URL = 'https://n8n.upperfy.com.br/webhook/espelho-ponto';
-  // ...demais constantes e variáveis...
-
-  // ========== SUBMISSÃO DO FORMULÁRIO (para gerar espelho de ponto) ==========
-  reportForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     
-    const month = document.getElementById('month').value;
-    const year = document.getElementById('year').value;
-
-    if (!month || !year) {
-      showMessage('Por favor, selecione o mês e o ano.', 'error');
-      return;
+    :root {
+      --roxo-escuro: #270949;
+      --roxo-medio: #87148C;
+      --roxo-vivo: #4F1295;
+      --laranja: #F93D00;
+      --laranja-esc: #e03800;
+      --branco: #fff;
+      --vidro: rgba(39, 9, 73, 0.6);
     }
 
-    setLoading(true);
-    message.style.display = 'none';
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #270949 0%, #1a0430 100%);
+      min-height: 100vh;
+      padding: 20px;
+      padding-left: 280px;
+      padding-top: 80px;
+      color: #fff;
+      transition: padding-left 0.3s ease;
+    }
 
-    try {
-      // Coletar todos os dados do localStorage
-      const localStorageData = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        localStorageData[key] = localStorage.getItem(key);
+    body.sidebar-collapsed {
+      padding-left: 80px;
+    }
+
+    /* MENU SUPERIOR FIXO */
+    .top-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--vidro);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(249, 61, 0, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      z-index: 1001;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .top-menu-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .welcome-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .welcome-text span {
+      color: var(--laranja);
+      font-weight: 700;
+    }
+
+    .top-menu-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .top-menu-link {
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .top-menu-link:hover {
+      background: rgba(249, 61, 0, 0.1);
+      color: var(--laranja);
+    }
+
+    .top-menu-link.profile {
+      background: rgba(249, 61, 0, 0.1);
+      border: 1px solid rgba(249, 61, 0, 0.3);
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--roxo-vivo), var(--roxo-medio));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+      border: 2px solid var(--laranja);
+    }
+
+    /* LOADING OVERLAY */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(39, 9, 73, 0.95);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-spinner {
+      width: 80px;
+      height: 80px;
+      border: 6px solid rgba(249, 61, 0, 0.2);
+      border-top-color: var(--laranja);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .container {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 60px;
+      height: calc(100vh - 60px);
+      width: 260px;
+      background: var(--vidro);
+      backdrop-filter: blur(10px);
+      border-right: 1px solid rgba(249, 61, 0, 0.15);
+      padding: 24px;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    .sidebar.collapsed {
+      width: 60px;
+      padding: 24px 10px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      gap: 10px;
+    }
+
+    .sidebar.collapsed .sidebar-header {
+      flex-direction: column;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar.collapsed .sidebar-brand {
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+    }
+
+    .sidebar-brand svg {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo-text {
+      font-size: 18px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .sidebar-logo-text span {
+      color: var(--laranja);
+    }
+
+    .toggle-btn {
+      background: rgba(249, 61, 0, 0.1);
+      border: 1px solid rgba(249, 61, 0, 0.3);
+      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .toggle-btn:hover {
+      background: rgba(249, 61, 0, 0.2);
+      border-color: rgba(249, 61, 0, 0.5);
+    }
+
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #cfcfcf;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar.collapsed .sidebar-title {
+      opacity: 0;
+      height: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .sidebar-shortcuts {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sidebar-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Montserrat', sans-serif;
+      text-align: left;
+    }
+
+    .sidebar-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(249, 61, 0, 0.4);
+      transform: translateX(5px);
+    }
+
+    .sidebar.collapsed .sidebar-btn {
+      padding: 12px;
+      justify-content: center;
+    }
+
+    .sidebar-btn-text {
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar.collapsed .sidebar-btn-text {
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      font-size: 11px;
+      color: #888;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar.collapsed .sidebar-footer {
+      opacity: 0;
+      height: 0;
+      padding: 0;
+      border: none;
+      overflow: hidden;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .btn-primary {
+      background: var(--laranja);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--laranja-esc);
+      box-shadow: 0 6px 20px rgba(249, 61, 0, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #fff;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .main-grid {
+      display: block;
+    }
+
+    .card {
+      background: var(--vidro);
+      border-radius: 20px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(249, 61, 0, 0.1);
+    }
+
+    .card-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-subtitle {
+      color: #a8a8a8;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #e0e0e0;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      background: rgba(20, 5, 35, 0.8);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--laranja);
+      background: rgba(20, 5, 35, 0.95);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .kpi-card {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #cfcfcf;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .kpi-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .chart-container {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .chart-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #cfcfcf;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    canvas {
+      max-height: 160px;
+      width: 100% !important;
+      height: 160px !important;
+    }
+
+    .chart-container canvas {
+      max-width: 100%;
+    }
+
+    .shortcuts {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.success {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      color: #86efac;
+    }
+
+    .message.error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .loader {
+      width: 16px;
+      height: 16px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: #888;
+      font-size: 12px;
+    }
+
+    @media (max-width: 1200px) {
+      body {
+        padding-left: 20px;
       }
 
-      // Enviar localStorage + dados do formulário para N8N (geração do espelho)
-      const response = await fetch(N8N_ESPELHO_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          ...localStorageData,
-          mes: month,
-          ano: year 
-        })
+      body.sidebar-collapsed {
+        padding-left: 20px;
+      }
+
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .top-menu {
+        padding: 0 15px;
+      }
+
+      .top-menu-right {
+        gap: 10px;
+      }
+
+      .top-menu-link span {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Carregando seus dados...</div>
+  </div>
+
+  <!-- Proteção de acesso -->
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '../index.html';
+    }
+  </script>
+
+  <!-- Menu Superior Fixo -->
+  <nav class="top-menu">
+    <div class="top-menu-left">
+      <div class="welcome-text">Bem-vindo, <span id="userName">Usuário</span></div>
+    </div>
+    <div class="top-menu-right">
+      <a href="https://clockfy.upperfy.com.br/area-restrita/meuperfil.html" class="top-menu-link profile">
+        <div class="avatar" id="userAvatar">U</div>
+        <span>Meu Perfil Upperfy</span>
+      </a>
+      <a href="https://plataforma.upperfy.com.br" target="_blank" class="top-menu-link">
+        <span>🚀 Plataforma Upperfy</span>
+      </a>
+      <a href="https://upperfy.com.br" target="_blank" class="top-menu-link">
+        <span>🌐 Conheça a Upperfy</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Sidebar Menu Lateral -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+          <path fill="#270949" d="M50,5L25,35h50L50,5z"/>
+          <circle fill="#f93d00" cx="50" cy="60" r="35"/>
+          <circle fill="#270949" cx="50" cy="60" r="28"/>
+          <circle fill="#fff" cx="50" cy="60" r="23"/>
+        </svg>
+        <div class="sidebar-logo-text">Clock<span>fy</span></div>
+      </div>
+      <button class="toggle-btn" onclick="toggleSidebar()" title="Recolher/Expandir">
+        <span id="toggleIcon">◀</span>
+      </button>
+    </div>
+
+    <div class="sidebar-title">⚡ Atalhos</div>
+
+    <div class="sidebar-shortcuts">
+      <button class="sidebar-btn" onclick="window.location.href='https://clockfy.upperfy.com.br/area-restrita/clockfyregistro.html'">
+        <span>🕐</span>
+        <span class="sidebar-btn-text">Registrar Ponto</span>
+      </button>
+      <button class="sidebar-btn" onclick="navigateTo('historico.html')">
+        <span>📋</span>
+        <span class="sidebar-btn-text">Histórico</span>
+      </button>
+      <button class="sidebar-btn" onclick="navigateTo('dashboard.html')">
+        <span>📊</span>
+        <span class="sidebar-btn-text">Dashboard</span>
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      Desenvolvido por <strong>Upperfy</strong>
+    </div>
+  </aside>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1 style="font-size: 28px; font-weight: 800;">Painel de Espelho de Ponto</h1>
+      <div class="header-actions">
+        <button class="btn btn-primary" onclick="logout()">Sair</button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-grid">
+      <!-- Left Column - Form and Charts -->
+      <div>
+        <div class="card">
+          <h2 class="card-title">📄 Espelho de Ponto</h2>
+          <p class="card-subtitle">Gere o relatório completo do seu ponto em PDF</p>
+
+          <form id="reportForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="month">Mês</label>
+                <select id="month" required>
+                  <option value="">Selecione o mês</option>
+                  <option value="01">Janeiro</option>
+                  <option value="02">Fevereiro</option>
+                  <option value="03">Março</option>
+                  <option value="04">Abril</option>
+                  <option value="05">Maio</option>
+                  <option value="06">Junho</option>
+                  <option value="07">Julho</option>
+                  <option value="08">Agosto</option>
+                  <option value="09">Setembro</option>
+                  <option value="10">Outubro</option>
+                  <option value="11">Novembro</option>
+                  <option value="12">Dezembro</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="year">Ano</label>
+                <input type="number" id="year" min="2023" max="2030" value="2025" required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="generateBtn" style="width: 100%;">
+              <span id="btnText">Gerar Espelho de Ponto</span>
+              <span class="loader" id="btnLoader"></span>
+            </button>
+
+            <div id="message" class="message"></div>
+          </form>
+
+          <!-- KPIs -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-label">Total de Horas</div>
+              <div class="kpi-value" id="kpiTotalHoras">—</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Minutos de Atraso</div>
+              <div class="kpi-value" id="kpiAtraso">—</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Saldo de Horas</div>
+              <div class="kpi-value" id="kpiSaldo">—</div>
+            </div>
+          </div>
+
+          <!-- Charts -->
+          <div class="charts-grid">
+            <div class="chart-container">
+              <div class="chart-title">Horas Trabalhadas</div>
+              <canvas id="chartHoras"></canvas>
+            </div>
+            <div class="chart-container">
+              <div class="chart-title">Atrasos (min)</div>
+              <canvas id="chartAtraso"></canvas>
+            </div>
+            <div class="chart-container">
+              <div class="chart-title">Saldo Diário</div>
+              <canvas id="chartSaldo"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== CONFIGURAÇÃO ==========
+    const N8N_WEBHOOK_URL = 'https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-painelclockfy';
+    const N8N_ESPELHO_URL = 'https://n8n.upperfy.com.br/webhook/espelho-ponto';
+
+    // ========== ELEMENTOS DO DOM ==========
+    const reportForm = document.getElementById('reportForm');
+    const generateBtn = document.getElementById('generateBtn');
+    const btnText = document.getElementById('btnText');
+    const btnLoader = document.getElementById('btnLoader');
+    const message = document.getElementById('message');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    // ========== VARIÁVEIS GLOBAIS ==========
+    let chartHoras, chartAtraso, chartSaldo;
+    let dashboardData = null; // Dados vindos do N8N
+
+    // ========== INICIALIZAÇÃO ==========
+    async function initializePage() {
+      try {
+        console.log('Iniciando carregamento dos dados do N8N...');
+        
+        // Obter nome do funcionário do localStorage
+        const nome = localStorage.getItem('nome') || localStorage.getItem('username') || 'Usuário';
+        
+        // Atualizar UI com nome
+        document.getElementById('userName').textContent = nome;
+        
+        // Criar avatar com iniciais
+        const initials = nome.split(' ')
+          .filter(word => word.length > 0)
+          .slice(0, 2)
+          .map(word => word[0].toUpperCase())
+          .join('');
+        document.getElementById('userAvatar').textContent = initials;
+
+        // Coletar todos os dados do localStorage
+        const localStorageData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          localStorageData[key] = localStorage.getItem(key);
+        }
+
+        console.log('Enviando dados para o N8N:', localStorageData);
+
+        // Enviar dados para n8n e aguardar resposta
+        const response = await fetch(N8N_WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(localStorageData)
+        });
+
+        console.log('Resposta do N8N recebida:', response.status);
+
+        if (!response.ok) {
+          throw new Error('Erro ao buscar dados do N8N');
+        }
+
+        const data = await response.json();
+        console.log('Dados do N8N:', data);
+        
+        // Armazenar dados globalmente
+        dashboardData = data;
+
+        // Verificar se temos os dados necessários
+        if (data.chartData && data.resumo) {
+          console.log('Renderizando gráficos e KPIs com dados do N8N');
+          
+          // Criar gráficos com dados reais
+          createCharts(data.chartData);
+          
+          // Atualizar KPIs com dados reais
+          updateKPIs(data.resumo);
+        } else {
+          console.warn('Dados incompletos recebidos do N8N');
+          throw new Error('Dados incompletos do servidor');
+        }
+
+        // Esconder loading
+        setTimeout(() => {
+          loadingOverlay.classList.add('hidden');
+        }, 500);
+
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        
+        // Mostrar mensagem de erro ao usuário
+        alert('Erro ao carregar seus dados. Por favor, recarregue a página.');
+        
+        // Manter loading visível em caso de erro
+        // ou redirecionar para login
+        setTimeout(() => {
+          loadingOverlay.classList.add('hidden');
+        }, 1000);
+      }
+    }
+
+    // ========== ATUALIZAÇÃO DE KPIs (com dados de resumo) ==========
+    function updateKPIs(resumo) {
+      console.log('Atualizando KPIs com:', resumo);
+      
+      // Usar dados de resumo vindos do N8N
+      document.getElementById('kpiTotalHoras').textContent = resumo.total_horas_mes || '—';
+      document.getElementById('kpiAtraso').textContent = resumo.total_atraso_min + ' min' || '—';
+      document.getElementById('kpiSaldo').textContent = resumo.saldo_total || '—';
+    }
+
+    // ========== CRIAÇÃO DOS GRÁFICOS (com dados de chartData) ==========
+    function createCharts(chartData) {
+      console.log('Criando gráficos com:', chartData);
+      
+      const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#ccc', font: { size: 10 } },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          },
+          y: {
+            ticks: { color: '#ccc', font: { size: 10 } },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          }
+        }
+      };
+
+      // Destruir gráficos existentes se houver
+      if (chartHoras) chartHoras.destroy();
+      if (chartAtraso) chartAtraso.destroy();
+      if (chartSaldo) chartSaldo.destroy();
+
+      // Chart Horas
+      chartHoras = new Chart(document.getElementById('chartHoras'), {
+        type: 'bar',
+        data: {
+          labels: chartData.dias,
+          datasets: [{
+            label: 'Horas',
+            data: chartData.horas,
+            backgroundColor: 'rgba(249, 61, 0, 0.7)',
+            borderColor: 'rgba(249, 61, 0, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: chartOptions
       });
 
-      if (!response.ok) {
-        throw new Error('Erro ao gerar relatório');
+      // Chart Atraso
+      chartAtraso = new Chart(document.getElementById('chartAtraso'), {
+        type: 'bar',
+        data: {
+          labels: chartData.dias,
+          datasets: [{
+            label: 'Atraso',
+            data: chartData.atraso,
+            backgroundColor: 'rgba(239, 68, 68, 0.7)',
+            borderColor: 'rgba(239, 68, 68, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: chartOptions
+      });
+
+      // Chart Saldo
+      chartSaldo = new Chart(document.getElementById('chartSaldo'), {
+        type: 'line',
+        data: {
+          labels: chartData.dias,
+          datasets: [{
+            label: 'Saldo',
+            data: chartData.saldo,
+            borderColor: 'rgba(135, 20, 140, 1)',
+            backgroundColor: 'rgba(135, 20, 140, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: chartOptions
+      });
+    }
+
+    // ========== FUNÇÕES AUXILIARES ==========
+    function logout() {
+      localStorage.clear();
+      window.location.href = '../index.html';
+    }
+
+    function navigateTo(page) {
+      const pages = ['dashboard.html', 'historico.html'];
+      if (pages.includes(page)) {
+        window.location.href = page;
+      } else {
+        showMessage(`Página ${page} ainda não foi criada.`, 'error');
+      }
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const toggleIcon = document.getElementById('toggleIcon');
+      const body = document.body;
+      
+      sidebar.classList.toggle('collapsed');
+      body.classList.toggle('sidebar-collapsed');
+      
+      if (sidebar.classList.contains('collapsed')) {
+        toggleIcon.textContent = '▶';
+      } else {
+        toggleIcon.textContent = '◀';
+      }
+    }
+
+    function showMessage(text, type) {
+      message.textContent = text;
+      message.className = `message ${type}`;
+      message.style.display = 'block';
+      setTimeout(() => {
+        message.style.display = 'none';
+      }, 5000);
+    }
+
+    function setLoading(isLoading) {
+      generateBtn.disabled = isLoading;
+      btnText.style.display = isLoading ? 'none' : 'inline';
+      btnLoader.style.display = isLoading ? 'inline-block' : 'none';
+    }
+
+    // ========== DOWNLOAD DO PDF ==========
+    function downloadPDF(base64Data, filename) {
+      try {
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Erro ao fazer download do PDF:', error);
+        showMessage('Erro ao processar o arquivo PDF', 'error');
+      }
+    }
+
+    // ========== SUBMISSÃO DO FORMULÁRIO (para gerar espelho de ponto) ==========
+    reportForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const month = document.getElementById('month').value;
+      const year = document.getElementById('year').value;
+
+      if (!month || !year) {
+        showMessage('Por favor, selecione o mês e o ano.', 'error');
+        return;
       }
 
-      const data = await response.json();
-      
-      // Tratamento da resposta do N8N (sucesso ou falha)
-      if (data.status === 'success') {
-        // Sucesso: baixar PDF automaticamente
+      setLoading(true);
+      message.style.display = 'none';
+
+      try {
+        // Coletar todos os dados do localStorage
+        const localStorageData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          localStorageData[key] = localStorage.getItem(key);
+        }
+
+        // Enviar localStorage + dados do formulário para n8n
+        const response = await fetch(N8N_ESPELHO_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            ...localStorageData,
+            mes: month,
+            ano: year
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Erro ao gerar relatório');
+        }
+
+        const data = await response.json();
+        
+        // Fazer download do PDF
         if (data.pdfBase64) {
           downloadPDF(data.pdfBase64, `espelho-ponto-${year}-${month}.pdf`);
         }
-        // Sucesso: exibir mensagem de sucesso com link para download manual
-        message.innerHTML = (data.mensagem || 'Espelho de ponto gerado com sucesso!') +
-          '<br><a href="' + data.urlEspelho + '" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Seu download teve algum erro ou está demorando demais? Clique aqui</a>.' +
-          '<br><small>Este link é temporário.</small>';
-        message.className = 'message success';
-        message.style.display = 'block';
-      } else {
-        // Falha: exibir mensagem de erro retornada
-        const errorMsg = data.mensagem || 'Não foi possível gerar o espelho de ponto. Tente novamente em alguns minutos.';
-        showMessage(errorMsg, 'error');
+
+        // Exibir mensagem de status
+        const statusType = data.status === 'success' ? 'success' : 'error';
+        const mensagem = data.mensagem || 'PDF gerado com sucesso!';
+        showMessage(mensagem, statusType);
+
+      } catch (error) {
+        console.error('Erro:', error);
+        showMessage('Erro ao gerar relatório. Tente novamente.', 'error');
+      } finally {
+        setLoading(false);
       }
+    });
 
-    } catch (error) {
-      console.error('Erro:', error);
-      showMessage('Erro ao gerar relatório. Tente novamente.', 'error');
-    } finally {
-      setLoading(false);
-    }
-  });
-
-  // ========== EXECUTAR INICIALIZAÇÃO ==========
-  initializePage();
-</script>
-
-<!-- ...código posterior inalterado... -->
+    // ========== EXECUTAR INICIALIZAÇÃO ==========
+    initializePage();
+  </script>
+</body>
+</html>
