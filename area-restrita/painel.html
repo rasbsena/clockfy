@@ -618,44 +618,6 @@
     if (!token) {
       window.location.href = '../index.html';
     }
-
-    // ========== ENVIAR DADOS AO N8N IMEDIATAMENTE ==========
-    (async function sendInitialData() {
-      try {
-        console.log('Enviando dados iniciais ao N8N...');
-        
-        // Coletar todos os dados do localStorage
-        const localStorageData = {};
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          localStorageData[key] = localStorage.getItem(key);
-        }
-
-        console.log('Dados do localStorage:', localStorageData);
-
-        // Enviar dados para n8n
-        const response = await fetch('https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-painelclockfy', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(localStorageData)
-        });
-
-        console.log('Resposta do N8N:', response.status);
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Dados recebidos do N8N:', data);
-          
-          // Armazenar dados para uso posterior
-          window.n8nInitialData = data;
-        }
-
-      } catch (error) {
-        console.error('Erro ao enviar dados iniciais ao n8n:', error);
-      }
-    })();
   </script>
 
   <!-- Menu Superior Fixo -->
@@ -818,10 +780,13 @@
 
     // ========== VARIÁVEIS GLOBAIS ==========
     let chartHoras, chartAtraso, chartSaldo;
+    let dashboardData = null; // Dados vindos do N8N
 
-    // ========== INICIALIZAÇÃO - ENVIAR DADOS AO N8N ==========
+    // ========== INICIALIZAÇÃO ==========
     async function initializePage() {
       try {
+        console.log('Iniciando carregamento dos dados do N8N...');
+        
         // Obter nome do funcionário do localStorage
         const nome = localStorage.getItem('nome') || localStorage.getItem('username') || 'Usuário';
         
@@ -836,43 +801,155 @@
           .join('');
         document.getElementById('userAvatar').textContent = initials;
 
-        // Verificar se já recebemos dados do n8n
-        let data = null;
-        if (window.n8nInitialData) {
-          data = window.n8nInitialData;
-          console.log('Usando dados já recebidos do N8N');
+        // Coletar todos os dados do localStorage
+        const localStorageData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          localStorageData[key] = localStorage.getItem(key);
         }
 
-        // Processar resposta do n8n com dados do painel
-        if (data && data.chartData) {
-          console.log('Criando gráficos com dados do N8N');
+        console.log('Enviando dados para o N8N:', localStorageData);
+
+        // Enviar dados para n8n e aguardar resposta
+        const response = await fetch(N8N_WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(localStorageData)
+        });
+
+        console.log('Resposta do N8N recebida:', response.status);
+
+        if (!response.ok) {
+          throw new Error('Erro ao buscar dados do N8N');
+        }
+
+        const data = await response.json();
+        console.log('Dados do N8N:', data);
+        
+        // Armazenar dados globalmente
+        dashboardData = data;
+
+        // Verificar se temos os dados necessários
+        if (data.chartData && data.resumo) {
+          console.log('Renderizando gráficos e KPIs com dados do N8N');
+          
+          // Criar gráficos com dados reais
           createCharts(data.chartData);
-          updateKPIs(data.chartData);
+          
+          // Atualizar KPIs com dados reais
+          updateKPIs(data.resumo);
         } else {
-          console.log('Usando dados mock');
-          // Usar dados mock se não houver resposta
-          const mockData = generateMockData();
-          createCharts(mockData);
-          updateKPIs(mockData);
+          console.warn('Dados incompletos recebidos do N8N');
+          throw new Error('Dados incompletos do servidor');
         }
 
         // Esconder loading
         setTimeout(() => {
           loadingOverlay.classList.add('hidden');
-        }, 1000);
+        }, 500);
 
       } catch (error) {
-        console.error('Erro ao inicializar página:', error);
+        console.error('Erro ao carregar dados:', error);
         
-        // Usar dados mock em caso de erro
-        const mockData = generateMockData();
-        createCharts(mockData);
-        updateKPIs(mockData);
+        // Mostrar mensagem de erro ao usuário
+        alert('Erro ao carregar seus dados. Por favor, recarregue a página.');
         
+        // Manter loading visível em caso de erro
+        // ou redirecionar para login
         setTimeout(() => {
           loadingOverlay.classList.add('hidden');
         }, 1000);
       }
+    }
+
+    // ========== ATUALIZAÇÃO DE KPIs (com dados de resumo) ==========
+    function updateKPIs(resumo) {
+      console.log('Atualizando KPIs com:', resumo);
+      
+      // Usar dados de resumo vindos do N8N
+      document.getElementById('kpiTotalHoras').textContent = resumo.total_horas_mes || '—';
+      document.getElementById('kpiAtraso').textContent = resumo.total_atraso_min + ' min' || '—';
+      document.getElementById('kpiSaldo').textContent = resumo.saldo_total || '—';
+    }
+
+    // ========== CRIAÇÃO DOS GRÁFICOS (com dados de chartData) ==========
+    function createCharts(chartData) {
+      console.log('Criando gráficos com:', chartData);
+      
+      const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#ccc', font: { size: 10 } },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          },
+          y: {
+            ticks: { color: '#ccc', font: { size: 10 } },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          }
+        }
+      };
+
+      // Destruir gráficos existentes se houver
+      if (chartHoras) chartHoras.destroy();
+      if (chartAtraso) chartAtraso.destroy();
+      if (chartSaldo) chartSaldo.destroy();
+
+      // Chart Horas
+      chartHoras = new Chart(document.getElementById('chartHoras'), {
+        type: 'bar',
+        data: {
+          labels: chartData.dias,
+          datasets: [{
+            label: 'Horas',
+            data: chartData.horas,
+            backgroundColor: 'rgba(249, 61, 0, 0.7)',
+            borderColor: 'rgba(249, 61, 0, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: chartOptions
+      });
+
+      // Chart Atraso
+      chartAtraso = new Chart(document.getElementById('chartAtraso'), {
+        type: 'bar',
+        data: {
+          labels: chartData.dias,
+          datasets: [{
+            label: 'Atraso',
+            data: chartData.atraso,
+            backgroundColor: 'rgba(239, 68, 68, 0.7)',
+            borderColor: 'rgba(239, 68, 68, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: chartOptions
+      });
+
+      // Chart Saldo
+      chartSaldo = new Chart(document.getElementById('chartSaldo'), {
+        type: 'line',
+        data: {
+          labels: chartData.dias,
+          datasets: [{
+            label: 'Saldo',
+            data: chartData.saldo,
+            borderColor: 'rgba(135, 20, 140, 1)',
+            backgroundColor: 'rgba(135, 20, 140, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: chartOptions
+      });
     }
 
     // ========== FUNÇÕES AUXILIARES ==========
@@ -920,103 +997,6 @@
       btnLoader.style.display = isLoading ? 'inline-block' : 'none';
     }
 
-    // ========== DADOS MOCK (para visualização inicial) ==========
-    function generateMockData() {
-      const dias = Array.from({length: 30}, (_, i) => i + 1);
-      const horas = dias.map(() => +(6 + Math.random() * 3).toFixed(1));
-      const atraso = dias.map(() => Math.floor(Math.random() * 20));
-      const saldo = dias.map(() => +((Math.random() * 2 - 1).toFixed(1)));
-      
-      return { dias, horas, atraso, saldo };
-    }
-
-    // ========== ATUALIZAÇÃO DE KPIs ==========
-    function updateKPIs(data) {
-      const totalHoras = data.horas.reduce((sum, h) => sum + h, 0);
-      const totalAtraso = data.atraso.reduce((sum, a) => sum + a, 0);
-      const saldoTotal = data.saldo.reduce((sum, s) => sum + s, 0);
-
-      document.getElementById('kpiTotalHoras').textContent = totalHoras.toFixed(1) + 'h';
-      document.getElementById('kpiAtraso').textContent = totalAtraso + ' min';
-      document.getElementById('kpiSaldo').textContent = (saldoTotal >= 0 ? '+' : '') + saldoTotal.toFixed(1) + 'h';
-    }
-
-    // ========== CRIAÇÃO DOS GRÁFICOS ==========
-    function createCharts(data) {
-      const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false }
-        },
-        scales: {
-          x: {
-            ticks: { color: '#ccc', font: { size: 10 } },
-            grid: { color: 'rgba(255, 255, 255, 0.05)' }
-          },
-          y: {
-            ticks: { color: '#ccc', font: { size: 10 } },
-            grid: { color: 'rgba(255, 255, 255, 0.05)' }
-          }
-        }
-      };
-
-      // Destruir gráficos existentes
-      if (chartHoras) chartHoras.destroy();
-      if (chartAtraso) chartAtraso.destroy();
-      if (chartSaldo) chartSaldo.destroy();
-
-      // Chart Horas
-      chartHoras = new Chart(document.getElementById('chartHoras'), {
-        type: 'bar',
-        data: {
-          labels: data.dias,
-          datasets: [{
-            label: 'Horas',
-            data: data.horas,
-            backgroundColor: 'rgba(249, 61, 0, 0.7)',
-            borderColor: 'rgba(249, 61, 0, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: chartOptions
-      });
-
-      // Chart Atraso
-      chartAtraso = new Chart(document.getElementById('chartAtraso'), {
-        type: 'bar',
-        data: {
-          labels: data.dias,
-          datasets: [{
-            label: 'Atraso',
-            data: data.atraso,
-            backgroundColor: 'rgba(239, 68, 68, 0.7)',
-            borderColor: 'rgba(239, 68, 68, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: chartOptions
-      });
-
-      // Chart Saldo
-      chartSaldo = new Chart(document.getElementById('chartSaldo'), {
-        type: 'line',
-        data: {
-          labels: data.dias,
-          datasets: [{
-            label: 'Saldo',
-            data: data.saldo,
-            borderColor: 'rgba(135, 20, 140, 1)',
-            backgroundColor: 'rgba(135, 20, 140, 0.1)',
-            borderWidth: 2,
-            tension: 0.4,
-            fill: true
-          }]
-        },
-        options: chartOptions
-      });
-    }
-
     // ========== DOWNLOAD DO PDF ==========
     function downloadPDF(base64Data, filename) {
       try {
@@ -1042,7 +1022,7 @@
       }
     }
 
-    // ========== SUBMISSÃO DO FORMULÁRIO ==========
+    // ========== SUBMISSÃO DO FORMULÁRIO (para gerar espelho de ponto) ==========
     reportForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -1084,28 +1064,13 @@
 
         const data = await response.json();
         
-        // Processar resposta do n8n
-        // Esperado: { 
-        //   pdfBase64: "...", 
-        //   status: "aprovado|reprovado|pendente",
-        //   mensagem: "...",
-        //   chartData: { dias, horas, atraso, saldo } 
-        // }
-        
-        // Atualizar gráficos se houver dados
-        if (data.chartData) {
-          createCharts(data.chartData);
-          updateKPIs(data.chartData);
-        }
-
         // Fazer download do PDF
         if (data.pdfBase64) {
           downloadPDF(data.pdfBase64, `espelho-ponto-${year}-${month}.pdf`);
         }
 
         // Exibir mensagem de status
-        const statusType = data.status === 'aprovado' ? 'success' : 
-                          data.status === 'reprovado' ? 'error' : 'success';
+        const statusType = data.status === 'success' ? 'success' : 'error';
         const mensagem = data.mensagem || 'PDF gerado com sucesso!';
         showMessage(mensagem, statusType);
 
@@ -1117,8 +1082,7 @@
       }
     });
 
-    // ========== INICIALIZAÇÃO ==========
-    // Executar ao carregar a página
+    // ========== EXECUTAR INICIALIZAÇÃO ==========
     initializePage();
   </script>
 </body>
