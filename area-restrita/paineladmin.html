@@ -906,7 +906,7 @@
     });
 
     async function searchEmployees(type, query, suggestionsElement) {
-      console.log(`Buscando funcionários por ${type}:`, query);
+      console.log(`🔍 Buscando funcionários por ${type}:`, query);
       
       suggestionsElement.innerHTML = '<div class="no-results">🔍 Buscando...</div>';
       suggestionsElement.classList.add('show');
@@ -924,39 +924,83 @@
           busca: query
         };
 
+        console.log('📤 Payload enviado:', payload);
+        console.log('📤 URL do webhook:', WEBHOOK_SEARCH);
+
         const response = await fetch(WEBHOOK_SEARCH, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          mode: 'cors',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify(payload)
         });
 
-        const data = await response.json();
-        console.log('Resultado da busca:', data);
+        console.log('📥 Response completo:', response);
+        console.log('📥 Status da resposta:', response.status);
+        console.log('📥 Response OK:', response.ok);
+        console.log('📥 Headers:', [...response.headers.entries()]);
+
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status}`);
+        }
+
+        const textResponse = await response.text();
+        console.log('📥 Resposta em texto:', textResponse);
+
+        let data;
+        try {
+          data = JSON.parse(textResponse);
+        } catch (e) {
+          console.error('❌ Erro ao parsear JSON:', e);
+          throw new Error('Resposta não é um JSON válido');
+        }
+
+        console.log('✅ Dados recebidos do n8n:', data);
+        console.log('✅ Tipo dos dados:', typeof data);
+        console.log('✅ É array?', Array.isArray(data));
+        console.log('✅ Quantidade de resultados:', data?.length);
 
         displaySuggestions(data, suggestionsElement);
 
       } catch (error) {
-        console.error('Erro ao buscar funcionários:', error);
-        suggestionsElement.innerHTML = '<div class="no-results">❌ Erro ao buscar. Tente novamente.</div>';
+        console.error('❌ Erro completo:', error);
+        console.error('❌ Stack trace:', error.stack);
+        suggestionsElement.innerHTML = `<div class="no-results">❌ Erro: ${error.message}</div>`;
       }
     }
 
     function displaySuggestions(employees, suggestionsElement) {
-      if (!employees || employees.length === 0) {
+      console.log('🎨 Exibindo sugestões:', employees);
+      
+      if (!employees || !Array.isArray(employees) || employees.length === 0) {
+        console.log('⚠️ Nenhum resultado para exibir');
         suggestionsElement.innerHTML = '<div class="no-results">😕 Nenhum funcionário encontrado</div>';
         return;
       }
 
-      suggestionsElement.innerHTML = employees.map(emp => `
-        <div class="suggestion-item" onclick='selectEmployee(${JSON.stringify(emp)})'>
-          <div class="suggestion-name">${emp.nome_completo || emp.nome}</div>
-          <div class="suggestion-info">
-            ID: ${emp.id || emp.id_funcionario} • 
-            ${emp.email} • 
-            ${emp.role || emp.nivel_acesso || 'Funcionário'}
+      console.log(`✅ Exibindo ${employees.length} funcionário(s)`);
+
+      const html = employees.map((emp, index) => {
+        console.log(`Funcionário ${index}:`, emp);
+        
+        const empJson = JSON.stringify(emp).replace(/'/g, "\\'");
+        
+        return `
+          <div class="suggestion-item" onclick='selectEmployee(${empJson})'>
+            <div class="suggestion-name">${emp.nome_completo || emp.nome || 'Sem nome'}</div>
+            <div class="suggestion-info">
+              ID: ${emp.id || emp.id_funcionario || 'N/A'} • 
+              ${emp.email || 'Sem email'} • 
+              ${emp.role || emp.nivel_acesso || 'Funcionário'}
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
+
+      console.log('📝 HTML gerado:', html);
+      suggestionsElement.innerHTML = html;
     }
 
     function selectEmployee(employee) {
