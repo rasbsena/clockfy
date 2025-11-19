@@ -130,10 +130,9 @@
       position: fixed;
       bottom: 30px;
       right: 30px;
-      width: 60px;
-      height: 60px;
+      padding: 16px 24px;
       background: linear-gradient(135deg, var(--laranja), var(--laranja-esc));
-      border-radius: 50%;
+      border-radius: 50px;
       display: none;
       align-items: center;
       justify-content: center;
@@ -142,6 +141,10 @@
       transition: all 0.3s ease;
       z-index: 9998;
       animation: pulse-admin 2s ease-in-out infinite;
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+      white-space: nowrap;
     }
 
     .admin-widget.show {
@@ -149,13 +152,8 @@
     }
 
     .admin-widget:hover {
-      transform: scale(1.1) translateY(-5px);
+      transform: scale(1.05) translateY(-5px);
       box-shadow: 0 12px 35px rgba(249, 61, 0, 0.7);
-    }
-
-    .admin-widget::before {
-      content: '⚙️';
-      font-size: 28px;
     }
 
     @keyframes pulse-admin {
@@ -169,7 +167,7 @@
 
     .admin-widget-tooltip {
       position: absolute;
-      right: 70px;
+      right: calc(100% + 15px);
       background: rgba(39, 9, 73, 0.95);
       color: #fff;
       padding: 8px 12px;
@@ -681,12 +679,8 @@
       .admin-widget {
         bottom: 20px;
         right: 20px;
-        width: 50px;
-        height: 50px;
-      }
-
-      .admin-widget::before {
-        font-size: 24px;
+        padding: 12px 20px;
+        font-size: 12px;
       }
     }
   </style>
@@ -729,7 +723,8 @@
 
   <!-- Botão Flutuante Admin -->
   <div class="admin-widget" id="adminWidget" onclick="window.location.href='https://clockfy.upperfy.com.br/area-restrita/paineladmin.html'">
-    <div class="admin-widget-tooltip">Painel Admin</div>
+    <div class="admin-widget-tooltip">Acesso Administrativo</div>
+    ⚙️ Painel Admin
   </div>
 
   <!-- Sidebar Menu Lateral -->
