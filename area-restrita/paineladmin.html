@@ -894,9 +894,12 @@
     searchId.addEventListener('input', (e) => {
       const query = e.target.value.trim();
       
+      console.log('🔤 Input ID changed:', query);
+      
       if (query.length >= 1) {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
+          console.log('⏰ Timeout executado, iniciando busca...');
           searchEmployees('id', query, suggestionsId);
         }, 300);
       } else {
@@ -906,10 +909,12 @@
     });
 
     async function searchEmployees(type, query, suggestionsElement) {
-      console.log(`🔍 Buscando funcionários por ${type}:`, query);
+      console.log('🔍 === INÍCIO DA BUSCA ===');
+      console.log(`🔍 Tipo: ${type}, Query: ${query}`);
       
       suggestionsElement.innerHTML = '<div class="no-results">🔍 Buscando...</div>';
       suggestionsElement.classList.add('show');
+      console.log('✅ Suggestions element mostrado');
 
       try {
         const localStorageData = {};
@@ -924,8 +929,9 @@
           busca: query
         };
 
-        console.log('📤 Payload enviado:', payload);
+        console.log('📤 Payload preparado:', payload);
         console.log('📤 URL do webhook:', WEBHOOK_SEARCH);
+        console.log('📤 Iniciando fetch...');
 
         const response = await fetch(WEBHOOK_SEARCH, {
           method: 'POST',
@@ -937,38 +943,56 @@
           body: JSON.stringify(payload)
         });
 
-        console.log('📥 Response completo:', response);
-        console.log('📥 Status da resposta:', response.status);
-        console.log('📥 Response OK:', response.ok);
-        console.log('📥 Headers:', [...response.headers.entries()]);
+        console.log('📥 === RESPOSTA RECEBIDA ===');
+        console.log('📥 Response object:', response);
+        console.log('📥 Status:', response.status);
+        console.log('📥 OK:', response.ok);
+        console.log('📥 StatusText:', response.statusText);
 
         if (!response.ok) {
+          console.error('❌ Response não OK!');
           throw new Error(`Erro HTTP: ${response.status}`);
         }
 
+        console.log('📥 Lendo body da resposta...');
         const textResponse = await response.text();
-        console.log('📥 Resposta em texto:', textResponse);
+        console.log('📥 Resposta em texto RAW:', textResponse);
+        console.log('📥 Tamanho da resposta:', textResponse.length);
 
         let data;
         try {
+          console.log('🔄 Tentando parsear JSON...');
           data = JSON.parse(textResponse);
+          console.log('✅ JSON parseado com sucesso!');
         } catch (e) {
-          console.error('❌ Erro ao parsear JSON:', e);
+          console.error('❌ ERRO ao parsear JSON:', e);
+          console.error('❌ Texto que falhou:', textResponse.substring(0, 200));
           throw new Error('Resposta não é um JSON válido');
         }
 
-        console.log('✅ Dados recebidos do n8n:', data);
-        console.log('✅ Tipo dos dados:', typeof data);
-        console.log('✅ É array?', Array.isArray(data));
-        console.log('✅ Quantidade de resultados:', data?.length);
+        console.log('✅ === DADOS RECEBIDOS ===');
+        console.log('✅ Data:', data);
+        console.log('✅ Tipo:', typeof data);
+        console.log('✅ É Array?', Array.isArray(data));
+        console.log('✅ Length:', data?.length);
 
+        if (Array.isArray(data)) {
+          console.log('✅ Conteúdo do array:', JSON.stringify(data, null, 2));
+        }
+
+        console.log('🎨 Chamando displaySuggestions...');
         displaySuggestions(data, suggestionsElement);
+        console.log('✅ displaySuggestions executado');
 
       } catch (error) {
-        console.error('❌ Erro completo:', error);
-        console.error('❌ Stack trace:', error.stack);
-        suggestionsElement.innerHTML = `<div class="no-results">❌ Erro: ${error.message}</div>`;
+        console.error('❌ === ERRO NA BUSCA ===');
+        console.error('❌ Error object:', error);
+        console.error('❌ Message:', error.message);
+        console.error('❌ Stack:', error.stack);
+        suggestionsElement.innerHTML = `<div class="no-results">❌ Erro: ${error.message}<br>Veja o console (F12)</div>`;
       }
+      
+      console.log('🔍 === FIM DA BUSCA ===');
     }
 
     function displaySuggestions(employees, suggestionsElement) {
