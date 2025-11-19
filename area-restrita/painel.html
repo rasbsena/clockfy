@@ -861,14 +861,14 @@
   <script>
     // ========== VERIFICAÇÃO E EXIBIÇÃO DO WIDGET ADMIN ==========
     (function checkAdminWidget() {
-      const tipo = localStorage.getItem('tipo');
+      const role = localStorage.getItem('role');
       const adminWidget = document.getElementById('adminWidget');
       
-      if (tipo === 'nimda') {
+      if (role === 'Admin') {
         adminWidget.classList.add('show');
-        console.log('Widget admin ativado');
+        console.log('Widget admin ativado - Role: Admin');
       } else {
-        console.log('Widget admin não exibido - tipo:', tipo);
+        console.log('Widget admin não exibido - Role:', role);
       }
     })();
 
