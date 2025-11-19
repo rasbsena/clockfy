@@ -861,14 +861,47 @@
   <script>
     // ========== VERIFICAÇÃO E EXIBIÇÃO DO WIDGET ADMIN ==========
     (function checkAdminWidget() {
-      const role = localStorage.getItem('role');
       const adminWidget = document.getElementById('adminWidget');
+      let isAdmin = false;
       
-      if (role === 'Admin') {
+      console.log('Verificando permissões de admin...');
+      
+      // Opção 1: Verificar se existe 'role' direto no localStorage
+      const role = localStorage.getItem('role');
+      if (role && role.trim() === 'Admin') {
+        isAdmin = true;
+        console.log('✅ Admin detectado via role:', role);
+      }
+      
+      // Opção 2: Verificar dentro do objeto 'usuario' (JSON)
+      const usuarioJson = localStorage.getItem('usuario');
+      if (!isAdmin && usuarioJson) {
+        try {
+          const usuario = JSON.parse(usuarioJson);
+          console.log('Objeto usuario encontrado:', usuario);
+          
+          // Verifica nivel_acesso
+          if (usuario.nivel_acesso === 'Admin') {
+            isAdmin = true;
+            console.log('✅ Admin detectado via usuario.nivel_acesso:', usuario.nivel_acesso);
+          }
+          
+          // Verifica role dentro do objeto usuario (fallback)
+          if (!isAdmin && usuario.role === 'Admin') {
+            isAdmin = true;
+            console.log('✅ Admin detectado via usuario.role:', usuario.role);
+          }
+        } catch (e) {
+          console.error('Erro ao parsear usuario do localStorage:', e);
+        }
+      }
+      
+      // Exibe ou esconde o widget
+      if (isAdmin) {
         adminWidget.classList.add('show');
-        console.log('Widget admin ativado - Role: Admin');
+        console.log('🎉 Widget admin ATIVADO');
       } else {
-        console.log('Widget admin não exibido - Role:', role);
+        console.log('❌ Widget admin NÃO exibido - Usuário não é Admin');
       }
     })();
 
