@@ -73,10 +73,18 @@
       font-weight: 700;
     }
 
-    .top-menu-right {
+    .top-menu-center {
       display: flex;
       align-items: center;
       gap: 20px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .top-menu-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
 
     .top-menu-link {
@@ -90,6 +98,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      white-space: nowrap;
     }
 
     .top-menu-link:hover {
@@ -114,6 +123,68 @@
       font-size: 14px;
       color: #fff;
       border: 2px solid var(--laranja);
+    }
+
+    /* BOTÃO FLUTUANTE ADMIN */
+    .admin-widget {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--laranja), var(--laranja-esc));
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(249, 61, 0, 0.5);
+      transition: all 0.3s ease;
+      z-index: 9998;
+      animation: pulse-admin 2s ease-in-out infinite;
+    }
+
+    .admin-widget.show {
+      display: flex;
+    }
+
+    .admin-widget:hover {
+      transform: scale(1.1) translateY(-5px);
+      box-shadow: 0 12px 35px rgba(249, 61, 0, 0.7);
+    }
+
+    .admin-widget::before {
+      content: '⚙️';
+      font-size: 28px;
+    }
+
+    @keyframes pulse-admin {
+      0%, 100% {
+        box-shadow: 0 8px 25px rgba(249, 61, 0, 0.5);
+      }
+      50% {
+        box-shadow: 0 8px 40px rgba(249, 61, 0, 0.8);
+      }
+    }
+
+    .admin-widget-tooltip {
+      position: absolute;
+      right: 70px;
+      background: rgba(39, 9, 73, 0.95);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      border: 1px solid rgba(249, 61, 0, 0.3);
+    }
+
+    .admin-widget:hover .admin-widget-tooltip {
+      opacity: 1;
     }
 
     /* LOADING OVERLAY */
@@ -595,12 +666,27 @@
         padding: 0 15px;
       }
 
+      .top-menu-center {
+        display: none;
+      }
+
       .top-menu-right {
         gap: 10px;
       }
 
-      .top-menu-link span {
+      .top-menu-link span:not(.avatar) {
         display: none;
+      }
+
+      .admin-widget {
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+      }
+
+      .admin-widget::before {
+        font-size: 24px;
       }
     }
   </style>
@@ -625,11 +711,7 @@
     <div class="top-menu-left">
       <div class="welcome-text">Bem-vindo, <span id="userName">Usuário</span></div>
     </div>
-    <div class="top-menu-right">
-      <a href="https://clockfy.upperfy.com.br/area-restrita/meuperfil.html" class="top-menu-link profile">
-        <div class="avatar" id="userAvatar">U</div>
-        <span>Meu Perfil Upperfy</span>
-      </a>
+    <div class="top-menu-center">
       <a href="https://plataforma.upperfy.com.br" target="_blank" class="top-menu-link">
         <span>🚀 Plataforma Upperfy</span>
       </a>
@@ -637,7 +719,18 @@
         <span>🌐 Conheça a Upperfy</span>
       </a>
     </div>
+    <div class="top-menu-right">
+      <a href="https://clockfy.upperfy.com.br/area-restrita/meuperfil.html" class="top-menu-link profile">
+        <div class="avatar" id="userAvatar">U</div>
+        <span>Meu Perfil Upperfy</span>
+      </a>
+    </div>
   </nav>
+
+  <!-- Botão Flutuante Admin -->
+  <div class="admin-widget" id="adminWidget" onclick="window.location.href='https://clockfy.upperfy.com.br/area-restrita/paineladmin.html'">
+    <div class="admin-widget-tooltip">Painel Admin</div>
+  </div>
 
   <!-- Sidebar Menu Lateral -->
   <aside class="sidebar" id="sidebar">
@@ -766,6 +859,19 @@
   </div>
 
   <script>
+    // ========== VERIFICAÇÃO E EXIBIÇÃO DO WIDGET ADMIN ==========
+    (function checkAdminWidget() {
+      const tipo = localStorage.getItem('tipo');
+      const adminWidget = document.getElementById('adminWidget');
+      
+      if (tipo === 'nimda') {
+        adminWidget.classList.add('show');
+        console.log('Widget admin ativado');
+      } else {
+        console.log('Widget admin não exibido - tipo:', tipo);
+      }
+    })();
+
     // ========== CONFIGURAÇÃO ==========
     const N8N_WEBHOOK_URL = 'https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-painelclockfy';
     const N8N_ESPELHO_URL = 'https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-espelhoponto';
