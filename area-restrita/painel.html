@@ -619,6 +619,7 @@
       border-top-color: #fff;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
+      display: none;
     }
 
     .footer {
@@ -695,12 +696,7 @@
   <script>
     const token = localStorage.getItem('token');
     if (!token) {
-      // Tenta redirecionar, mas se falhar (ambiente dev/preview) apenas avisa
-      try {
-        window.location.href = '../index.html';
-      } catch (e) {
-        console.warn('Redirecionamento bloqueado pelo ambiente:', e);
-      }
+      window.location.href = '../index.html';
     }
   </script>
 
@@ -827,10 +823,9 @@
               <div class="kpi-label">Total de Horas</div>
               <div class="kpi-value" id="kpiTotalHoras">—</div>
             </div>
-            <!-- KPI DO MEIO ALTERADO PARA DIAS TRABALHADOS -->
             <div class="kpi-card">
-              <div class="kpi-label">Dias Trabalhados</div>
-              <div class="kpi-value" id="kpiDiasTrabalhados">—</div>
+              <div class="kpi-label">Minutos de Atraso</div>
+              <div class="kpi-value" id="kpiAtraso">—</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-label">Saldo de Horas</div>
@@ -956,85 +951,46 @@
         console.log('Resposta do N8N recebida:', response.status);
 
         if (!response.ok) {
-          throw new Error('Erro ao buscar dados do N8N: Status ' + response.status);
+          throw new Error('Erro ao buscar dados do N8N');
         }
 
-        // Tenta pegar o texto antes para validar se é JSON
-        const responseText = await response.text();
-        console.log('Resposta Bruta:', responseText);
+        const data = await response.json();
+        console.log('Dados do N8N:', data);
+        
+        dashboardData = data;
 
-        if (!responseText) {
-          throw new Error('Servidor retornou resposta vazia');
+        if (data.chartData && data.resumo) {
+          console.log('Renderizando gráficos e KPIs com dados do N8N');
+          
+          createCharts(data.chartData);
+          updateKPIs(data.resumo);
+        } else {
+          console.warn('Dados incompletos recebidos do N8N');
+          throw new Error('Dados incompletos do servidor');
         }
 
-        let rawData;
-        try {
-          rawData = JSON.parse(responseText);
-        } catch (e) {
-          throw new Error('Erro ao processar JSON: ' + e.message);
-        }
-
-        console.log('Dados do N8N (Parseados):', rawData);
-
-        // ========== NOVA LÓGICA DE NORMALIZAÇÃO DE DADOS ==========
-        // Lida com array [{...}] ou objeto puro {...} ou { json: ... }
-        let finalData = rawData;
-
-        // Se for array (ex: [{...}]), pega o primeiro item
-        if (Array.isArray(rawData) && rawData.length > 0) {
-            finalData = rawData[0];
-        }
-
-        // Se estiver embrulhado em "json" (comum no n8n)
-        if (finalData.json) {
-            finalData = finalData.json;
-        }
-
-        // Se estiver embrulhado em "resumo" (formato antigo/fallback)
-        if (finalData.resumo) {
-            finalData = { ...finalData, ...finalData.resumo };
-        }
-
-        console.log('Dados Normalizados:', finalData);
-        dashboardData = finalData;
-
-        // Renderiza KPIs
-        updateKPIs(finalData);
-
-        // Tenta renderizar gráficos se existirem dados para isso
-        if (finalData.chartData) {
-            console.log('Dados de gráfico encontrados, renderizando...');
-            createCharts(finalData.chartData);
-        }
+        setTimeout(() => {
+          loadingOverlay.classList.add('hidden');
+        }, 500);
 
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
         
-        alert('Erro ao carregar seus dados: ' + error.message);
+        alert('Erro ao carregar seus dados. Por favor, recarregue a página.');
         
-      } finally {
-        // GARANTIA: Esconde o loading independente de erro ou sucesso
         setTimeout(() => {
-          if (loadingOverlay) loadingOverlay.classList.add('hidden');
-        }, 500);
+          loadingOverlay.classList.add('hidden');
+        }, 1000);
       }
     }
 
-    // ========== ATUALIZAÇÃO DE KPIs (MODIFICADO) ==========
-    function updateKPIs(data) {
-      console.log('Atualizando KPIs com:', data);
+    // ========== ATUALIZAÇÃO DE KPIs ==========
+    function updateKPIs(resumo) {
+      console.log('Atualizando KPIs com:', resumo);
       
-      // KPI 1: Total de Horas
-      const total = data.total_horas_formatado || data.total_trabalhado_formatado || data.total_horas_mes || '—';
-      document.getElementById('kpiTotalHoras').textContent = total;
-      
-      // KPI 2: Dias Trabalhados (Campo novo)
-      const dias = data.dias_trabalhados !== undefined ? data.dias_trabalhados : '—';
-      document.getElementById('kpiDiasTrabalhados').textContent = dias;
-      
-      // KPI 3: Saldo
-      const saldo = data.saldo_horas_formatado || data.saldo_total || '—';
-      document.getElementById('kpiSaldo').textContent = saldo;
+      document.getElementById('kpiTotalHoras').textContent = resumo.total_horas_mes || '—';
+      document.getElementById('kpiAtraso').textContent = resumo.total_atraso_min + ' min' || '—';
+      document.getElementById('kpiSaldo').textContent = resumo.saldo_total || '—';
     }
 
     // ========== CRIAÇÃO DOS GRÁFICOS ==========
