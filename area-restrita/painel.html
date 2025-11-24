@@ -820,15 +820,15 @@
           <!-- KPIs -->
           <div class="kpi-grid">
             <div class="kpi-card">
-              <div class="kpi-label">Total de Horas</div>
+              <div class="kpi-label" id="kpiLabelHoras">Total de Horas</div>
               <div class="kpi-value" id="kpiTotalHoras">—</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-label">Minutos de Atraso</div>
+              <div class="kpi-label" id="kpiLabelAtraso">Minutos de Atraso</div>
               <div class="kpi-value" id="kpiAtraso">—</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-label">Saldo de Horas</div>
+              <div class="kpi-label" id="kpiLabelSaldo">Saldo de Horas</div>
               <div class="kpi-value" id="kpiSaldo">—</div>
             </div>
           </div>
@@ -920,6 +920,15 @@
     async function initializePage() {
       try {
         console.log('Iniciando carregamento dos dados do N8N...');
+        
+        // Atualizar títulos dos KPIs com o mês atual
+        const meses = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 
+                       'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+        const mesAtual = meses[new Date().getMonth()];
+        
+        document.getElementById('kpiLabelHoras').textContent = `Total de Horas/${mesAtual}`;
+        document.getElementById('kpiLabelAtraso').textContent = `Minutos de Atraso/${mesAtual}`;
+        document.getElementById('kpiLabelSaldo').textContent = `Saldo de Horas/${mesAtual}`;
         
         // CORREÇÃO: Buscar usuario_nome ao invés de nome
         const nome = localStorage.getItem('usuario_nome') || 'Usuário';
