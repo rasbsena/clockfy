@@ -619,7 +619,6 @@
       border-top-color: #fff;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
-      display: none;
     }
 
     .footer {
@@ -823,9 +822,10 @@
               <div class="kpi-label">Total de Horas</div>
               <div class="kpi-value" id="kpiTotalHoras">—</div>
             </div>
+            <!-- KPI DO MEIO ALTERADO PARA DIAS TRABALHADOS -->
             <div class="kpi-card">
-              <div class="kpi-label">Minutos de Atraso</div>
-              <div class="kpi-value" id="kpiAtraso">—</div>
+              <div class="kpi-label">Dias Trabalhados</div>
+              <div class="kpi-value" id="kpiDiasTrabalhados">—</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-label">Saldo de Horas</div>
@@ -954,19 +954,38 @@
           throw new Error('Erro ao buscar dados do N8N');
         }
 
-        const data = await response.json();
-        console.log('Dados do N8N:', data);
-        
-        dashboardData = data;
+        const rawData = await response.json();
+        console.log('Dados do N8N (Bruto):', rawData);
 
-        if (data.chartData && data.resumo) {
-          console.log('Renderizando gráficos e KPIs com dados do N8N');
-          
-          createCharts(data.chartData);
-          updateKPIs(data.resumo);
-        } else {
-          console.warn('Dados incompletos recebidos do N8N');
-          throw new Error('Dados incompletos do servidor');
+        // ========== NOVA LÓGICA DE NORMALIZAÇÃO DE DADOS ==========
+        // Lida com array [{...}] ou objeto puro {...} ou { json: ... }
+        let finalData = rawData;
+
+        // Se for array (ex: [{...}]), pega o primeiro item
+        if (Array.isArray(rawData) && rawData.length > 0) {
+            finalData = rawData[0];
+        }
+
+        // Se estiver embrulhado em "json" (comum no n8n)
+        if (finalData.json) {
+            finalData = finalData.json;
+        }
+
+        // Se estiver embrulhado em "resumo" (formato antigo/fallback)
+        if (finalData.resumo) {
+            finalData = { ...finalData, ...finalData.resumo };
+        }
+
+        console.log('Dados Normalizados:', finalData);
+        dashboardData = finalData;
+
+        // Renderiza KPIs
+        updateKPIs(finalData);
+
+        // Tenta renderizar gráficos se existirem dados para isso
+        if (finalData.chartData) {
+            console.log('Dados de gráfico encontrados, renderizando...');
+            createCharts(finalData.chartData);
         }
 
         setTimeout(() => {
@@ -984,13 +1003,21 @@
       }
     }
 
-    // ========== ATUALIZAÇÃO DE KPIs ==========
-    function updateKPIs(resumo) {
-      console.log('Atualizando KPIs com:', resumo);
+    // ========== ATUALIZAÇÃO DE KPIs (MODIFICADO) ==========
+    function updateKPIs(data) {
+      console.log('Atualizando KPIs com:', data);
       
-      document.getElementById('kpiTotalHoras').textContent = resumo.total_horas_mes || '—';
-      document.getElementById('kpiAtraso').textContent = resumo.total_atraso_min + ' min' || '—';
-      document.getElementById('kpiSaldo').textContent = resumo.saldo_total || '—';
+      // KPI 1: Total de Horas
+      const total = data.total_horas_formatado || data.total_trabalhado_formatado || data.total_horas_mes || '—';
+      document.getElementById('kpiTotalHoras').textContent = total;
+      
+      // KPI 2: Dias Trabalhados (Campo novo)
+      const dias = data.dias_trabalhados !== undefined ? data.dias_trabalhados : '—';
+      document.getElementById('kpiDiasTrabalhados').textContent = dias;
+      
+      // KPI 3: Saldo
+      const saldo = data.saldo_horas_formatado || data.saldo_total || '—';
+      document.getElementById('kpiSaldo').textContent = saldo;
     }
 
     // ========== CRIAÇÃO DOS GRÁFICOS ==========
