@@ -589,11 +589,6 @@
         </h2>
         
         <div class="actions-section">
-          <button class="action-btn" onclick="openForm('corrigir')">
-            <span class="action-icon">✏️</span>
-            <span class="action-text">Corrigir Ponto</span>
-          </button>
-
           <button class="action-btn" onclick="openForm('lancar')">
             <span class="action-icon">📝</span>
             <span class="action-text">Lançar Ponto Antigo</span>
@@ -619,49 +614,6 @@
             <span class="action-text">Excluir Funcionário</span>
           </button>
         </div>
-      </div>
-
-      <!-- FORMULÁRIO: CORRIGIR PONTO -->
-      <div class="card form-area" id="formCorrigir">
-        <div class="form-header">
-          <h2 class="form-title">✏️ Corrigir Ponto</h2>
-          <button class="btn-ghost" onclick="closeForm()">✕ Fechar</button>
-        </div>
-        <form id="formCorrigirSubmit">
-          <div class="form-group">
-            <label class="form-label">ID do Funcionário</label>
-            <input type="text" class="form-input" name="funcionario_id" placeholder="Digite o ID do funcionário" required>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Data</label>
-              <input type="date" class="form-input" name="data" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Tipo de Registro</label>
-              <select class="form-select" name="tipo_registro" required>
-                <option value="">Selecione</option>
-                <option value="entrada">Entrada</option>
-                <option value="saida_almoco">Saída para Almoço</option>
-                <option value="retorno_almoco">Retorno do Almoço</option>
-                <option value="saida">Saída</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Horário Correto</label>
-            <input type="time" class="form-input" name="horario" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Motivo da Correção</label>
-            <textarea class="form-textarea" name="motivo" placeholder="Descreva o motivo..." required></textarea>
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary" style="flex: 1;">Salvar Correção</button>
-            <button type="button" class="btn btn-ghost" onclick="closeForm()">Cancelar</button>
-          </div>
-          <div class="message" id="messageCorrigir"></div>
-        </form>
       </div>
 
       <!-- FORMULÁRIO: LANÇAR PONTO ANTIGO -->
@@ -870,7 +822,6 @@
   <script>
     // ========== CONFIGURAÇÃO DOS WEBHOOKS ==========
     const WEBHOOKS = {
-      corrigir: 'https://n8n.upperfy.com.br/webhook/clock1',
       lancar: 'https://n8n.upperfy.com.br/webhook/clock2',
       espelho: 'https://n8n.upperfy.com.br/webhook/clock3',
       atualizar: 'https://n8n.upperfy.com.br/webhook/clock4',
@@ -1098,35 +1049,6 @@
     }
 
     // ========== SUBMISSÃO DE FORMULÁRIOS ==========
-    
-    document.getElementById('formCorrigirSubmit').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const form = e.target;
-      const formData = {
-        acao: 'corrigir_ponto',
-        funcionario_id: form.funcionario_id.value,
-        data: form.data.value,
-        tipo_registro: form.tipo_registro.value,
-        horario: form.horario.value,
-        motivo: form.motivo.value,
-        timestamp: new Date().toISOString()
-      };
-
-      try {
-        const response = await submitForm('corrigir', formData);
-        
-        if (response.sucesso || response.success) {
-          showMessage('messageCorrigir', response.mensagem || 'Ponto corrigido com sucesso!', 'success');
-          form.reset();
-          setTimeout(() => closeForm(), 2000);
-        } else {
-          showMessage('messageCorrigir', response.mensagem || 'Erro ao processar. Revise os dados.', 'error');
-        }
-      } catch (error) {
-        showMessage('messageCorrigir', 'Erro ao enviar requisição. Revise os dados.', 'error');
-      }
-    });
 
     document.getElementById('formLancarSubmit').addEventListener('submit', async (e) => {
       e.preventDefault();
