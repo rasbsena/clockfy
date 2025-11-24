@@ -695,7 +695,12 @@
   <script>
     const token = localStorage.getItem('token');
     if (!token) {
-      window.location.href = '../index.html';
+      // Tenta redirecionar, mas se falhar (ambiente dev/preview) apenas avisa
+      try {
+        window.location.href = '../index.html';
+      } catch (e) {
+        console.warn('Redirecionamento bloqueado pelo ambiente:', e);
+      }
     }
   </script>
 
@@ -951,11 +956,25 @@
         console.log('Resposta do N8N recebida:', response.status);
 
         if (!response.ok) {
-          throw new Error('Erro ao buscar dados do N8N');
+          throw new Error('Erro ao buscar dados do N8N: Status ' + response.status);
         }
 
-        const rawData = await response.json();
-        console.log('Dados do N8N (Bruto):', rawData);
+        // Tenta pegar o texto antes para validar se é JSON
+        const responseText = await response.text();
+        console.log('Resposta Bruta:', responseText);
+
+        if (!responseText) {
+          throw new Error('Servidor retornou resposta vazia');
+        }
+
+        let rawData;
+        try {
+          rawData = JSON.parse(responseText);
+        } catch (e) {
+          throw new Error('Erro ao processar JSON: ' + e.message);
+        }
+
+        console.log('Dados do N8N (Parseados):', rawData);
 
         // ========== NOVA LÓGICA DE NORMALIZAÇÃO DE DADOS ==========
         // Lida com array [{...}] ou objeto puro {...} ou { json: ... }
@@ -988,18 +1007,16 @@
             createCharts(finalData.chartData);
         }
 
-        setTimeout(() => {
-          loadingOverlay.classList.add('hidden');
-        }, 500);
-
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
         
-        alert('Erro ao carregar seus dados. Por favor, recarregue a página.');
+        alert('Erro ao carregar seus dados: ' + error.message);
         
+      } finally {
+        // GARANTIA: Esconde o loading independente de erro ou sucesso
         setTimeout(() => {
-          loadingOverlay.classList.add('hidden');
-        }, 1000);
+          if (loadingOverlay) loadingOverlay.classList.add('hidden');
+        }, 500);
       }
     }
 
