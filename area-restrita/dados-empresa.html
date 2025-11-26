@@ -35,7 +35,7 @@
       margin: 0 auto;
     }
 
-    /* HEADER (Mesmo estilo) */
+    /* HEADER */
     .header {
       display: flex;
       justify-content: space-between;
@@ -254,7 +254,7 @@
 </head>
 <body>
   <script>
-    // Verificação de segurança (Igual ao painel anterior)
+    // Verificação de segurança
     const role = localStorage.getItem('role');
     const usuarioJson = localStorage.getItem('usuario');
     let isAdmin = false;
@@ -402,7 +402,7 @@
     // ========== CONFIGURAÇÃO ==========
     const WEBHOOK_GET_EMPRESA = 'https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-empresa';
     
-    // Você pode usar o mesmo webhook com um campo 'action': 'update' ou outro URL se tiver
+    // Webhook para atualização
     const WEBHOOK_UPDATE_EMPRESA = 'https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-empresa'; 
 
     // ========== ELEMENTOS ==========
@@ -412,16 +412,19 @@
 
     // ========== AO CARREGAR A PÁGINA ==========
     document.addEventListener('DOMContentLoaded', async () => {
-      // 1. Recuperar dados do LocalStorage para montar o Payload
+      // 1. Recuperar dados do LocalStorage
       const storedData = JSON.parse(localStorage.getItem('usuario') || '{}');
       
-      // Tentativa de pegar ID da empresa de várias estruturas possíveis do JSON que você mandou
       const idEmpresa = storedData.id_empresa || (storedData.empresa ? storedData.empresa.idempresa : null);
       const token = storedData.token;
       const idFuncionario = storedData.id_funcionario || (storedData.usuario ? storedData.usuario.id : null);
 
+      console.log('Dados Locais:', { idEmpresa, idFuncionario });
+
+      // Se não tiver ID, tenta pegar do fallback ou avisa
       if (!idEmpresa) {
-        showMessage('Erro: ID da empresa não encontrado no login.', 'error');
+        // Se o usuário estiver na tela é porque logou, então talvez os dados estejam desatualizados no navegador
+        alert('Seu cadastro parece estar incompleto (ID da empresa faltando). Tente fazer logout e login novamente.');
         loadingOverlay.style.display = 'none';
         return;
       }
@@ -431,7 +434,7 @@
 
       // 2. Payload para buscar os dados
       const payload = {
-        acao: 'buscar_dados_empresa', // Identificador para o n8n saber que é leitura
+        acao: 'buscar_dados_empresa',
         id_empresa: idEmpresa,
         id_funcionario: idFuncionario,
         token: token,
@@ -449,22 +452,29 @@
 
         if (!response.ok) throw new Error('Falha na comunicação com o servidor');
 
-        const data = await response.json();
-        console.log('✅ Dados recebidos:', data);
+        const rawData = await response.json();
+        console.log('✅ Dados recebidos (Bruto):', rawData);
 
-        // 3. Preencher o formulário com os dados recebidos
-        // O código abaixo tenta mapear as chaves comuns. O n8n deve retornar um JSON com essas chaves ou parecidas.
-        
-        // Exemplo de estrutura esperada no 'data': { nome: 'Upperfy', cnpj: '...', segmento: '...' }
-        // Se o n8n retornar tudo dentro de um objeto 'empresa', ajuste para data.empresa.campo
-        
-        const empresaData = data.empresa || data; // Fallback caso venha direto ou aninhado
+        // --- TRATAMENTO ROBUSTO DE DADOS ---
+        // O n8n pode retornar Array ou Objeto. Aqui normalizamos.
+        let data = rawData;
+        if (Array.isArray(rawData)) {
+            // Se for array, pega o primeiro item
+            data = rawData.length > 0 ? rawData[0] : {};
+        }
+
+        // Tenta achar onde estão os dados da empresa (pode estar na raiz ou dentro de 'empresa')
+        const empresaData = data.empresa || data; 
 
         if (empresaData) {
-          document.getElementById('nomeEmpresa').value = empresaData.nome || empresaData.nomeempresa || storedData.empresa?.nomeempresa || '';
+          // Usamos || '' para evitar que undefined apareça nos inputs
+          document.getElementById('nomeEmpresa').value = empresaData.nome || empresaData.nome_empresa || empresaData.nomeempresa || storedData.empresa?.nomeempresa || '';
           document.getElementById('cnpj').value = empresaData.cnpj || '';
           document.getElementById('segmento').value = empresaData.segmento || '';
-          document.getElementById('porte').value = empresaData.porte || 'Pequeno';
+          
+          // Verifica se o valor do porte existe nas opções, senão mantém padrão
+          if(empresaData.porte) document.getElementById('porte').value = empresaData.porte;
+          
           document.getElementById('emailCorporativo').value = empresaData.email || '';
           document.getElementById('telefone').value = empresaData.telefone || empresaData.whatsapp || '';
           document.getElementById('cep').value = empresaData.cep || '';
@@ -474,15 +484,14 @@
 
       } catch (error) {
         console.error('Erro:', error);
-        showMessage('Não foi possível carregar os dados da empresa. Verifique sua conexão.', 'error');
+        showMessage('Erro ao carregar dados. Verifique o console (F12) para detalhes.', 'error');
         
-        // Fallback: Se der erro, preenche pelo menos o nome que está no localStorage
+        // Fallback para preencher pelo menos o nome se houver erro de rede
         if (storedData.empresa && storedData.empresa.nomeempresa) {
-          document.getElementById('nomeEmpresa').value = storedData.empresa.nomeempresa;
+            document.getElementById('nomeEmpresa').value = storedData.empresa.nomeempresa;
         }
 
       } finally {
-        // Remove o loading
         loadingOverlay.style.display = 'none';
       }
     });
@@ -524,27 +533,21 @@
           body: JSON.stringify(formData)
         });
 
-        const result = await response.json();
-
-        // Verifica sucesso (adaptar conforme retorno do seu n8n)
         if (response.ok) {
           showMessage('Dados da empresa atualizados com sucesso!', 'success');
           
-          // Atualiza localStorage se o nome mudou, para manter consistência
+          // Atualiza localStorage para manter consistência
           if (storedData.empresa) {
             storedData.empresa.nomeempresa = formData.dados_atualizados.nome;
             localStorage.setItem('usuario', JSON.stringify(storedData));
           }
         } else {
-          showMessage('Erro ao salvar. Tente novamente.', 'error');
+          showMessage('Erro ao salvar. Verifique se o n8n respondeu corretamente.', 'error');
         }
 
       } catch (error) {
         console.error('Erro ao salvar:', error);
-        // showMessage('Erro de conexão ao salvar.', 'error');
-        
-        // Para fins de demonstração (se o webhook não estiver configurado para responder update):
-        showMessage('Dados enviados com sucesso! (Modo Demonstração)', 'success');
+        showMessage('Erro de conexão ao salvar.', 'error');
       } finally {
         btn.disabled = false;
         btn.innerHTML = originalText;
@@ -564,7 +567,7 @@
     function logout() {
       if (confirm('Deseja realmente sair?')) {
         localStorage.clear();
-        window.location.href = '../index.html'; // Ajuste o caminho conforme necessário
+        window.location.href = '../index.html';
       }
     }
   </script>
