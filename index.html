@@ -113,7 +113,6 @@
                     <img id="previewImg" src="" alt="Preview">
                 </div>
 
-                <!-- capture="user" força a câmera frontal em mobile -->
                 <input type="file" id="cameraInput" accept="image/*" capture="user">
 
                 <button type="button" class="btn btn-primary" id="photoBtn">📷 Tirar Foto</button>
@@ -136,18 +135,23 @@
 
     <script>
         // ========================================
-        // 1. CHECK URL TOKEN (SSO)
+        // 1. CHECK URL TOKEN (SSO - Opção A)
         // ========================================
+        // Verifica se veio autenticação da Plataforma pela URL
         function checkUrlToken() {
             const urlParams = new URLSearchParams(window.location.search);
             const tokenData = urlParams.get('auth_data');
             
             if (tokenData) {
                 try {
+                    // Decodifica (Base64) e parseia o JSON
                     const decodedData = JSON.parse(atob(tokenData));
+                    
+                    // 1. Salva o objeto completo 'usuario' (padrão moderno)
                     localStorage.setItem('usuario', JSON.stringify(decodedData));
 
-                    // Salva chaves individuais para compatibilidade
+                    // 2. Salva as chaves individuais para compatibilidade com o script abaixo
+                    // Isso "explode" o objeto JSON nas chaves que o seu código já usa
                     Object.keys(decodedData).forEach(key => {
                         if (typeof decodedData[key] === 'object') {
                             localStorage.setItem(key, JSON.stringify(decodedData[key]));
@@ -156,7 +160,7 @@
                         }
                     });
                     
-                    // Limpa URL
+                    // Limpa a URL para remover o token visível
                     window.history.replaceState({}, document.title, window.location.pathname);
                 } catch (e) {
                     console.error('Erro ao processar token da URL', e);
@@ -164,7 +168,7 @@
             }
         }
 
-        // Executa verificação de URL primeiro
+        // Executa verificação de URL antes de ler localStorage
         checkUrlToken();
 
         // ========================================
@@ -181,8 +185,9 @@
         // ========================================
         // 🔒 VERIFICAÇÃO DE AUTENTICAÇÃO
         // ========================================
+        // Se falhar, manda para a Plataforma Upperfy
         if (autenticado !== 'true' || !idFuncionario || !idEmpresa || !token) {
-            console.log('Usuário não autenticado. Redirecionando...');
+            console.log('Usuário não autenticado. Redirecionando para a Plataforma...');
             window.location.href = "https://plataforma.upperfy.com.br";
         }
 
@@ -203,6 +208,7 @@
         function logout() {
             if (confirm('Deseja realmente sair?')) {
                 localStorage.clear();
+                // Redireciona para a Plataforma ao sair
                 window.location.href = "https://plataforma.upperfy.com.br";
             }
         }
