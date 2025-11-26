@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clockfy - Adicionar Funcionário</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23270949' d='M50,5L25,35h50L50,5z'/%3E%3Ccircle fill='%23f93d00' cx='50' cy='60' r='35'/%3E%3Ccircle fill='%23270949' cx='50' cy='60' r='28'/%3E%3Ccircle fill='%23fff' cx='50' cy='60' r='23'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --roxo-escuro: #270949;
+      --roxo-medio: #87148C;
+      --roxo-vivo: #4F1295;
+      --laranja: #F93D00;
+      --laranja-esc: #e03800;
+      --branco: #fff;
+      --vidro: rgba(39, 9, 73, 0.6);
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #270949 0%, #1a0430 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: var(--vidro);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      border: 1px solid rgba(249, 61, 0, 0.1);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo {
+      width: 50px;
+      height: 50px;
+    }
+
+    .header-title {
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .header-title span {
+      color: var(--laranja);
+    }
+
+    .admin-badge {
+      background: var(--laranja);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Montserrat', sans-serif;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--laranja);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--laranja-esc);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(249, 61, 0, 0.4);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #fff;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* CONTEÚDO PRINCIPAL */
+    .content-wrapper {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--vidro);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      border: 1px solid rgba(249, 61, 0, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 24px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e0e0e0;
+      margin-left: 4px;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      background: rgba(20, 5, 35, 0.6);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--laranja);
+      background: rgba(20, 5, 35, 0.95);
+      box-shadow: 0 0 0 4px rgba(249, 61, 0, 0.1);
+    }
+
+    /* Mensagens */
+    .message {
+      padding: 15px;
+      border-radius: 12px;
+      font-weight: 600;
+      margin-top: 20px;
+      display: none;
+      text-align: center;
+      animation: slideIn 0.3s ease;
+    }
+
+    .message.success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      color: #86efac;
+    }
+
+    .message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-left-color: #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 768px) {
+      .form-row { grid-template-columns: 1fr; }
+      .header { flex-direction: column; gap: 20px; }
+      .header-left { width: 100%; justify-content: center; }
+      .btn { width: 100%; margin-bottom: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // ========== VERIFICAÇÃO DE SEGURANÇA (ADMIN CHECK) ==========
+    const role = localStorage.getItem('role');
+    const usuarioJson = localStorage.getItem('usuario');
+    let isAdmin = false;
+    let currentUser = null;
+
+    try {
+      if (usuarioJson) {
+        // Parsing seguro (evita double stringify issue)
+        try {
+            currentUser = JSON.parse(usuarioJson);
+            if (typeof currentUser === 'string') {
+                currentUser = JSON.parse(currentUser);
+            }
+        } catch (e) {
+            console.error("Erro parsing usuario JSON", e);
+        }
+
+        // Verifica se é Admin (suporta diferentes estruturas de JSON antigas/novas)
+        if (currentUser && (role === 'Admin' || currentUser.nivel_acesso === 'Admin' || currentUser.role === 'Admin')) {
+          isAdmin = true;
+        }
+      }
+    } catch (e) {
+      console.error("Erro ao ler localStorage", e);
+    }
+
+    // Se não for admin, chuta para o painel
+    if (!isAdmin) {
+      try {
+        alert('Acesso negado! Apenas administradores podem adicionar funcionários.');
+        window.location.href = 'painel.html';
+      } catch (e) {
+        console.warn('Redirecionamento bloqueado no preview:', e);
+      }
+    }
+  </script>
+
+  <div class="container">
+    <header class="header">
+      <div class="header-left">
+        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+          <path fill="#270949" d="M50,5L25,35h50L50,5z"/>
+          <circle fill="#f93d00" cx="50" cy="60" r="35"/>
+          <circle fill="#270949" cx="50" cy="60" r="28"/>
+          <circle fill="#fff" cx="50" cy="60" r="23"/>
+        </svg>
+        <div>
+          <div class="header-title">Clock<span>fy</span></div>
+          <div class="admin-badge">⚙️ Admin</div>
+        </div>
+      </div>
+      <div>
+        <button class="btn btn-ghost" onclick="try{window.location.href='painel_admin.html'}catch(e){}">
+          ← Voltar ao Painel Admin
+        </button>
+        <button class="btn btn-primary" onclick="logout()">Sair</button>
+      </div>
+    </header>
+
+    <div class="content-wrapper">
+      <div class="card">
+        <div class="section-title">
+            <span>👤 Novo Funcionário</span>
+        </div>
+
+        <form id="addUserForm">
+          <div class="form-grid">
+            
+            <div class="form-group">
+              <label class="form-label">Nome Completo</label>
+              <input type="text" class="form-input" name="nome_completo" placeholder="Ex: João da Silva" required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">E-mail</label>
+                <input type="email" class="form-input" name="email" placeholder="joao@empresa.com" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">WhatsApp</label>
+                <input type="tel" class="form-input" name="numero_whatsapp" placeholder="(00) 00000-0000" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Carga Horária Diária (h)</label>
+                <input type="number" class="form-input" name="carga_horaria_diaria" placeholder="8" min="1" max="24" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nível de Acesso (Role)</label>
+                <select class="form-select" name="role" required>
+                  <option value="user">Funcionário (Padrão)</option>
+                  <option value="Admin">Administrador</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+              <button type="submit" id="btnSubmit" class="btn btn-primary" style="width: 100%; height: 50px; font-size: 16px;">
+                ➕ Cadastrar Funcionário
+              </button>
+            </div>
+            
+            <div class="message" id="statusMessage"></div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== CONFIGURAÇÃO ==========
+    // COLOQUE AQUI A URL DO SEU WEBHOOK DO N8N PARA CRIAR USUÁRIO
+    const WEBHOOK_ADD_USER = 'https://n8n.upperfy.com.br/webhook/SUA-URL-AQUI'; 
+
+    // ========== ELEMENTOS ==========
+    const form = document.getElementById('addUserForm');
+    const messageEl = document.getElementById('statusMessage');
+    const btnSubmit = document.getElementById('btnSubmit');
+
+    // Função para coletar TUDO do localStorage (para validação no n8n)
+    function getAllLocalStorage() {
+        const data = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const val = localStorage.getItem(key);
+            try {
+                data[key] = JSON.parse(val);
+                // Verifica double parse
+                if (typeof data[key] === 'string' && (data[key].startsWith('{') || data[key].startsWith('['))) {
+                     try { data[key] = JSON.parse(data[key]); } catch(e) {}
+                }
+            } catch (e) {
+                data[key] = val;
+            }
+        }
+        return data;
+    }
+
+    // Função auxiliar para pegar o ID da empresa do localStorage para o formulário
+    function getCompanyId(data) {
+        if (!data) return null;
+        if (data.id_empresa) return data.id_empresa;
+        if (data.idempresa) return data.idempresa;
+        if (data.empresa) {
+            if (data.empresa.id) return data.empresa.id;
+            if (data.empresa.id_empresa) return data.empresa.id_empresa;
+            if (data.empresa.idempresa) return data.empresa.idempresa;
+        }
+        return null;
+    }
+
+    // ========== SUBMIT DO FORMULÁRIO ==========
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Feedback visual de carregamento
+      const originalText = btnSubmit.innerHTML;
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = '<span class="spinner"></span> Cadastrando...';
+      messageEl.style.display = 'none';
+
+      // Coleta dados do LocalStorage
+      const storageData = getAllLocalStorage();
+      const empresaId = getCompanyId(storageData);
+
+      // Coleta dados do formulário
+      const formData = new FormData(form);
+      const userData = Object.fromEntries(formData.entries());
+
+      // Monta o payload completo
+      const payload = {
+        acao: 'criar_funcionario',
+        timestamp: new Date().toISOString(),
+        auth_context: storageData, // Envia todo o localStorage para validação de segurança no n8n
+        empresa_id: empresaId,     // Envia explicitamente o ID da empresa para facilitar
+        novo_usuario: {
+            ...userData,
+            empresa_id: empresaId // Redundância útil para o insert
+        }
+      };
+
+      try {
+        console.log('📡 Enviando dados para:', WEBHOOK_ADD_USER);
+        console.log('📦 Payload:', payload);
+
+        const response = await fetch(WEBHOOK_ADD_USER, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json(); // Espera JSON de resposta do n8n
+
+        if (response.ok) {
+          showMessage('Funcionário cadastrado com sucesso!', 'success');
+          form.reset(); // Limpa o formulário
+        } else {
+          showMessage('Erro ao cadastrar: ' + (result.message || 'Erro desconhecido'), 'error');
+        }
+
+      } catch (error) {
+        console.error('Erro:', error);
+        showMessage('Erro de conexão com o servidor.', 'error');
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = originalText;
+      }
+    });
+
+    // ========== UTILITÁRIOS ==========
+    function showMessage(text, type) {
+      messageEl.textContent = text;
+      messageEl.className = `message ${type}`;
+      messageEl.style.display = 'block';
+      
+      // Auto-hide após 5s se for sucesso
+      if (type === 'success') {
+          setTimeout(() => {
+            messageEl.style.display = 'none';
+          }, 5000);
+      }
+    }
+
+    function logout() {
+      if (confirm('Deseja realmente sair?')) {
+        localStorage.clear();
+        window.location.href = '../index.html';
+      }
+    }
+  </script>
+</body>
+</html>
