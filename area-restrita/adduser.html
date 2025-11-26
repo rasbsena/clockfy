@@ -460,7 +460,8 @@
     function logout() {
       if (confirm('Deseja realmente sair?')) {
         localStorage.clear();
-        window.location.href = '../index.html';
+        // CORRIGIDO: Redireciona para a Plataforma
+        window.location.href = 'https://plataforma.upperfy.com.br';
       }
     }
   </script>
