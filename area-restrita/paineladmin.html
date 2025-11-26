@@ -485,6 +485,14 @@
 </head>
 <body>
   <script>
+    // 1. VERIFICAR SE ESTÁ LOGADO (Segurança extra)
+    const token = localStorage.getItem('token');
+    if (!token) {
+      // Se não tiver token, manda para a plataforma
+      window.location.href = 'https://plataforma.upperfy.com.br';
+    }
+
+    // 2. VERIFICAR ADMIN
     const role = localStorage.getItem('role');
     const usuarioJson = localStorage.getItem('usuario');
     let isAdmin = false;
@@ -535,7 +543,9 @@
     </header>
 
     <div class="main-grid">
+      <!-- SEÇÃO SUPERIOR -->
       <div class="top-section">
+        <!-- BUSCA -->
         <div class="card">
           <h2 class="card-title">🔍 Buscar Funcionário</h2>
           <p class="card-subtitle">Digite nome ou ID para localizar</p>
@@ -553,6 +563,7 @@
           </div>
         </div>
 
+        <!-- FUNCIONÁRIO SELECIONADO -->
         <div class="card" id="selectedEmployeeCard" style="display: none;">
           <div class="selected-employee">
             <div class="selected-header">
@@ -585,6 +596,7 @@
         </div>
       </div>
 
+      <!-- MENU DE AÇÕES -->
       <div class="actions-menu" id="actionsMenu">
         <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 20px; text-align: center;">
           ⚡ Escolha uma Ação
@@ -618,6 +630,7 @@
         </div>
       </div>
 
+      <!-- FORMULÁRIO: LANÇAR PONTO ANTIGO -->
       <div class="card form-area" id="formLancar">
         <div class="form-header">
           <h2 class="form-title">📝 Lançar Ponto Antigo</h2>
@@ -664,6 +677,7 @@
         </form>
       </div>
 
+      <!-- FORMULÁRIO: ESPELHO -->
       <div class="card form-area" id="formEspelho">
         <div class="form-header">
           <h2 class="form-title">📄 Enviar Espelho de Ponto</h2>
@@ -710,6 +724,7 @@
         </form>
       </div>
 
+      <!-- FORMULÁRIO: ATUALIZAR DADOS -->
       <div class="card form-area" id="formAtualizar">
         <div class="form-header">
           <h2 class="form-title">👤 Atualizar Dados do Funcionário</h2>
@@ -752,6 +767,7 @@
         </form>
       </div>
 
+      <!-- FORMULÁRIO: PROMOVER -->
       <div class="card form-area" id="formPromover">
         <div class="form-header">
           <h2 class="form-title">⭐ Promover para Administrador</h2>
@@ -781,6 +797,7 @@
         </form>
       </div>
 
+      <!-- FORMULÁRIO: EXCLUIR -->
       <div class="card form-area" id="formExcluir">
         <div class="form-header">
           <h2 class="form-title">🗑️ Excluir Funcionário</h2>
@@ -1216,7 +1233,8 @@
     function logout() {
       if (confirm('Deseja realmente sair?')) {
         localStorage.clear();
-        window.location.href = '../index.html';
+        // CORREÇÃO: Redirecionamento para Plataforma
+        window.location.href = 'https://plataforma.upperfy.com.br';
       }
     }
 
