@@ -105,6 +105,16 @@
       box-shadow: 0 6px 20px rgba(249, 61, 0, 0.4);
     }
 
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
     .btn-ghost {
       background: transparent;
       color: #fff;
@@ -186,11 +196,12 @@
       box-shadow: 0 0 0 4px rgba(249, 61, 0, 0.1);
     }
 
-    .form-input:disabled {
+    .form-input:disabled, .form-select:disabled {
       background: rgba(255, 255, 255, 0.05);
       border-color: rgba(255, 255, 255, 0.05);
       color: #aaa;
       cursor: not-allowed;
+      opacity: 0.7;
     }
 
     .loading-overlay {
@@ -239,6 +250,10 @@
       background: rgba(239, 68, 68, 0.2);
       border: 1px solid rgba(239, 68, 68, 0.4);
       color: #fca5a5;
+    }
+    
+    .hidden {
+        display: none !important;
     }
 
     @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -334,19 +349,19 @@
               </div>
               <div class="form-group">
                 <label class="form-label">CNPJ</label>
-                <input type="text" class="form-input" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00">
+                <input type="text" class="form-input" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00" disabled>
               </div>
             </div>
 
             <div class="form-group">
               <label class="form-label">Nome da Empresa</label>
-              <input type="text" class="form-input" id="nomeEmpresa" name="nome_empresa" required>
+              <input type="text" class="form-input" id="nomeEmpresa" name="nome_empresa" required disabled>
             </div>
 
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Segmento</label>
-                <select class="form-select" id="segmento" name="segmento">
+                <select class="form-select" id="segmento" name="segmento" disabled>
                   <option value="">Selecione...</option>
                   <option value="Tecnologia">Tecnologia</option>
                   <option value="Varejo">Varejo</option>
@@ -358,11 +373,15 @@
                 </select>
               </div>
               <div class="form-group">
-                <label class="form-label">Porte</label>
-                <select class="form-select" id="porte" name="porte">
-                  <option value="Pequeno">Pequeno</option>
-                  <option value="Médio">Médio</option>
-                  <option value="Grande">Grande</option>
+                <label class="form-label">Quantidade de Funcionários</label>
+                <select class="form-select" id="porte" name="porte" disabled>
+                  <option value="">Selecione a faixa...</option>
+                  <option value="1 a 5">1 a 5 funcionários</option>
+                  <option value="6 a 10">6 a 10 funcionários</option>
+                  <option value="11 a 20">11 a 20 funcionários</option>
+                  <option value="21 a 50">21 a 50 funcionários</option>
+                  <option value="51 a 100">51 a 100 funcionários</option>
+                  <option value="Mais de 100">Mais de 100 funcionários</option>
                 </select>
               </div>
             </div>
@@ -371,11 +390,11 @@
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">E-mail Corporativo</label>
-                <input type="email" class="form-input" id="emailCorporativo" name="email_corporativo">
+                <input type="email" class="form-input" id="emailCorporativo" name="email_corporativo" disabled>
               </div>
               <div class="form-group">
                 <label class="form-label">Telefone / WhatsApp</label>
-                <input type="tel" class="form-input" id="telefone" name="telefone" placeholder="(00) 00000-0000">
+                <input type="tel" class="form-input" id="telefone" name="telefone" placeholder="(00) 00000-0000" disabled>
               </div>
             </div>
 
@@ -385,23 +404,32 @@
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">CEP</label>
-                <input type="text" class="form-input" id="cep" name="cep">
+                <input type="text" class="form-input" id="cep" name="cep" disabled>
               </div>
               <div class="form-group">
                 <label class="form-label">Cidade / UF</label>
-                <input type="text" class="form-input" id="cidade" name="cidade_uf">
+                <input type="text" class="form-input" id="cidade" name="cidade_uf" disabled>
               </div>
             </div>
 
             <div class="form-group">
               <label class="form-label">Logradouro (Rua, Av.)</label>
-              <input type="text" class="form-input" id="endereco" name="endereco">
+              <input type="text" class="form-input" id="endereco" name="endereco" disabled>
             </div>
 
             <!-- Botões -->
             <div style="margin-top: 30px; display: flex; gap: 15px;">
-              <button type="submit" class="btn btn-primary" style="flex: 1; height: 50px; font-size: 16px;">
+              <!-- Botão Inicial: Editar -->
+              <button type="button" id="btnEdit" class="btn btn-primary" onclick="toggleEditMode(true)" style="flex: 1; height: 50px; font-size: 16px;">
+                📝 Editar Dados
+              </button>
+              
+              <!-- Botões de Ação (Escondidos inicialmente) -->
+              <button type="submit" id="btnSave" class="btn btn-primary hidden" style="flex: 2; height: 50px; font-size: 16px;">
                 💾 Salvar Alterações
+              </button>
+              <button type="button" id="btnCancel" class="btn btn-secondary hidden" onclick="cancelEdit()" style="flex: 1; height: 50px; font-size: 16px;">
+                🚫 Cancelar
               </button>
             </div>
             
@@ -414,12 +442,21 @@
 
   <script>
     // ========== CONFIGURAÇÃO ==========
-    const WEBHOOK_URL = 'https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-empresa';
+    const WEBHOOK_GET_URL = 'https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-empresa';
+    const WEBHOOK_UPDATE_URL = 'https://n8n.upperfy.com.br/webhook/2f97bdf7-420-451a-bdee-updateemp';
 
     // ========== ELEMENTOS ==========
     const loadingOverlay = document.getElementById('loadingOverlay');
     const form = document.getElementById('companyForm');
     const messageEl = document.getElementById('statusMessage');
+    
+    // Botões
+    const btnEdit = document.getElementById('btnEdit');
+    const btnSave = document.getElementById('btnSave');
+    const btnCancel = document.getElementById('btnCancel');
+
+    // Variável para guardar estado original (para cancelar)
+    let originalFormData = {};
 
     // Função para coletar TUDO do localStorage
     function getAllLocalStorage() {
@@ -459,6 +496,60 @@
         return null;
     }
 
+    // ========== CONTROLE DE EDIÇÃO ==========
+    function toggleEditMode(enable) {
+        const inputs = form.querySelectorAll('input:not(#idEmpresa), select');
+        
+        inputs.forEach(input => {
+            input.disabled = !enable;
+        });
+
+        if (enable) {
+            // Entrando no modo edição
+            // Salva estado atual para possível cancelamento
+            saveCurrentState();
+            
+            btnEdit.classList.add('hidden');
+            btnSave.classList.remove('hidden');
+            btnCancel.classList.remove('hidden');
+        } else {
+            // Saindo do modo edição
+            btnEdit.classList.remove('hidden');
+            btnSave.classList.add('hidden');
+            btnCancel.classList.add('hidden');
+        }
+    }
+
+    function saveCurrentState() {
+        originalFormData = {
+            nome: document.getElementById('nomeEmpresa').value,
+            cnpj: document.getElementById('cnpj').value,
+            segmento: document.getElementById('segmento').value,
+            porte: document.getElementById('porte').value,
+            email: document.getElementById('emailCorporativo').value,
+            telefone: document.getElementById('telefone').value,
+            cep: document.getElementById('cep').value,
+            cidade: document.getElementById('cidade').value,
+            endereco: document.getElementById('endereco').value
+        };
+    }
+
+    function cancelEdit() {
+        // Restaura valores originais
+        document.getElementById('nomeEmpresa').value = originalFormData.nome || '';
+        document.getElementById('cnpj').value = originalFormData.cnpj || '';
+        document.getElementById('segmento').value = originalFormData.segmento || '';
+        document.getElementById('porte').value = originalFormData.porte || '';
+        document.getElementById('emailCorporativo').value = originalFormData.email || '';
+        document.getElementById('telefone').value = originalFormData.telefone || '';
+        document.getElementById('cep').value = originalFormData.cep || '';
+        document.getElementById('cidade').value = originalFormData.cidade || '';
+        document.getElementById('endereco').value = originalFormData.endereco || '';
+
+        // Bloqueia campos
+        toggleEditMode(false);
+    }
+
     // ========== AO CARREGAR A PÁGINA ==========
     document.addEventListener('DOMContentLoaded', async () => {
       // 1. Coleta TODOS os dados do LocalStorage
@@ -478,10 +569,10 @@
       };
 
       try {
-        console.log('📡 Enviando Payload Completo:', payload);
+        console.log('📡 Enviando Payload Completo para GET:', payload);
         
         // Usa .text() primeiro para evitar erro de JSON inválido se a resposta for vazia
-        const response = await fetch(WEBHOOK_URL, {
+        const response = await fetch(WEBHOOK_GET_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -509,7 +600,11 @@
           document.getElementById('nomeEmpresa').value = empresaData.nome || empresaData.nome_empresa || empresaData.nomeempresa || '';
           document.getElementById('cnpj').value = empresaData.cnpj || '';
           document.getElementById('segmento').value = empresaData.segmento || '';
+          
+          // Mapeia valor antigo para novo se necessário, ou usa direto se já vier formatado
+          // Se o valor não bater com as opções, o select fica em branco ou na primeira opção
           if(empresaData.porte) document.getElementById('porte').value = empresaData.porte;
+          
           document.getElementById('emailCorporativo').value = empresaData.email || '';
           document.getElementById('telefone').value = empresaData.telefone || empresaData.whatsapp || '';
           document.getElementById('cep').value = empresaData.cep || '';
@@ -527,10 +622,11 @@
     // ========== SALVAR DADOS ==========
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const btn = form.querySelector('button[type="submit"]');
-      const originalText = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></span> Salvando...';
+      
+      const originalText = btnSave.innerHTML;
+      btnSave.disabled = true;
+      btnSave.innerHTML = '<span class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></span> Salvando...';
+      btnCancel.disabled = true;
 
       const allData = getAllLocalStorage();
 
@@ -543,7 +639,7 @@
           nome: document.getElementById('nomeEmpresa').value,
           cnpj: document.getElementById('cnpj').value,
           segmento: document.getElementById('segmento').value,
-          porte: document.getElementById('porte').value,
+          porte: document.getElementById('porte').value, // Agora envia a faixa de funcionários
           email: document.getElementById('emailCorporativo').value,
           telefone: document.getElementById('telefone').value,
           cep: document.getElementById('cep').value,
@@ -553,7 +649,8 @@
       };
 
       try {
-        const response = await fetch(WEBHOOK_URL, {
+        console.log('📡 Enviando para UPDATE:', WEBHOOK_UPDATE_URL);
+        const response = await fetch(WEBHOOK_UPDATE_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
@@ -561,11 +658,16 @@
 
         if (response.ok) {
           showMessage('Dados atualizados com sucesso!', 'success');
+          
           // Atualiza localStorage localmente para consistência imediata
           if (allData.empresa) {
             allData.empresa.nomeempresa = formData.dados_atualizados.nome;
-            localStorage.setItem('usuario', JSON.stringify(allData)); // Assume estrutura comum
+            localStorage.setItem('usuario', JSON.stringify(allData));
           }
+
+          // Bloqueia campos novamente após salvar com sucesso
+          toggleEditMode(false);
+
         } else {
           showMessage('Erro ao salvar.', 'error');
         }
@@ -573,8 +675,9 @@
         console.error('Erro:', error);
         showMessage('Erro de conexão.', 'error');
       } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalText;
+        btnSave.disabled = false;
+        btnSave.innerHTML = originalText;
+        btnCancel.disabled = false;
       }
     });
 
