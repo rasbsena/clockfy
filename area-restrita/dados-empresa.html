@@ -147,6 +147,7 @@
       font-weight: 700;
       margin-bottom: 30px;
       display: flex;
+      justify-content: space-between; /* Alterado para separar título e botão */
       align-items: center;
       gap: 12px;
       padding-bottom: 20px;
@@ -264,12 +265,14 @@
       .header { flex-direction: column; gap: 20px; }
       .header-left { width: 100%; justify-content: center; }
       .btn { width: 100%; margin-bottom: 10px; }
+      .section-title { flex-direction: column; align-items: flex-start; gap: 15px; }
+      .section-title button { width: 100%; margin-left: 0 !important; }
     }
   </style>
 </head>
 <body>
   <script>
-    // Verificação de segurança
+    // Verificação de segurança e redirecionamento seguro
     const role = localStorage.getItem('role');
     const usuarioJson = localStorage.getItem('usuario');
     let isAdmin = false;
@@ -277,7 +280,6 @@
 
     try {
       if (usuarioJson) {
-        // Tenta parsear. Se falhar, tenta parsear novamente (para casos de double stringify)
         try {
             currentUser = JSON.parse(usuarioJson);
             if (typeof currentUser === 'string') {
@@ -336,7 +338,15 @@
           <p>Buscando dados da empresa...</p>
         </div>
 
-        <h2 class="section-title">🏢 Dados da Organização</h2>
+        <!-- Título e Botão Editar (Agora no topo) -->
+        <div class="section-title">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span>🏢 Dados da Organização</span>
+            </div>
+            <button type="button" id="btnEdit" class="btn btn-primary" onclick="toggleEditMode(true)" style="font-size: 14px; padding: 10px 20px;">
+                📝 Editar Dados
+            </button>
+        </div>
 
         <form id="companyForm">
           <div class="form-grid">
@@ -417,14 +427,9 @@
               <input type="text" class="form-input" id="endereco" name="endereco" disabled>
             </div>
 
-            <!-- Botões -->
+            <!-- Botões de Ação (Salvar/Cancelar) -->
             <div style="margin-top: 30px; display: flex; gap: 15px;">
-              <!-- Botão Inicial: Editar -->
-              <button type="button" id="btnEdit" class="btn btn-primary" onclick="toggleEditMode(true)" style="flex: 1; height: 50px; font-size: 16px;">
-                📝 Editar Dados
-              </button>
-              
-              <!-- Botões de Ação (Escondidos inicialmente) -->
+              <!-- Botões Escondidos inicialmente -->
               <button type="submit" id="btnSave" class="btn btn-primary hidden" style="flex: 2; height: 50px; font-size: 16px;">
                 💾 Salvar Alterações
               </button>
@@ -458,7 +463,7 @@
     // Variável para guardar estado original (para cancelar)
     let originalFormData = {};
 
-    // Função para coletar TUDO do localStorage
+    // Função para coletar TUDO do localStorage (apenas para leitura/envio ao n8n)
     function getAllLocalStorage() {
         const data = {};
         for (let i = 0; i < localStorage.length; i++) {
@@ -506,7 +511,6 @@
 
         if (enable) {
             // Entrando no modo edição
-            // Salva estado atual para possível cancelamento
             saveCurrentState();
             
             btnEdit.classList.add('hidden');
@@ -552,7 +556,7 @@
 
     // ========== AO CARREGAR A PÁGINA ==========
     document.addEventListener('DOMContentLoaded', async () => {
-      // 1. Coleta TODOS os dados do LocalStorage
+      // 1. Coleta TODOS os dados do LocalStorage para leitura
       const allData = getAllLocalStorage();
       
       console.log('📦 LocalStorage Completo:', allData);
@@ -563,7 +567,7 @@
 
       // 2. Payload com TUDO + ação
       const payload = {
-        ...allData, // Espalha todo o localStorage na raiz do JSON
+        ...allData, // Espalha todo o localStorage na raiz do JSON para o n8n
         acao: 'buscar_dados_empresa',
         timestamp: new Date().toISOString()
       };
@@ -571,7 +575,6 @@
       try {
         console.log('📡 Enviando Payload Completo para GET:', payload);
         
-        // Usa .text() primeiro para evitar erro de JSON inválido se a resposta for vazia
         const response = await fetch(WEBHOOK_GET_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -592,7 +595,6 @@
         const empresaData = data.empresa || data; 
 
         if (empresaData) {
-          // Atualiza ID visualmente se veio do servidor
           if ((empresaData.id || empresaData.id_empresa) && !document.getElementById('idEmpresa').value) {
              document.getElementById('idEmpresa').value = empresaData.id || empresaData.id_empresa;
           }
@@ -600,11 +602,7 @@
           document.getElementById('nomeEmpresa').value = empresaData.nome || empresaData.nome_empresa || empresaData.nomeempresa || '';
           document.getElementById('cnpj').value = empresaData.cnpj || '';
           document.getElementById('segmento').value = empresaData.segmento || '';
-          
-          // Mapeia valor antigo para novo se necessário, ou usa direto se já vier formatado
-          // Se o valor não bater com as opções, o select fica em branco ou na primeira opção
           if(empresaData.porte) document.getElementById('porte').value = empresaData.porte;
-          
           document.getElementById('emailCorporativo').value = empresaData.email || '';
           document.getElementById('telefone').value = empresaData.telefone || empresaData.whatsapp || '';
           document.getElementById('cep').value = empresaData.cep || '';
@@ -632,14 +630,14 @@
 
       // Payload de salvamento: TUDO do storage + dados do formulário
       const formData = {
-        ...allData, // Envia contexto completo novamente
+        ...allData, 
         acao: 'atualizar_empresa',
         dados_atualizados: {
           id_empresa: document.getElementById('idEmpresa').value,
           nome: document.getElementById('nomeEmpresa').value,
           cnpj: document.getElementById('cnpj').value,
           segmento: document.getElementById('segmento').value,
-          porte: document.getElementById('porte').value, // Agora envia a faixa de funcionários
+          porte: document.getElementById('porte').value, 
           email: document.getElementById('emailCorporativo').value,
           telefone: document.getElementById('telefone').value,
           cep: document.getElementById('cep').value,
@@ -659,13 +657,29 @@
         if (response.ok) {
           showMessage('Dados atualizados com sucesso!', 'success');
           
-          // Atualiza localStorage localmente para consistência imediata
-          if (allData.empresa) {
-            allData.empresa.nomeempresa = formData.dados_atualizados.nome;
-            localStorage.setItem('usuario', JSON.stringify(allData));
+          // --- CORREÇÃO AQUI ---
+          // NÃO gravamos 'allData' (que é tudo misturado) de volta no 'usuario'.
+          // Apenas lemos o 'usuario' original, atualizamos a empresa dentro dele e salvamos.
+          
+          const currentUserStr = localStorage.getItem('usuario');
+          if (currentUserStr) {
+             try {
+                let currentUser = JSON.parse(currentUserStr);
+                // Double parse check
+                if (typeof currentUser === 'string') currentUser = JSON.parse(currentUser);
+                
+                // Atualiza APENAS o nome da empresa dentro da estrutura existente
+                if (!currentUser.empresa) currentUser.empresa = {};
+                currentUser.empresa.nomeempresa = formData.dados_atualizados.nome;
+                
+                // Salva de volta apenas a chave usuario
+                localStorage.setItem('usuario', JSON.stringify(currentUser));
+                console.log('✅ LocalStorage (usuario) atualizado com segurança.');
+             } catch(e) {
+                console.error('Erro ao atualizar localStorage localmente:', e);
+             }
           }
 
-          // Bloqueia campos novamente após salvar com sucesso
           toggleEditMode(false);
 
         } else {
