@@ -224,6 +224,7 @@
     </div>
 
     <script>
+        // URL do Webhook para login (Mesmo da plataforma)
         const WEBHOOK_URL = "https://n8n.upperfy.com.br/webhook/b45a3be4-1f27-4b01-b341-loginplataforma4";
 
         const loginForm = document.getElementById('loginForm');
@@ -233,6 +234,24 @@
         const btnText = document.getElementById('btnText');
         const errorMessage = document.getElementById('errorMessage');
 
+        // ========================================
+        // 1. VERIFICA SE JÁ ESTÁ LOGADO
+        // ========================================
+        window.addEventListener('DOMContentLoaded', () => {
+            const autenticado = localStorage.getItem('autenticado');
+            const idFuncionario = localStorage.getItem('id_funcionario');
+            
+            // Se JÁ estiver autenticado, redireciona para dentro do sistema
+            if (autenticado === 'true' && idFuncionario) {
+                console.log('Usuário já autenticado. Redirecionando...');
+                window.location.href = 'area-restrita/clockfyregistro.html';
+            }
+            // Caso contrário, permanece aqui para o usuário fazer login
+        });
+
+        // ========================================
+        // 2. HANDLER DE SUBMIT (LOGIN)
+        // ========================================
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             errorMessage.classList.remove('show');
@@ -257,32 +276,49 @@
                 const data = await response.json();
 
                 if (data.autenticado === true) {
+                    // Limpa dados antigos
                     localStorage.clear();
                     
-                    // Salva chaves importantes individualmente
-                    localStorage.setItem('autenticado', 'true');
-                    if (data.token) localStorage.setItem('token', data.token);
-                    if (data.id_funcionario || data.idFuncionario) localStorage.setItem('id_funcionario', data.id_funcionario || data.idFuncionario);
-                    if (data.id_empresa || data.idEmpresa) localStorage.setItem('id_empresa', data.id_empresa || data.idEmpresa);
+                    // ==================================================
+                    // 3. SALVA RESPOSTA COMPLETA E CAMPOS INDIVIDUAIS
+                    // ==================================================
                     
-                    // Salva objeto completo do usuário
-                    if (data.usuario) {
-                        localStorage.setItem('usuario', JSON.stringify(data.usuario));
-                        if (data.usuario.nome) localStorage.setItem('usuario_nome', data.usuario.nome);
-                        if (data.usuario.email) localStorage.setItem('usuario_email', data.usuario.email);
-                        if (data.usuario.cargo) localStorage.setItem('usuario_cargo', data.usuario.cargo);
-                        if (data.usuario.nivel_acesso) localStorage.setItem('role', data.usuario.nivel_acesso);
-                        if (data.usuario.role) localStorage.setItem('role', data.usuario.role);
-                    }
+                    // Salva o objeto completo
+                    localStorage.setItem('usuario', JSON.stringify(data.usuario));
+                    
+                    // Salva chaves individuais (para compatibilidade com scripts antigos)
+                    localStorage.setItem('autenticado', 'true');
+                    
+                    if (data.token) localStorage.setItem('token', data.token);
+                    
+                    // Funcionario
+                    const fId = data.id_funcionario || data.idFuncionario || (data.usuario && data.usuario.id);
+                    if (fId) localStorage.setItem('id_funcionario', fId);
+                    
+                    // Empresa
+                    const eId = data.id_empresa || data.idEmpresa || (data.empresa && data.empresa.id);
+                    if (eId) localStorage.setItem('id_empresa', eId);
+
+                    // Nomes
+                    if (data.usuario && data.usuario.nome) localStorage.setItem('usuario_nome', data.usuario.nome);
+                    if (data.usuario && data.usuario.email) localStorage.setItem('usuario_email', data.usuario.email);
                     
                     if (data.empresa && (data.empresa.nome || data.empresa.razao_social)) {
-                        localStorage.setItem('empresa_nome', data.empresa.nome || data.empresa.razao_social);
+                        const eNome = data.empresa.nome || data.empresa.razao_social;
+                        localStorage.setItem('empresa_nome', eNome);
                     }
 
-                    btnText.textContent = 'Sucesso! Redirecionando...';
+                    // Permissões
+                    if (data.usuario && data.usuario.nivel_acesso) localStorage.setItem('role', data.usuario.nivel_acesso);
+                    else if (data.usuario && data.usuario.role) localStorage.setItem('role', data.usuario.role);
+
+                    // Armazena o payload completo bruto para referência futura
+                    localStorage.setItem('login_response_full', JSON.stringify(data));
+
+                    btnText.textContent = 'Sucesso! Entrando...';
                     
                     setTimeout(() => {
-                        // Redireciona para a área restrita do clockfy
+                        // Redireciona para o registro de ponto
                         window.location.href = 'area-restrita/clockfyregistro.html';
                     }, 800);
                 } else {
@@ -316,16 +352,6 @@
 
         emailInput.addEventListener('input', () => errorMessage.classList.remove('show'));
         senhaInput.addEventListener('input', () => errorMessage.classList.remove('show'));
-
-        // Verifica se já está logado e redireciona
-        window.addEventListener('DOMContentLoaded', () => {
-            const autenticado = localStorage.getItem('autenticado');
-            const idFuncionario = localStorage.getItem('id_funcionario');
-            
-            if (autenticado === 'true' && idFuncionario) {
-                window.location.href = 'area-restrita/clockfyregistro.html';
-            }
-        });
     </script>
 </body>
 </html>
