@@ -696,8 +696,7 @@
   <script>
     const token = localStorage.getItem('token');
     if (!token) {
-      // CORREÇÃO: Redireciona para a Plataforma
-      window.location.href = 'https://plataforma.upperfy.com.br';
+      window.location.href = '../index.html';
     }
   </script>
 
@@ -756,8 +755,7 @@
         <span>📋</span>
         <span class="sidebar-btn-text">Obter Suporte</span>
       </button>
-      <!-- CORREÇÃO: Link do Dashboard para a Plataforma Central -->
-      <button class="sidebar-btn" onclick="window.location.href='https://plataforma.upperfy.com.br/area-restrita/dashboard.html'">
+      <button class="sidebar-btn" onclick="navigateTo('dashboard.html')">
         <span>📊</span>
         <span class="sidebar-btn-text">Dashboard</span>
       </button>
@@ -925,7 +923,7 @@
         
         // Atualizar títulos dos KPIs com o mês atual
         const meses = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 
-                        'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+                       'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
         const mesAtual = meses[new Date().getMonth()];
         
         document.getElementById('kpiLabelHoras').textContent = `Total de Horas/${mesAtual}`;
@@ -1083,22 +1081,14 @@
 
     // ========== FUNÇÕES AUXILIARES ==========
     function logout() {
-      if (confirm('Deseja realmente sair?')) {
-        localStorage.clear();
-        // CORREÇÃO: Redirecionamento para Plataforma
-        window.location.href = 'https://plataforma.upperfy.com.br';
-      }
+      localStorage.clear();
+      window.location.href = '../index.html';
     }
 
     function navigateTo(page) {
-      // Esta função parece não ser mais usada diretamente para o Dashboard no HTML, 
-      // mas se for, vamos garantir que não aponte para o local errado.
-      const pages = ['historico.html']; // Removido 'dashboard.html' daqui
+      const pages = ['dashboard.html', 'historico.html'];
       if (pages.includes(page)) {
         window.location.href = page;
-      } else if (page === 'dashboard.html') {
-         // Fallback de segurança
-         window.location.href = 'https://plataforma.upperfy.com.br/area-restrita/dashboard.html';
       } else {
         showMessage(`Página ${page} ainda não foi criada.`, 'error');
       }
