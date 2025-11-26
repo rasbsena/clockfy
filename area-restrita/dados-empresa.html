@@ -262,8 +262,17 @@
 
     try {
       if (usuarioJson) {
-        currentUser = JSON.parse(usuarioJson);
-        if (role === 'Admin' || currentUser.nivel_acesso === 'Admin' || currentUser.role === 'Admin') {
+        // Tenta parsear. Se falhar, tenta parsear novamente (para casos de double stringify)
+        try {
+            currentUser = JSON.parse(usuarioJson);
+            if (typeof currentUser === 'string') {
+                currentUser = JSON.parse(currentUser);
+            }
+        } catch (e) {
+            console.error("Erro parsing usuario JSON", e);
+        }
+
+        if (currentUser && (role === 'Admin' || currentUser.nivel_acesso === 'Admin' || currentUser.role === 'Admin')) {
           isAdmin = true;
         }
       }
@@ -292,7 +301,7 @@
         </div>
       </div>
       <div>
-        <button class="btn btn-ghost" onclick="window.location.href='painel_admin.html'">
+        <button class="btn btn-ghost" onclick="window.location.href='painel.html'">
           ← Voltar ao Painel
         </button>
         <button class="btn btn-primary" onclick="logout()">Sair</button>
@@ -400,37 +409,81 @@
 
   <script>
     // ========== CONFIGURAÇÃO ==========
-    const WEBHOOK_GET_EMPRESA = 'https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-empresa';
-    
-    // Webhook para atualização
-    const WEBHOOK_UPDATE_EMPRESA = 'https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-empresa'; 
+    // Garante que a URL é exatamente a solicitada
+    const WEBHOOK_URL = 'https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-empresa';
 
     // ========== ELEMENTOS ==========
     const loadingOverlay = document.getElementById('loadingOverlay');
     const form = document.getElementById('companyForm');
     const messageEl = document.getElementById('statusMessage');
 
+    // Função auxiliar para encontrar o ID da empresa em várias estruturas
+    function getRobustCompanyId(data) {
+        if (!data) return null;
+        
+        // 1. Busca na raiz
+        if (data.id_empresa) return data.id_empresa;
+        if (data.idempresa) return data.idempresa;
+        if (data.company_id) return data.company_id;
+
+        // 2. Busca dentro de 'empresa' (se for objeto ou array)
+        if (data.empresa) {
+            // Se for array, pega o primeiro
+            if (Array.isArray(data.empresa) && data.empresa.length > 0) {
+                const emp = data.empresa[0];
+                if (emp.id) return emp.id;
+                if (emp.id_empresa) return emp.id_empresa;
+                if (emp.idempresa) return emp.idempresa;
+            } 
+            // Se for objeto
+            else if (typeof data.empresa === 'object') {
+                if (data.empresa.id) return data.empresa.id;
+                if (data.empresa.id_empresa) return data.empresa.id_empresa;
+                if (data.empresa.idempresa) return data.empresa.idempresa;
+                if (data.empresa.id_company) return data.empresa.id_company;
+            }
+        }
+
+        // 3. Busca dentro de 'usuario' (às vezes o vínculo fica no user)
+        if (data.usuario) {
+             if (data.usuario.id_empresa) return data.usuario.id_empresa;
+             if (data.usuario.idempresa) return data.usuario.idempresa;
+        }
+
+        return null;
+    }
+
     // ========== AO CARREGAR A PÁGINA ==========
     document.addEventListener('DOMContentLoaded', async () => {
-      // 1. Recuperar dados do LocalStorage
-      const storedData = JSON.parse(localStorage.getItem('usuario') || '{}');
+      // 1. Recuperar dados do LocalStorage de forma mais robusta
+      let storedData = {};
+      try {
+          const rawUser = localStorage.getItem('usuario');
+          if (rawUser) {
+              storedData = JSON.parse(rawUser);
+              // Verifica se foi parseado como string novamente (erro comum)
+              if (typeof storedData === 'string') {
+                  storedData = JSON.parse(storedData);
+              }
+          }
+      } catch(e) {
+          console.error("Erro parsing JSON no load", e);
+      }
       
-      const idEmpresa = storedData.id_empresa || (storedData.empresa ? storedData.empresa.idempresa : null);
-      const token = storedData.token;
+      // Usa a função robusta para tentar achar o ID em qualquer lugar
+      const idEmpresa = getRobustCompanyId(storedData);
+      const token = storedData.token || localStorage.getItem('token');
       const idFuncionario = storedData.id_funcionario || (storedData.usuario ? storedData.usuario.id : null);
 
-      console.log('Dados Locais:', { idEmpresa, idFuncionario });
+      console.log('Tentando carregar dados para:', { idEmpresa, idFuncionario });
 
-      // Se não tiver ID, tenta pegar do fallback ou avisa
+      // Se não tiver ID, apenas loga aviso, mas NÃO retorna/para. Tenta enviar mesmo assim.
       if (!idEmpresa) {
-        // Se o usuário estiver na tela é porque logou, então talvez os dados estejam desatualizados no navegador
-        alert('Seu cadastro parece estar incompleto (ID da empresa faltando). Tente fazer logout e login novamente.');
-        loadingOverlay.style.display = 'none';
-        return;
+        console.warn('ID da empresa não encontrado localmente. Tentando buscar via Webhook apenas com token/user...');
       }
 
-      // Preenche visualmente o ID
-      document.getElementById('idEmpresa').value = idEmpresa;
+      // Preenche visualmente o ID se existir
+      if(idEmpresa) document.getElementById('idEmpresa').value = idEmpresa;
 
       // 2. Payload para buscar os dados
       const payload = {
@@ -442,9 +495,10 @@
       };
 
       try {
-        console.log('📡 Buscando dados:', payload);
+        console.log('📡 Enviando requisição para:', WEBHOOK_URL);
+        console.log('📦 Payload:', payload);
         
-        const response = await fetch(WEBHOOK_GET_EMPRESA, {
+        const response = await fetch(WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -452,27 +506,28 @@
 
         if (!response.ok) throw new Error('Falha na comunicação com o servidor');
 
-        const rawData = await response.json();
-        console.log('✅ Dados recebidos (Bruto):', rawData);
+        const rawData = await response.json(); // Se falhar aqui, cai no catch
+        console.log('✅ Dados recebidos do n8n:', rawData);
 
         // --- TRATAMENTO ROBUSTO DE DADOS ---
-        // O n8n pode retornar Array ou Objeto. Aqui normalizamos.
         let data = rawData;
         if (Array.isArray(rawData)) {
-            // Se for array, pega o primeiro item
             data = rawData.length > 0 ? rawData[0] : {};
         }
 
-        // Tenta achar onde estão os dados da empresa (pode estar na raiz ou dentro de 'empresa')
+        // Tenta achar onde estão os dados da empresa
         const empresaData = data.empresa || data; 
 
         if (empresaData) {
-          // Usamos || '' para evitar que undefined apareça nos inputs
+          // Se o n8n retornou o ID da empresa e não tínhamos antes, atualizamos o input
+          if ((empresaData.id || empresaData.id_empresa) && !document.getElementById('idEmpresa').value) {
+             document.getElementById('idEmpresa').value = empresaData.id || empresaData.id_empresa;
+          }
+
           document.getElementById('nomeEmpresa').value = empresaData.nome || empresaData.nome_empresa || empresaData.nomeempresa || storedData.empresa?.nomeempresa || '';
           document.getElementById('cnpj').value = empresaData.cnpj || '';
           document.getElementById('segmento').value = empresaData.segmento || '';
           
-          // Verifica se o valor do porte existe nas opções, senão mantém padrão
           if(empresaData.porte) document.getElementById('porte').value = empresaData.porte;
           
           document.getElementById('emailCorporativo').value = empresaData.email || '';
@@ -483,10 +538,9 @@
         }
 
       } catch (error) {
-        console.error('Erro:', error);
-        showMessage('Erro ao carregar dados. Verifique o console (F12) para detalhes.', 'error');
+        console.error('Erro na requisição:', error);
         
-        // Fallback para preencher pelo menos o nome se houver erro de rede
+        // Fallback visual simples
         if (storedData.empresa && storedData.empresa.nomeempresa) {
             document.getElementById('nomeEmpresa').value = storedData.empresa.nomeempresa;
         }
@@ -505,8 +559,16 @@
       btn.disabled = true;
       btn.innerHTML = '<span class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></span> Salvando...';
 
-      const storedData = JSON.parse(localStorage.getItem('usuario') || '{}');
-
+      // Recupera dados novamente para garantir token atualizado
+      let storedData = {};
+      try {
+          const rawUser = localStorage.getItem('usuario');
+          if (rawUser) {
+             storedData = JSON.parse(rawUser);
+             if (typeof storedData === 'string') storedData = JSON.parse(storedData);
+          }
+      } catch(e) {}
+      
       // Coleta dados do form
       const formData = {
         acao: 'atualizar_empresa',
@@ -527,7 +589,8 @@
       };
 
       try {
-        const response = await fetch(WEBHOOK_UPDATE_EMPRESA, {
+        console.log('📡 Salvando em:', WEBHOOK_URL);
+        const response = await fetch(WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
@@ -536,13 +599,13 @@
         if (response.ok) {
           showMessage('Dados da empresa atualizados com sucesso!', 'success');
           
-          // Atualiza localStorage para manter consistência
+          // Tenta atualizar localStorage se possível
           if (storedData.empresa) {
             storedData.empresa.nomeempresa = formData.dados_atualizados.nome;
             localStorage.setItem('usuario', JSON.stringify(storedData));
           }
         } else {
-          showMessage('Erro ao salvar. Verifique se o n8n respondeu corretamente.', 'error');
+          showMessage('Erro ao salvar. Verifique conexão.', 'error');
         }
 
       } catch (error) {
