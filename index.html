@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upperfy - Login</title>
+    <title>Clockfy - Ponto Eletrônico</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23270949;%7D.cls-2%7Bfill:%23ff3d00;%7D.cls-3%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M140,170 L140,130 Q140,70 200,70 L200,70 Q260,70 260,130 L260,170' stroke='%23270949' stroke-width='20' fill='none'/%3E%3Crect class='cls-2' x='110' y='160' width='180' height='160' rx='20'/%3E%3Ccircle class='cls-3' cx='200' cy='240' r='25'/%3E%3Crect class='cls-3' x='190' y='240' width='20' height='50' rx='5'/%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234F1295' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpolyline points='12 6 12 12 16 14'%3E%3C/polyline%3E%3C/svg%3E">
     
     <style>
         /* ========================================
@@ -20,7 +21,7 @@
         }
 
         /* ========================================
-           CORES OFICIAIS UPPERFY 2025
+           CORES OFICIAIS (Mantidas da Identidade Visual)
            ======================================== */
         :root {
             --roxo-escuro: #270949;
@@ -33,7 +34,7 @@
         }
 
         /* ========================================
-           FUNDO COM GRADIENTE ANIMADO
+           FUNDO COM GRADIENTE E ANIMAÇÕES
            ======================================== */
         body {
             font-family: 'Montserrat', sans-serif;
@@ -45,6 +46,8 @@
             background: linear-gradient(135deg, var(--roxo-escuro) 0%, var(--roxo-vivo) 50%, var(--roxo-medio) 100%);
             background-size: 200% 200%;
             animation: gradientShift 15s ease infinite;
+            overflow: hidden; /* Importante para as formas flutuantes */
+            position: relative;
         }
 
         @keyframes gradientShift {
@@ -53,51 +56,84 @@
             100% { background-position: 0% 50%; }
         }
 
+        /* Elementos Decorativos de Fundo (Abstração de Tempo) */
+        .bg-shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            z-index: 0;
+            animation: float 20s infinite linear;
+        }
+
+        .shape-1 {
+            width: 300px;
+            height: 300px;
+            top: -50px;
+            left: -50px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .shape-2 {
+            width: 200px;
+            height: 200px;
+            bottom: 50px;
+            right: -20px;
+            background: rgba(255, 61, 0, 0.1);
+            animation-delay: -5s;
+        }
+
+        .shape-3 {
+            width: 100px;
+            height: 100px;
+            top: 40%;
+            left: 20%;
+            animation-duration: 15s;
+            animation-direction: reverse;
+        }
+
+        /* Animação que simula ponteiros girando ou flutuação */
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(20px, 20px) rotate(180deg); }
+            100% { transform: translate(0, 0) rotate(360deg); }
+        }
+
         /* ========================================
-           CONTAINER PRINCIPAL E CARD
+           CONTAINER PRINCIPAL
            ======================================== */
         .login-container {
             width: 100%;
             max-width: 420px;
-            animation: fadeIn 0.6s ease;
+            animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: 10;
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .login-card {
-            background: var(--branco);
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
             padding: 50px 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             position: relative;
             overflow: hidden;
         }
 
-        /* Efeito de brilho sutil no card */
-        .login-card::before {
+        /* Barra superior colorida */
+        .login-card::after {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255, 61, 0, 0.05), transparent);
-            transform: rotate(45deg);
-            animation: shine 8s ease-in-out infinite;
-        }
-
-        @keyframes shine {
-            0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--laranja-vibrante), var(--roxo-vivo));
         }
 
         /* ========================================
@@ -106,313 +142,254 @@
         .logo-section {
             text-align: center;
             margin-bottom: 40px;
-            position: relative;
-            z-index: 1;
         }
 
         .logo-section img {
-            width: 100px;
+            width: 110px;
             height: auto;
-            margin-bottom: 20px;
-            animation: logoFloat 3s ease-in-out infinite;
+            margin-bottom: 15px;
+            /* Animação suave no logo */
+            animation: pulseLogo 4s ease-in-out infinite;
         }
 
-        @keyframes logoFloat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
+        @keyframes pulseLogo {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .brand-name {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: 700;
-            color: var(--roxo-escuro);
-            margin-bottom: 8px;
-        }
-
-        .page-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--roxo-escuro);
-            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--roxo-escuro), var(--roxo-vivo));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+            letter-spacing: -1px;
         }
 
         .page-subtitle {
             font-size: 14px;
             color: #666;
-            font-weight: 400;
+            font-weight: 500;
+        }
+
+        .time-badge {
+            display: inline-block;
+            background: rgba(135, 20, 140, 0.1);
+            color: var(--roxo-medio);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         /* ========================================
-           FORMULÁRIO E INPUTS
+           FORMULÁRIO
            ======================================== */
-        .login-form {
-            position: relative;
-            z-index: 1;
-        }
-
         .form-group {
             margin-bottom: 25px;
         }
 
         label {
             display: block;
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 13px;
+            font-weight: 600;
             color: var(--roxo-escuro);
             margin-bottom: 8px;
+            margin-left: 4px;
         }
 
         .input-wrapper {
             position: relative;
         }
 
+        /* Ícones dentro dos inputs (via CSS pseudo-elementos para simplificar) */
+        .input-wrapper::before {
+            font-family: sans-serif; /* Fallback simples */
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 16px;
+            z-index: 2;
+        }
+        
         input[type="email"],
         input[type="password"] {
             width: 100%;
-            padding: 16px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
+            padding: 16px 20px 16px 20px;
+            border: 2px solid #eee;
+            border-radius: 12px;
             font-size: 15px;
             font-family: 'Montserrat', sans-serif;
-            font-weight: 400;
             color: var(--roxo-escuro);
             transition: all 0.3s ease;
-            background: var(--cinza-suave);
+            background: #fcfcfc;
         }
 
-        input[type="email"]:focus,
-        input[type="password"]:focus {
+        input:focus {
             outline: none;
             border-color: var(--roxo-medio);
             background: var(--branco);
-            box-shadow: 0 0 0 4px rgba(135, 20, 140, 0.1);
-        }
-
-        input::placeholder {
-            color: #999;
-            font-weight: 400;
+            box-shadow: 0 4px 15px rgba(135, 20, 140, 0.1);
+            transform: translateY(-2px);
         }
 
         /* ========================================
-           BOTÃO PRINCIPAL
+           BOTÃO
            ======================================== */
         .btn-login {
             width: 100%;
             padding: 18px;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 700;
-            font-family: 'Montserrat', sans-serif;
             color: var(--branco);
-            background: linear-gradient(135deg, var(--laranja-vibrante), var(--laranja-claro));
+            background: linear-gradient(135deg, var(--laranja-vibrante), #FF6D00);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
-            margin-top: 30px;
-        }
-
-        .btn-login::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--roxo-vivo), var(--roxo-medio));
-            transition: left 0.4s ease;
-        }
-
-        .btn-login span {
-            position: relative;
-            z-index: 1;
-        }
-
-        .btn-login:hover::before {
-            left: 0;
+            margin-top: 10px;
+            box-shadow: 0 10px 20px rgba(255, 61, 0, 0.2);
         }
 
         .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 61, 0, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 61, 0, 0.3);
         }
 
         .btn-login:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
         }
 
-        .btn-login:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-login:disabled::before {
-            display: none;
-        }
-
-        /* Loading spinner no botão */
+        /* Spinner */
         .btn-spinner {
             display: none;
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-top-color: var(--branco);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-            margin-left: 10px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+            vertical-align: middle;
+            margin-left: 8px;
         }
 
         .btn-login.loading .btn-spinner {
             display: inline-block;
         }
 
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         /* ========================================
-           MENSAGENS DE ERRO
+           MENSAGEM ERRO E FOOTER
            ======================================== */
         .error-message {
-            background: rgba(255, 61, 0, 0.1);
-            border: 1px solid var(--laranja-vibrante);
-            color: var(--laranja-vibrante);
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            text-align: center;
+            background: #FFF0F0;
+            border-left: 4px solid var(--laranja-vibrante);
+            color: #D32F2F;
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: left;
             margin-top: 20px;
             display: none;
             animation: slideDown 0.3s ease;
         }
 
         @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .error-message.show {
-            display: block;
-        }
+        .error-message.show { display: block; }
 
-        /* ========================================
-           RODAPÉ
-           ======================================== */
         .footer-text {
             text-align: center;
             margin-top: 30px;
             font-size: 12px;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
         }
 
-        /* ========================================
-           RESPONSIVIDADE
-           ======================================== */
         @media (max-width: 480px) {
-            .login-card {
-                padding: 40px 30px;
-            }
-
-            .brand-name {
-                font-size: 28px;
-            }
-
-            .page-title {
-                font-size: 20px;
-            }
-
-            .logo-section img {
-                width: 80px;
-            }
-        }
-
-        @media (max-width: 360px) {
-            .login-card {
-                padding: 30px 20px;
-            }
-
-            input[type="email"],
-            input[type="password"] {
-                padding: 14px 16px;
-            }
+            .login-card { padding: 40px 25px; }
+            .brand-name { font-size: 30px; }
         }
     </style>
 </head>
 <body>
+
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
+    <div class="bg-shape shape-3"></div>
+
     <div class="login-container">
         <div class="login-card">
-            <!-- Logo e Branding -->
             <div class="logo-section">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23270949;%7D.cls-2%7Bfill:%23ff3d00;%7D.cls-3%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3C!-- Arco do cadeado (roxo escuro) --%3E%3Cpath class='cls-1' d='M140,180 L140,120 Q140,50 200,50 L200,50 Q260,50 260,120 L260,180' stroke='%23270949' stroke-width='28' fill='none' stroke-linecap='round'/%3E%3C!-- Corpo do cadeado (laranja vibrante) --%3E%3Crect class='cls-2' x='100' y='170' width='200' height='180' rx='25'/%3E%3C!-- Buraco da fechadura (branco) --%3E%3Ccircle class='cls-3' cx='200' cy='250' r='30'/%3E%3Crect class='cls-3' x='185' y='250' width='30' height='60' rx='8'/%3E%3C/svg%3E" alt="Upperfy Logo">
-                <div class="brand-name">Upperfy</div>
-                <p class="page-subtitle">Plataforma Exclusiva</p>
-                <p class="page-subtitle" style="font-size: 12px; margin-top: 5px; color: #999;">Powered by <strong style="color: var(--roxo-escuro);">Upperfy</strong></p>
-                <h1 class="page-title" style="margin-top: 20px;">Acesse sua conta</h1>
+                <svg width="100" height="100" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="90" stroke="#270949" stroke-width="12"/>
+                    <path d="M100 45V100L135 135" stroke="#FF3D00" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="100" cy="100" r="8" fill="#270949"/>
+                    <circle cx="100" cy="25" r="4" fill="#87148C"/>
+                    <circle cx="175" cy="100" r="4" fill="#87148C"/>
+                    <circle cx="100" cy="175" r="4" fill="#87148C"/>
+                    <circle cx="25" cy="100" r="4" fill="#87148C"/>
+                </svg>
+                
+                <div class="brand-name">Clockfy</div>
+                <div class="time-badge">Gestão de Ponto Inteligente</div>
+                <p class="page-subtitle" style="margin-top: 15px;">Bem-vindo de volta!</p>
             </div>
 
-            <!-- Formulário de Login -->
             <form class="login-form" id="loginForm">
                 <div class="form-group">
-                    <label for="email">E-mail</label>
+                    <label for="email">E-mail Corporativo</label>
                     <div class="input-wrapper">
-                        <input 
-                            type="email" 
-                            id="email" 
-                            name="email" 
-                            placeholder="Seu e-mail corporativo" 
-                            required
-                            autocomplete="email">
+                        <input type="email" id="email" name="email" placeholder="nome@empresa.com" required autocomplete="email">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="senha">Senha</label>
+                    <label for="senha">Senha de Acesso</label>
                     <div class="input-wrapper">
-                        <input 
-                            type="password" 
-                            id="senha" 
-                            name="senha" 
-                            placeholder="Sua senha de acesso" 
-                            required
-                            autocomplete="current-password">
+                        <input type="password" id="senha" name="senha" placeholder="••••••••" required autocomplete="current-password">
                     </div>
                 </div>
 
                 <button type="submit" class="btn-login" id="btnLogin">
-                    <span id="btnText">Entrar</span>
+                    <span id="btnText">Acessar Sistema</span>
                     <div class="btn-spinner"></div>
                 </button>
 
-                <!-- Mensagem de erro -->
                 <div class="error-message" id="errorMessage">
-                    E-mail ou senha inválidos
+                    Credenciais inválidas.
                 </div>
             </form>
         </div>
 
         <div class="footer-text">
-            © 2025 Upperfy - Todos os direitos reservados
+            © 2025 Clockfy - Tecnologia em Gestão de Tempo
         </div>
     </div>
 
     <script>
         /* ========================================
-           CONFIGURAÇÃO DO WEBHOOK
-           Para alterar a URL de autenticação, modifique a linha abaixo
+           CONFIGURAÇÃO
            ======================================== */
         const WEBHOOK_URL = "https://n8n.upperfy.com.br/webhook/b45a3be4-1f27-4b01-b341-loginplataforma4";
+        // URL ATUALIZADA DE REDIRECIONAMENTO
+        const REDIRECT_URL = "/area-restrita/clockfyregistro.html";
 
         /* ========================================
-           ELEMENTOS DO DOM
+           ELEMENTOS
            ======================================== */
         const loginForm = document.getElementById('loginForm');
         const emailInput = document.getElementById('email');
@@ -422,193 +399,101 @@
         const errorMessage = document.getElementById('errorMessage');
 
         /* ========================================
-           HANDLER DO FORMULÁRIO DE LOGIN
+           LOGIC
            ======================================== */
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            // Esconder mensagem de erro anterior
             errorMessage.classList.remove('show');
-
-            // Obter valores dos campos
             const email = emailInput.value.trim();
             const senha = senhaInput.value;
 
-            // Validação básica
             if (!email || !senha) {
-                showError('Por favor, preencha todos os campos');
+                showError('Preencha todos os campos para continuar.');
                 return;
             }
 
-            // Ativar estado de loading
             setLoadingState(true);
 
             try {
-                // Fazer requisição ao webhook
                 const response = await fetch(WEBHOOK_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, senha })
                 });
 
                 const data = await response.json();
 
-                // Verificar se autenticação foi bem-sucedida
                 if (data.autenticado === true) {
-                    // Limpar qualquer dado anterior do localStorage
                     localStorage.clear();
-
-                    // Salvar TODAS as informações do payload no localStorage
                     
-                    // 1. Status de autenticação
+                    // Salvando dados vitais
                     localStorage.setItem('autenticado', 'true');
+                    if (data.token) localStorage.setItem('token', data.token);
                     
-                    // 2. Token (se existir)
-                    if (data.token) {
-                        localStorage.setItem('token', data.token);
-                    }
+                    // Tratamento robusto de IDs
+                    const funcId = data.id_funcionario || data.idFuncionario || data.funcionario_id;
+                    if (funcId) localStorage.setItem('id_funcionario', funcId);
                     
-                    // 3. ID do funcionário (ESSENCIAL)
-                    if (data.id_funcionario || data.idFuncionario || data.funcionario_id) {
-                        const funcionarioId = data.id_funcionario || data.idFuncionario || data.funcionario_id;
-                        localStorage.setItem('id_funcionario', funcionarioId);
-                    }
+                    const empId = data.id_empresa || data.idEmpresa || data.empresa_id;
+                    if (empId) localStorage.setItem('id_empresa', empId);
                     
-                    // 4. ID da empresa (ESSENCIAL)
-                    if (data.id_empresa || data.idEmpresa || data.empresa_id) {
-                        const empresaId = data.id_empresa || data.idEmpresa || data.empresa_id;
-                        localStorage.setItem('id_empresa', empresaId);
-                    }
+                    if (data.usuario) localStorage.setItem('usuario', JSON.stringify(data.usuario));
+                    if (data.empresa) localStorage.setItem('empresa', JSON.stringify(data.empresa));
                     
-                    // 5. Dados do usuário (objeto completo)
-                    if (data.usuario) {
-                        localStorage.setItem('usuario', JSON.stringify(data.usuario));
-                        
-                        // Extrair campos específicos do usuário para acesso rápido
-                        if (data.usuario.nome) {
-                            localStorage.setItem('usuario_nome', data.usuario.nome);
-                        }
-                        if (data.usuario.email) {
-                            localStorage.setItem('usuario_email', data.usuario.email);
-                        }
-                        if (data.usuario.telefone) {
-                            localStorage.setItem('usuario_telefone', data.usuario.telefone);
-                        }
-                        if (data.usuario.foto_perfil || data.usuario.fotoPerfil) {
-                            const foto = data.usuario.foto_perfil || data.usuario.fotoPerfil;
-                            localStorage.setItem('usuario_foto', foto);
-                        }
-                        if (data.usuario.cargo) {
-                            localStorage.setItem('usuario_cargo', data.usuario.cargo);
-                        }
-                    }
-                    
-                    // 6. Dados da empresa (objeto completo)
-                    if (data.empresa) {
-                        localStorage.setItem('empresa', JSON.stringify(data.empresa));
-                        
-                        // Extrair campos específicos da empresa para acesso rápido
-                        if (data.empresa.nome || data.empresa.razao_social) {
-                            const nomeEmpresa = data.empresa.nome || data.empresa.razao_social;
-                            localStorage.setItem('empresa_nome', nomeEmpresa);
-                        }
-                        if (data.empresa.logo) {
-                            localStorage.setItem('empresa_logo', data.empresa.logo);
-                        }
-                    }
-                    
-                    // 7. Permissões/roles (se existir)
-                    if (data.permissoes || data.roles) {
-                        const permissoes = data.permissoes || data.roles;
-                        localStorage.setItem('permissoes', JSON.stringify(permissoes));
-                    }
-                    
-                    // 8. Qualquer outro campo adicional do payload
-                    // Armazenar o payload completo para referência futura
-                    localStorage.setItem('login_payload', JSON.stringify(data));
-                    
-                    // 9. Data/hora do login
                     localStorage.setItem('login_timestamp', new Date().toISOString());
 
-                    // Log para debug (remover em produção)
-                    console.log('Dados salvos no localStorage:', {
-                        autenticado: localStorage.getItem('autenticado'),
-                        id_funcionario: localStorage.getItem('id_funcionario'),
-                        id_empresa: localStorage.getItem('id_empresa'),
-                        usuario_nome: localStorage.getItem('usuario_nome'),
-                        empresa_nome: localStorage.getItem('empresa_nome')
-                    });
-
-                    // Feedback visual de sucesso
-                    btnText.textContent = 'Sucesso! Redirecionando...';
+                    // Feedback e Redirecionamento Atualizado
+                    btnText.textContent = 'Login efetuado! Redirecionando...';
+                    btnLogin.style.background = '#4CAF50'; // Verde sucesso momentâneo
                     
-                    // Redirecionar para área restrita
                     setTimeout(() => {
-                        window.location.href = '/area-restrita/dashboard.html';
+                        window.location.href = REDIRECT_URL;
                     }, 800);
                 } else {
-                    // Mostrar erro de autenticação
-                    showError(data.mensagem || 'E-mail ou senha inválidos');
+                    showError(data.mensagem || 'E-mail ou senha incorretos.');
                     setLoadingState(false);
                 }
             } catch (error) {
-                console.error('Erro ao fazer login:', error);
-                showError('Erro de conexão. Tente novamente.');
+                console.error('Erro:', error);
+                showError('Falha na comunicação com o servidor.');
                 setLoadingState(false);
             }
         });
 
-        /* ========================================
-           FUNÇÕES AUXILIARES
-           ======================================== */
-        
-        // Ativar/desativar estado de loading no botão
         function setLoadingState(isLoading) {
             if (isLoading) {
                 btnLogin.disabled = true;
                 btnLogin.classList.add('loading');
-                btnText.textContent = 'Validando...';
+                btnText.textContent = 'Autenticando...';
             } else {
                 btnLogin.disabled = false;
                 btnLogin.classList.remove('loading');
-                btnText.textContent = 'Entrar';
+                btnText.textContent = 'Acessar Sistema';
             }
         }
 
-        // Mostrar mensagem de erro
         function showError(message) {
             errorMessage.textContent = message;
             errorMessage.classList.add('show');
-            
-            // Esconder após 5 segundos
-            setTimeout(() => {
-                errorMessage.classList.remove('show');
-            }, 5000);
+            setTimeout(() => errorMessage.classList.remove('show'), 5000);
         }
 
-        // Limpar mensagem de erro ao digitar
-        emailInput.addEventListener('input', () => {
-            errorMessage.classList.remove('show');
-        });
-
-        senhaInput.addEventListener('input', () => {
-            errorMessage.classList.remove('show');
+        // Limpar erro ao digitar
+        [emailInput, senhaInput].forEach(input => {
+            input.addEventListener('input', () => errorMessage.classList.remove('show'));
         });
 
         /* ========================================
-           VERIFICAR SE JÁ ESTÁ LOGADO
-           Se já houver autenticação válida, redirecionar automaticamente
+           AUTO-REDIRECT SE JÁ LOGADO
            ======================================== */
         window.addEventListener('DOMContentLoaded', () => {
             const autenticado = localStorage.getItem('autenticado');
             const idFuncionario = localStorage.getItem('id_funcionario');
             
-            // Se já estiver autenticado e tiver ID de funcionário, redirecionar
             if (autenticado === 'true' && idFuncionario) {
-                console.log('Usuário já autenticado, redirecionando...');
-                window.location.href = '/area-restrita/dashboard.html';
+                console.log('Sessão ativa detectada.');
+                // Redirecionamento Atualizado
+                window.location.href = REDIRECT_URL;
             }
         });
     </script>
