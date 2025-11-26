@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clockfy - Registro de Ponto</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23270949' d='M50,5L25,35h50L50,5z'/%3E%3Ccircle fill='%23f93d00' cx='50' cy='60' r='35'/%3E%3Ccircle fill='%23270949' cx='50' cy='60' r='28'/%3E%3Ccircle fill='%23fff' cx='50' cy='60' r='23'/%3E%3C/svg%3E">
+    <title>Clockfy - Sistema de Registro de Ponto</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23270949;%7D.cls-2%7Bfill:%23ff3d00;%7D.cls-3%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cpath class='cls-1' d='M140,180 L140,120 Q140,50 200,50 L200,50 Q260,50 260,120 L260,180' stroke='%23270949' stroke-width='28' fill='none' stroke-linecap='round'/%3E%3Crect class='cls-2' x='100' y='170' width='200' height='180' rx='25'/%3E%3Ccircle class='cls-3' cx='200' cy='250' r='30'/%3E%3Crect class='cls-3' x='185' y='250' width='30' height='60' rx='8'/%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -193,6 +193,43 @@
             margin: 20px 0; border-radius: 10px; border: 2px solid #F93D00;
             background: rgba(0,0,0,0.3); color: white; letter-spacing: 10px;
         }
+
+        /* Preview da foto */
+        .photo-preview {
+            margin-top: 20px;
+            display: none;
+            text-align: center;
+        }
+        .photo-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+            border: 2px solid #F93D00;
+        }
+
+        /* Mensagens de erro/sucesso */
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+        .message.error {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+        .message.success {
+            background: rgba(0, 255, 0, 0.2);
+            color: #51cf66;
+            border: 1px solid #51cf66;
+        }
+
+        /* Input file escondido */
+        #cameraInput {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -237,14 +274,37 @@
         </div>
     </div>
 
-    <!-- Modal PIN (Simplificado) -->
+    <!-- Modal PIN + Foto -->
     <div class="pin-modal" id="pinModal">
         <div class="pin-content">
-            <h3>Digite seu PIN</h3>
-            <input type="password" class="pin-input" id="pinInput" maxlength="4" placeholder="••••">
-            <button class="btn-outline" style="background: #F93D00; border: none; width: 100%; padding: 15px; font-weight: bold;" onclick="confirmarPonto()">CONFIRMAR</button>
-            <br><br>
-            <button class="btn-outline" onclick="fecharModal()">Cancelar</button>
+            <h3>Confirme sua Identidade</h3>
+            
+            <p style="font-size: 14px; color: #ccc; margin-bottom: 15px;">
+                1. Digite seu PIN<br>
+                2. Tire uma foto para confirmar
+            </p>
+
+            <input type="password" class="pin-input" id="pinInput" maxlength="4" placeholder="PIN">
+            
+            <!-- Botão para abrir câmera -->
+            <button class="btn-outline" id="btnCamera" onclick="abrirCamera()" style="width: 100%; margin-bottom: 10px;">
+                📷 Tirar Foto
+            </button>
+            
+            <!-- Preview da foto -->
+            <div class="photo-preview" id="photoPreview">
+                <img id="previewImg" src="">
+            </div>
+
+            <!-- Input file oculto -->
+            <input type="file" id="cameraInput" accept="image/*" capture="user">
+
+            <div id="modalMessage" class="message"></div>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn-outline" style="flex: 1;" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-outline" style="background: #F93D00; border: none; flex: 1; font-weight: bold;" onclick="enviarPonto()">ENVIAR</button>
+            </div>
         </div>
     </div>
 
@@ -292,13 +352,11 @@
 
             // 2. Verifica se tem dados no localStorage
             const usuarioJson = localStorage.getItem('usuario');
+            // A verificação é branda na carga para permitir o SSO funcionar
             const idFuncionario = localStorage.getItem('id_funcionario');
-            const autenticado = localStorage.getItem('autenticado');
             
-            // A verificação agora é mais branda para evitar loop. 
-            // O token é verificado apenas na hora de registrar o ponto.
-            if (!usuarioJson || !idFuncionario || autenticado !== 'true') {
-                // SE NÃO TIVER LOGADO: Redireciona para a PLATAFORMA
+            if (!usuarioJson && !idFuncionario) {
+                // SE NÃO TIVER NADA: Redireciona para a PLATAFORMA
                 console.log('Não autenticado. Redirecionando...');
                 setTimeout(() => {
                     window.location.href = 'https://plataforma.upperfy.com.br';
@@ -313,8 +371,10 @@
 
         function loadUserInfo(json) {
             try {
-                const user = JSON.parse(json);
-                // Tenta pegar nome de várias formas possíveis
+                // Tenta ler do json ou do localStorage direto (fallback)
+                let user = {};
+                if (json) user = JSON.parse(json);
+
                 const nome = user.nome || user.nome_completo || user.usuario_nome || localStorage.getItem('usuario_nome') || 'Colaborador';
                 document.getElementById('userName').textContent = nome;
                 
@@ -325,8 +385,7 @@
                 }
             } catch (e) {
                 console.error(e);
-                localStorage.clear();
-                window.location.href = 'https://plataforma.upperfy.com.br';
+                // Não força logout aqui para não criar loop se o JSON estiver zoado mas os dados existirem
             }
         }
 
@@ -347,32 +406,127 @@
         updateClock();
 
         // ============================================================
-        // 3. REGISTRO DE PONTO
+        // 3. LÓGICA DE CÂMERA E FOTO
+        // ============================================================
+        let capturedPhotoBase64 = null;
+
+        function abrirCamera() {
+            document.getElementById('cameraInput').click();
+        }
+
+        document.getElementById('cameraInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    capturedPhotoBase64 = event.target.result;
+                    
+                    // Mostrar preview
+                    const img = document.getElementById('previewImg');
+                    img.src = capturedPhotoBase64;
+                    document.getElementById('photoPreview').style.display = 'block';
+                    
+                    // Mudar texto do botão
+                    document.getElementById('btnCamera').textContent = '✓ Foto Capturada';
+                    document.getElementById('btnCamera').style.backgroundColor = '#2ecc71';
+                    document.getElementById('btnCamera').style.borderColor = '#2ecc71';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // ============================================================
+        // 4. REGISTRO DE PONTO (FINAL)
         // ============================================================
         function iniciarRegistro() {
-            // Verifica token aqui antes de deixar bater ponto
+            // Verifica token aqui antes de abrir modal
             const token = localStorage.getItem('token');
             if (!token) {
-                alert('Sessão inválida ou expirada. Faça login novamente.');
+                alert('Sessão inválida ou expirada. Por favor, faça login novamente na Plataforma.');
                 logout();
                 return;
             }
+            
+            // Limpa estados anteriores
+            document.getElementById('pinInput').value = '';
+            capturedPhotoBase64 = null;
+            document.getElementById('photoPreview').style.display = 'none';
+            document.getElementById('btnCamera').textContent = '📷 Tirar Foto';
+            document.getElementById('btnCamera').style.backgroundColor = 'transparent';
+            document.getElementById('btnCamera').style.borderColor = '#fff';
+            document.getElementById('modalMessage').style.display = 'none';
+
             document.getElementById('pinModal').style.display = 'flex';
             document.getElementById('pinInput').focus();
         }
 
         function fecharModal() {
             document.getElementById('pinModal').style.display = 'none';
-            document.getElementById('pinInput').value = '';
         }
 
-        async function confirmarPonto() {
+        async function enviarPonto() {
             const pin = document.getElementById('pinInput').value;
-            if(pin.length < 4) return alert('Digite o PIN completo');
-            
-            // Redireciona para a página completa de registro com foto
-            // Como estamos na raiz, o caminho para area-restrita é direto
-            window.location.href = 'area-restrita/clockfyregistro.html'; 
+            const messageEl = document.getElementById('modalMessage');
+
+            // Validações
+            if(pin.length < 4) {
+                messageEl.textContent = 'Digite o PIN completo (4 dígitos).';
+                messageEl.className = 'message error';
+                messageEl.style.display = 'block';
+                return;
+            }
+
+            if(!capturedPhotoBase64) {
+                messageEl.textContent = 'É obrigatório tirar uma foto para comprovar o ponto.';
+                messageEl.className = 'message error';
+                messageEl.style.display = 'block';
+                return;
+            }
+
+            // Preparar envio
+            messageEl.textContent = 'Enviando ponto... aguarde.';
+            messageEl.className = 'message'; // neutro
+            messageEl.style.display = 'block';
+
+            // Coleta dados
+            const payload = {
+                pin: pin,
+                photo: capturedPhotoBase64,
+                timestamp: new Date().toISOString(),
+                // Dados de contexto
+                autenticado: localStorage.getItem('autenticado'),
+                id_funcionario: localStorage.getItem('id_funcionario'),
+                id_empresa: localStorage.getItem('id_empresa'),
+                usuario_nome: localStorage.getItem('usuario_nome'),
+                usuario_email: localStorage.getItem('usuario_email'),
+                token: localStorage.getItem('token')
+            };
+
+            try {
+                const response = await fetch('https://n8n.upperfy.com.br/webhook/2f97bdf7-22ff-451a-bdee-clockfy01', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data === true || data.success === true || response.ok) {
+                    messageEl.textContent = '✓ Ponto registrado com sucesso!';
+                    messageEl.className = 'message success';
+                    
+                    setTimeout(() => {
+                        fecharModal();
+                    }, 2000);
+                } else {
+                    throw new Error(data.mensagem || 'Erro ao registrar ponto');
+                }
+
+            } catch (error) {
+                console.error(error);
+                messageEl.textContent = 'Erro: ' + (error.message || 'Falha na conexão.');
+                messageEl.className = 'message error';
+            }
         }
 
         function logout() {
