@@ -68,7 +68,7 @@
         /* Container Principal */
         .container {
             width: 100%;
-            max-width: 500px;
+            max-width: 450px;
             z-index: 10;
             animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
@@ -283,21 +283,6 @@
                     </div>
                 </div>
 
-                <div class="info-group">
-                    <label>Empresa Vinculada</label>
-                    <div class="input-icon-wrapper">
-                        <i class="fas fa-building"></i>
-                        <input type="text" class="info-value" id="displayCompany" value="---" readonly>
-                    </div>
-                </div>
-
-                <div class="info-group">
-                    <label>ID do Funcionário</label>
-                    <div class="input-icon-wrapper">
-                        <i class="fas fa-id-badge"></i>
-                        <input type="text" class="info-value" id="displayId" value="---" readonly>
-                    </div>
-                </div>
             </div>
 
             <div class="btn-container">
@@ -318,48 +303,7 @@
     </div>
 
     <script>
-        // ========================================
-        // FUNÇÃO SHERLOCK: PROCURA DADOS EM TODO LUGAR
-        // ========================================
-        function findCompanyData() {
-            // 1. Tenta pegar direto da chave 'empresa_nome'
-            const direto = localStorage.getItem('empresa_nome');
-            if (direto && direto !== 'undefined') return direto;
-
-            // 2. Analisa o objeto 'empresa' (se for string JSON)
-            try {
-                const empRaw = localStorage.getItem('empresa');
-                // Se 'empresa' for apenas o nome salvo como string simples
-                if (empRaw && !empRaw.startsWith('{')) return empRaw;
-
-                const empObj = JSON.parse(empRaw);
-                if (empObj) {
-                    if (empObj.nome) return empObj.nome;
-                    if (empObj.nome_fantasia) return empObj.nome_fantasia;
-                    if (empObj.nomeFantasia) return empObj.nomeFantasia;
-                    if (empObj.razao_social) return empObj.razao_social;
-                    if (empObj.razaoSocial) return empObj.razaoSocial;
-                    if (empObj.company_name) return empObj.company_name;
-                    if (empObj.name) return empObj.name; 
-                }
-            } catch (e) {}
-
-            // 3. Analisa se está dentro do objeto 'usuario'
-            try {
-                const userObj = JSON.parse(localStorage.getItem('usuario'));
-                if (userObj) {
-                    if (userObj.empresa_nome) return userObj.empresa_nome;
-                    if (userObj.nome_empresa) return userObj.nome_empresa;
-                    
-                    if (typeof userObj.empresa === 'string') return userObj.empresa;
-                    
-                    if (typeof userObj.empresa === 'object' && userObj.empresa.nome) return userObj.empresa.nome;
-                }
-            } catch (e) {}
-
-            return 'Empresa não identificada';
-        }
-
+        // Função segura para pegar dados
         function getSafeUserField(field1, field2) {
             // Tenta 'usuario_nome'
             let val = localStorage.getItem('usuario_' + field1);
@@ -386,17 +330,10 @@
             // 2. EMAIL
             let email = getSafeUserField('email', 'mail') || 'Não informado';
 
-            // 3. EMPRESA (Busca Inteligente)
-            let empresa = findCompanyData();
-
-            // 4. ID
-            let id = localStorage.getItem('id_funcionario');
-            if (!id) id = getSafeUserField('id', 'id_funcionario') || '---';
-
-            // 5. CARGO
+            // 3. CARGO
             let cargo = getSafeUserField('cargo', 'role') || 'Colaborador';
 
-            // 6. FOTO
+            // 4. FOTO
             let foto = getSafeUserField('foto_perfil', 'foto');
             if (!foto) foto = getSafeUserField('avatar', 'image');
 
@@ -410,12 +347,6 @@
             const elEmail = document.getElementById('displayEmail');
             if(elEmail) elEmail.value = email;
 
-            const elCompany = document.getElementById('displayCompany');
-            if(elCompany) elCompany.value = empresa;
-
-            const elId = document.getElementById('displayId');
-            if(elId) elId.value = `#${id}`;
-
             // Foto
             if (foto && foto.length > 10) { 
                 const imgElement = document.getElementById('userPhoto');
@@ -428,9 +359,6 @@
                     iconElement.style.display = 'none';
                 }
             }
-
-            // Log de Debug
-            console.log('Dados carregados:', {nome, empresa, id});
         });
 
         function goBack() {
