@@ -47,9 +47,7 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* ========================================
-           BACKGROUND ANIMADO
-           ======================================== */
+        /* Background Animado */
         .bg-shape {
             position: absolute;
             border-radius: 50%;
@@ -68,9 +66,7 @@
             100% { transform: translate(0, 0) rotate(360deg); }
         }
 
-        /* ========================================
-           CONTAINER PRINCIPAL
-           ======================================== */
+        /* Container Principal */
         .container {
             width: 100%;
             max-width: 450px;
@@ -101,9 +97,7 @@
             background: linear-gradient(90deg, var(--laranja-vibrante), var(--roxo-vivo));
         }
 
-        /* ========================================
-           HEADER DO USUÁRIO
-           ======================================== */
+        /* Header e Logo */
         .user-header {
             display: flex;
             justify-content: space-between;
@@ -113,16 +107,8 @@
             border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
-        .user-info {
-            font-size: 14px;
-            color: #555;
-            font-weight: 500;
-        }
-
-        .user-info strong {
-            color: var(--roxo-vivo);
-            font-size: 16px;
-        }
+        .user-info { font-size: 14px; color: #555; font-weight: 500; }
+        .user-info strong { color: var(--roxo-vivo); font-size: 16px; }
 
         .btn-logout {
             background: rgba(255, 61, 0, 0.1);
@@ -135,20 +121,9 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
+        .btn-logout:hover { background: var(--laranja-vibrante); color: white; }
 
-        .btn-logout:hover {
-            background: var(--laranja-vibrante);
-            color: white;
-        }
-
-        /* ========================================
-           LOGO E TÍTULO
-           ======================================== */
-        .logo-section {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
+        .logo-section { text-align: center; margin-bottom: 20px; }
         .brand-name {
             font-size: 28px;
             font-weight: 700;
@@ -157,17 +132,9 @@
             -webkit-text-fill-color: transparent;
             margin-top: 10px;
         }
+        .page-subtitle { font-size: 13px; color: #888; font-weight: 500; margin-top: 5px; }
 
-        .page-subtitle {
-            font-size: 13px;
-            color: #888;
-            font-weight: 500;
-            margin-top: 5px;
-        }
-
-        /* ========================================
-           RELÓGIO MUNDIAL (NOVO)
-           ======================================== */
+        /* Relógio Mundial */
         .world-clock-container {
             display: flex;
             justify-content: center;
@@ -178,7 +145,6 @@
             border: 1px solid rgba(230, 230, 230, 0.8);
             border-radius: 16px;
         }
-
         .clock-item {
             display: flex;
             flex-direction: column;
@@ -186,8 +152,6 @@
             min-width: 85px;
             position: relative;
         }
-        
-        /* Divisoria entre relógios */
         .clock-item:not(:last-child)::after {
             content: '';
             position: absolute;
@@ -198,180 +162,132 @@
             width: 1px;
             background: rgba(0,0,0,0.1);
         }
-
         .clock-time {
-            font-family: 'Montserrat', monospace; /* Monospace para evitar tremor */
+            font-family: 'Montserrat', monospace;
             font-size: 15px;
             font-weight: 700;
             color: var(--roxo-escuro);
             font-variant-numeric: tabular-nums;
             letter-spacing: -0.5px;
         }
-
         .clock-label {
             font-size: 10px;
             text-transform: uppercase;
             color: #666;
             margin-top: 3px;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 4px;
         }
 
-        /* ========================================
-           FORMULÁRIO
-           ======================================== */
+        /* Formulário */
         .form-group { margin-bottom: 20px; text-align: center; }
-        
-        label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--roxo-escuro);
-            margin-bottom: 8px;
-        }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--roxo-escuro); margin-bottom: 8px; }
 
-        /* Input de PIN CORRIGIDO - Borda Laranja Visível */
         input[type="password"] {
-            width: 100%;
-            max-width: 200px;
-            padding: 15px;
-            
-            /* AQUI: Borda laranja fixa para visibilidade total */
+            width: 100%; max-width: 200px; padding: 15px;
             border: 2px solid var(--laranja-vibrante);
-            
-            border-radius: 12px;
-            font-size: 24px;
-            font-family: 'Montserrat', sans-serif;
-            text-align: center;
-            letter-spacing: 8px;
-            color: var(--roxo-escuro);
-            transition: all 0.3s ease;
-            background: #fff; /* Fundo branco puro para contraste */
-            margin: 0 auto;
-            display: block;
+            border-radius: 12px; font-size: 24px; text-align: center;
+            letter-spacing: 8px; color: var(--roxo-escuro);
+            transition: all 0.3s ease; background: #fff; margin: 0 auto; display: block;
             box-shadow: 0 4px 10px rgba(255, 61, 0, 0.05);
         }
-
         input[type="password"]:focus {
-            outline: none;
-            /* Laranja mais escuro e brilho ao focar */
-            border-color: #d63300; 
+            outline: none; border-color: #d63300;
             box-shadow: 0 4px 15px rgba(255, 61, 0, 0.25);
             transform: translateY(-2px);
         }
 
-        input::placeholder { letter-spacing: normal; font-size: 14px; opacity: 0.5; }
-
-        /* Preview da Foto */
-        .photo-preview {
+        /* ÁREA DA CÂMERA AO VIVO */
+        .camera-container {
             margin: 15px 0;
-            display: none;
-            animation: fadeIn 0.5s ease;
             text-align: center;
+            position: relative;
+            min-height: 200px; /* Evita pulo de layout */
+            display: none; /* Escondido até ativar */
         }
 
-        .photo-preview img {
+        .camera-view {
             width: 100%;
-            max-width: 180px;
+            max-width: 280px;
             border-radius: 12px;
             border: 3px solid var(--roxo-vivo);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            background: #000;
+            transform: scaleX(-1); /* Espelha a câmera para ficar natural */
+        }
+
+        .photo-result {
+            margin: 15px 0;
+            text-align: center;
+            display: none;
+        }
+
+        .photo-result img {
+            width: 100%;
+            max-width: 280px;
+            border-radius: 12px;
+            border: 3px solid #2E7D32; /* Verde sucesso */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         /* Botões */
         .btn {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 700;
-            font-family: 'Montserrat', sans-serif;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 12px;
+            width: 100%; padding: 16px; border: none; border-radius: 12px;
+            font-size: 15px; font-weight: 700; font-family: 'Montserrat', sans-serif;
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px;
         }
 
         .btn-camera {
-            background: rgba(79, 18, 149, 0.1);
-            color: var(--roxo-vivo);
+            background: rgba(79, 18, 149, 0.1); color: var(--roxo-vivo);
             border: 1px solid rgba(79, 18, 149, 0.2);
         }
-
         .btn-camera:hover {
-            background: var(--roxo-vivo);
-            color: white;
-            transform: translateY(-2px);
+            background: var(--roxo-vivo); color: white; transform: translateY(-2px);
         }
+        /* Estado quando a câmera está ligada */
+        .btn-camera.active {
+            background: var(--roxo-vivo); color: white;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
 
         .btn-primary {
             color: var(--branco);
             background: linear-gradient(135deg, var(--laranja-vibrante), #FF6D00);
             box-shadow: 0 8px 20px rgba(255, 61, 0, 0.25);
         }
-
         .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(255, 61, 0, 0.35);
+            transform: translateY(-3px); box-shadow: 0 12px 25px rgba(255, 61, 0, 0.35);
         }
 
         .btn-secondary {
-            background: transparent;
-            color: #666;
-            font-weight: 600;
-            font-size: 14px;
-            padding: 10px;
-            margin-top: 10px;
+            background: transparent; color: #666; font-weight: 600; font-size: 14px;
+            padding: 10px; margin-top: 10px;
         }
-
         .btn-secondary:hover { color: var(--roxo-vivo); background: rgba(0,0,0,0.03); }
 
         .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-        /* Mensagens e Loader */
         .message {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            text-align: center;
-            display: none;
+            margin-top: 15px; padding: 12px; border-radius: 8px;
+            font-size: 13px; font-weight: 600; text-align: center; display: none;
             animation: slideDown 0.3s ease;
         }
-        
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
         .message.success { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
         .message.error { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
         .loader {
-            width: 18px; height: 18px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            display: none;
+            width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #fff; border-radius: 50%;
+            animation: spin 1s linear infinite; display: none;
         }
         @keyframes spin { 0%{ transform: rotate(0deg);} 100%{ transform: rotate(360deg);} }
+        
+        .footer-text { text-align: center; margin-top: 25px; font-size: 11px; color: rgba(255, 255, 255, 0.7); }
 
-        .footer-text {
-            text-align: center;
-            margin-top: 25px;
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        /* Responsividade */
         @media (max-width: 360px) {
             .glass-card { padding: 20px; }
-            .brand-name { font-size: 24px; }
             .world-clock-container { gap: 5px; }
             .clock-item { min-width: 65px; }
             .clock-time { font-size: 13px; }
@@ -387,8 +303,7 @@
     <div class="container">
         <div class="glass-card">
             <div class="user-header">
-                <div class="user-info" id="userInfo">
-                    </div>
+                <div class="user-info" id="userInfo"></div>
                 <button onclick="logout()" class="btn-logout">
                     <i class="fas fa-sign-out-alt"></i> Sair
                 </button>
@@ -429,15 +344,18 @@
                     <input type="password" id="pin" placeholder="••••" maxlength="4" inputmode="numeric" required>
                 </div>
 
-                <div class="photo-preview" id="photoPreview">
-                    <label style="font-size: 11px; margin-bottom: 5px; color:#666;">Preview da Captura:</label>
-                    <img id="previewImg" src="" alt="Preview">
+                <div class="camera-container" id="cameraContainer">
+                    <video id="videoElement" class="camera-view" autoplay playsinline muted></video>
+                    <canvas id="canvasElement" style="display: none;"></canvas>
                 </div>
 
-                <input type="file" id="cameraInput" accept="image/*" capture="user" style="display: none;">
+                <div class="photo-result" id="photoResult">
+                    <label style="font-size: 11px; margin-bottom: 5px; color:#666;">Foto Capturada:</label>
+                    <img id="finalImage" src="" alt="Sua Foto">
+                </div>
 
-                <button type="button" class="btn btn-camera" id="photoBtn">
-                    <i class="fas fa-camera"></i> <span id="cameraText">Tirar Foto do Rosto</span>
+                <button type="button" class="btn btn-camera" id="cameraBtn">
+                    <i class="fas fa-camera"></i> <span id="cameraBtnText">Iniciar Câmera</span>
                 </button>
 
                 <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -460,7 +378,7 @@
 
     <script>
         // ========================================
-        // DADOS DO USUÁRIO E EMPRESA (localStorage)
+        // 1. DADOS E SETUP
         // ========================================
         const autenticado = localStorage.getItem('autenticado');
         const idFuncionario = localStorage.getItem('id_funcionario');
@@ -470,17 +388,10 @@
         const empresaNome = localStorage.getItem('empresa_nome');
         const token = localStorage.getItem('token');
 
-        // ========================================
-        // 🔒 VERIFICAÇÃO DE AUTENTICAÇÃO
-        // ========================================
         if (autenticado !== 'true' || !idFuncionario || !idEmpresa) {
-            console.log('Sessão inválida. Redirecionando...');
             window.location.href = "../index.html";
         }
 
-        // ========================================
-        // 👤 EXIBIR INFORMAÇÕES DO USUÁRIO
-        // ========================================
         window.addEventListener('DOMContentLoaded', () => {
             const userInfo = document.getElementById('userInfo');
             if (usuarioNome) {
@@ -489,41 +400,18 @@
             } else {
                 userInfo.innerHTML = `Olá, <strong>Colaborador</strong>`;
             }
-
-            // Inicia o Relógio
             setInterval(updateWorldClocks, 1000);
             updateWorldClocks();
         });
 
-        // ========================================
-        // 🌍 LÓGICA DO RELÓGIO MUNDIAL
-        // ========================================
         function updateWorldClocks() {
             const now = new Date();
-            
-            const options = { 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit', 
-                hour12: false 
-            };
-
-            // Brasil (SP)
-            const timeBR = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', ...options });
-            document.getElementById('time-br').textContent = timeBR;
-
-            // Portugal (Lisboa)
-            const timePT = now.toLocaleTimeString('pt-PT', { timeZone: 'Europe/Lisbon', ...options });
-            document.getElementById('time-pt').textContent = timePT;
-
-            // EUA (New York)
-            const timeUS = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', ...options });
-            document.getElementById('time-us').textContent = timeUS;
+            const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            document.getElementById('time-br').textContent = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', ...options });
+            document.getElementById('time-pt').textContent = now.toLocaleTimeString('pt-PT', { timeZone: 'Europe/Lisbon', ...options });
+            document.getElementById('time-us').textContent = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', ...options });
         }
 
-        // ========================================
-        // 🚪 FUNÇÃO DE LOGOUT
-        // ========================================
         function logout() {
             if (confirm('Deseja realmente sair e encerrar a sessão?')) {
                 localStorage.clear();
@@ -532,55 +420,111 @@
         }
 
         // ========================================
-        // 📷 CAPTURA DE FOTO E REGISTRO DE PONTO
+        // 2. LÓGICA DE CÂMERA AO VIVO (SEM GALERIA)
         // ========================================
-        let capturedPhoto = null;
-        const pinInput = document.getElementById('pin');
-        const cameraInput = document.getElementById('cameraInput');
-        const photoBtn = document.getElementById('photoBtn');
-        const cameraText = document.getElementById('cameraText');
-        const photoPreview = document.getElementById('photoPreview');
-        const previewImg = document.getElementById('previewImg');
+        let stream = null;
+        let capturedPhoto = null; // Guarda o Base64 final
+        let isCameraOn = false;
+
+        const cameraBtn = document.getElementById('cameraBtn');
+        const cameraBtnText = document.getElementById('cameraBtnText');
+        const cameraContainer = document.getElementById('cameraContainer');
+        const videoElement = document.getElementById('videoElement');
+        const canvasElement = document.getElementById('canvasElement');
+        const photoResult = document.getElementById('photoResult');
+        const finalImage = document.getElementById('finalImage');
+
+        cameraBtn.addEventListener('click', async () => {
+            if (!isCameraOn) {
+                // Passo 1: Ligar Câmera
+                startCamera();
+            } else {
+                // Passo 2: Capturar Foto
+                takePhoto();
+            }
+        });
+
+        async function startCamera() {
+            try {
+                // Reseta visualização anterior
+                photoResult.style.display = 'none';
+                capturedPhoto = null;
+                
+                // Solicita acesso à câmera (prioridade frontal)
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'user' }, 
+                    audio: false 
+                });
+
+                videoElement.srcObject = stream;
+                cameraContainer.style.display = 'block';
+                
+                // Atualiza estado do botão
+                isCameraOn = true;
+                cameraBtn.classList.add('active');
+                cameraBtn.innerHTML = '<i class="fas fa-circle"></i> <span id="cameraBtnText">CAPTURAR AGORA</span>';
+                
+            } catch (err) {
+                console.error("Erro na câmera:", err);
+                alert("Não foi possível acessar a câmera. Verifique as permissões.");
+            }
+        }
+
+        function takePhoto() {
+            // Configura canvas para o tamanho do vídeo
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
+            
+            // Desenha o frame atual no canvas
+            const context = canvasElement.getContext('2d');
+            // Espelha no canvas também para ficar igual ao preview
+            context.translate(canvasElement.width, 0);
+            context.scale(-1, 1);
+            context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+            // Converte para Base64
+            capturedPhoto = canvasElement.toDataURL('image/jpeg', 0.8);
+
+            // Mostra o resultado
+            finalImage.src = capturedPhoto;
+            photoResult.style.display = 'block';
+
+            // Desliga a câmera e esconde o vídeo
+            stopCamera();
+            cameraContainer.style.display = 'none';
+
+            // Atualiza botão para opção de "Tirar Outra"
+            isCameraOn = false;
+            cameraBtn.classList.remove('active');
+            cameraBtn.style.background = '#E8F5E9';
+            cameraBtn.style.color = '#2E7D32';
+            cameraBtn.style.borderColor = '#C8E6C9';
+            cameraBtn.innerHTML = '<i class="fas fa-redo"></i> <span>Não gostou? Tirar Outra</span>';
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+        }
+
+        // ========================================
+        // 3. ENVIO DO FORMULÁRIO
+        // ========================================
         const form = document.getElementById('pontoForm');
+        const pinInput = document.getElementById('pin');
         const submitBtn = document.getElementById('submitBtn');
         const btnText = document.getElementById('btnText');
         const loader = document.getElementById('loader');
         const message = document.getElementById('message');
 
-        photoBtn.addEventListener('click', () => cameraInput.click());
-
-        cameraInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    capturedPhoto = event.target.result;
-                    previewImg.src = capturedPhoto;
-                    photoPreview.style.display = 'block';
-                    
-                    // Mudança visual no botão de foto
-                    photoBtn.style.background = '#E8F5E9';
-                    photoBtn.style.color = '#2E7D32';
-                    photoBtn.style.borderColor = '#C8E6C9';
-                    photoBtn.innerHTML = '<i class="fas fa-check"></i> Foto Capturada (Tirar Outra)';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // ========================================
-        // 📤 ENVIO DO REGISTRO DE PONTO PARA N8N
-        // ========================================
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const pin = pinInput.value;
 
-            if (!pin || pin.length < 4) {
-                return showMessage('O PIN deve conter 4 dígitos.', 'error');
-            }
-            if (!capturedPhoto) {
-                return showMessage('É obrigatório tirar uma foto.', 'error');
-            }
+            if (!pin || pin.length < 4) return showMessage('O PIN deve conter 4 dígitos.', 'error');
+            if (!capturedPhoto) return showMessage('Você precisa tirar uma foto ao vivo.', 'error');
 
             submitBtn.disabled = true;
             btnText.style.display = 'none';
@@ -611,17 +555,9 @@
 
                 if (data === true || data.success === true || (data.status && data.status === 'success') || response.ok) {
                     showMessage('Ponto registrado com sucesso!', 'success');
-                    
                     setTimeout(() => {
-                        form.reset();
-                        capturedPhoto = null;
-                        photoPreview.style.display = 'none';
-                        photoBtn.style.background = '';
-                        photoBtn.style.color = '';
-                        photoBtn.style.borderColor = '';
-                        photoBtn.innerHTML = '<i class="fas fa-camera"></i> <span id="cameraText">Tirar Foto do Rosto</span>';
+                        window.location.reload(); // Recarrega para limpar tudo
                     }, 2000);
-
                 } else {
                     showMessage(data.mensagem || 'Erro ao registrar. Verifique o PIN.', 'error');
                 }
@@ -639,12 +575,7 @@
             message.textContent = text;
             message.className = `message ${type}`;
             message.style.display = 'block';
-            
-            if (type === 'success') {
-                // Sucesso
-            } else {
-                if(navigator.vibrate) navigator.vibrate(200);
-            }
+            if (type !== 'success' && navigator.vibrate) navigator.vibrate(200);
         }
     </script>
 </body>
