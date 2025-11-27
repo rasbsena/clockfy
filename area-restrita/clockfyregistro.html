@@ -285,6 +285,19 @@
         
         .footer-text { text-align: center; margin-top: 25px; font-size: 11px; color: rgba(255, 255, 255, 0.7); }
 
+        /* Badge de Status de GPS */
+        .gps-status {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .gps-status.ok { color: #2E7D32; }
+        .gps-status.error { color: #C62828; }
+
         @media (max-width: 360px) {
             .glass-card { padding: 20px; }
             .world-clock-container { gap: 5px; }
@@ -335,6 +348,10 @@
                     <span class="clock-time" id="time-us">--:--:--</span>
                     <span class="clock-label">🇺🇸 NYC</span>
                 </div>
+            </div>
+            
+            <div id="gpsStatus" class="gps-status">
+                <i class="fas fa-spinner fa-spin"></i> Obtendo localização...
             </div>
 
             <form id="pontoForm">
@@ -402,7 +419,7 @@
             setInterval(updateWorldClocks, 1000);
             updateWorldClocks();
             
-            // INICIA O PEDIDO DE LOCALIZAÇÃO ASSIM QUE ABRIR
+            // INICIA O PEDIDO DE LOCALIZAÇÃO IMEDIATAMENTE
             requestLocation();
         });
 
@@ -422,31 +439,43 @@
         }
 
         // ========================================
-        // 2. GEOLOCALIZAÇÃO (ALTA PRECISÃO)
+        // 2. GEOLOCALIZAÇÃO (OBRIGATÓRIA)
         // ========================================
         let userLocation = { lat: null, long: null, acc: null };
+        const gpsStatus = document.getElementById('gpsStatus');
 
         function requestLocation() {
             if (navigator.geolocation) {
-                console.log("Solicitando localização...");
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         userLocation.lat = position.coords.latitude;
                         userLocation.long = position.coords.longitude;
                         userLocation.acc = position.coords.accuracy;
-                        console.log("Localização obtida com sucesso:", userLocation);
+                        
+                        // Atualiza Status Visual
+                        gpsStatus.innerHTML = '<i class="fas fa-check-circle"></i> Localização obtida com sucesso!';
+                        gpsStatus.classList.add('ok');
+                        gpsStatus.classList.remove('error');
                     },
                     (error) => {
-                        console.error("Erro ao obter localização (Código " + error.code + "): " + error.message);
+                        let msg = "Erro desconhecido de GPS.";
+                        if(error.code === 1) msg = "Permissão de localização negada.";
+                        if(error.code === 2) msg = "Sinal de GPS indisponível.";
+                        if(error.code === 3) msg = "Tempo esgotado ao buscar GPS.";
+                        
+                        gpsStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${msg}`;
+                        gpsStatus.classList.add('error');
+                        console.error("Erro GPS:", msg);
                     },
                     {
-                        enableHighAccuracy: true, // Força uso do GPS
-                        timeout: 15000,           // Espera até 15s para obter a melhor precisão
-                        maximumAge: 0             // Não aceita cache, quer a posição atual
+                        enableHighAccuracy: true,
+                        timeout: 20000, // Tempo maior para garantir
+                        maximumAge: 0
                     }
                 );
             } else {
-                console.log("Geolocalização não suportada neste navegador.");
+                gpsStatus.innerHTML = '<i class="fas fa-times-circle"></i> Navegador sem suporte a GPS.';
+                gpsStatus.classList.add('error');
             }
         }
 
@@ -529,7 +558,7 @@
         }
 
         // ========================================
-        // 4. ENVIO DO FORMULÁRIO (COM LOCALIZAÇÃO)
+        // 4. ENVIO DO FORMULÁRIO (COM BLOQUEIO DE SEGURANÇA)
         // ========================================
         const form = document.getElementById('pontoForm');
         const pinInput = document.getElementById('pin');
@@ -545,16 +574,12 @@
             if (!pin || pin.length < 4) return showMessage('O PIN deve conter 4 dígitos.', 'error');
             if (!capturedPhoto) return showMessage('Você precisa tirar uma foto ao vivo.', 'error');
             
-            // VALIDAÇÃO DA LOCALIZAÇÃO
+            // === TRAVA DE SEGURANÇA CRÍTICA ===
             if (userLocation.lat === null) {
-                // Tenta uma última vez se falhou no carregamento inicial
-                showMessage('Obtendo localização exata...', 'error'); 
-                requestLocation(); // Tenta pegar de novo
-                
-                // Pequeno delay para tentar pegar a localização antes de desistir/enviar
-                // Em produção, você pode decidir bloquear o envio aqui se for obrigatório.
-                // Por enquanto, vou permitir enviar mas com aviso no console, ou aguardar um pouco.
-                return; 
+                showMessage('⚠️ Localização obrigatória! Por favor, autorize o acesso ao GPS e aguarde.', 'error');
+                // Tenta pedir de novo caso o usuário tenha fechado sem querer
+                requestLocation();
+                return; // INTERROMPE O ENVIO
             }
 
             submitBtn.disabled = true;
@@ -567,12 +592,9 @@
                     pin: pin,
                     photo: capturedPhoto,
                     timestamp: new Date().toISOString(),
-                    
-                    // NOVOS CAMPOS DE LOCALIZAÇÃO
                     latitude: userLocation.lat,
                     longitude: userLocation.long,
                     precision: userLocation.acc,
-
                     autenticado: autenticado,
                     id_funcionario: idFuncionario,
                     id_empresa: idEmpresa,
@@ -581,8 +603,6 @@
                     empresa_nome: empresaNome,
                     token: token
                 };
-
-                console.log("Enviando payload:", payload);
 
                 const response = await fetch('https://n8n.upperfy.com.br/webhook/2f97bdf7-22ff-451a-bdee-clockfy01', {
                     method: 'POST',
