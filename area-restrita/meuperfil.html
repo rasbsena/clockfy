@@ -283,6 +283,14 @@
                     </div>
                 </div>
 
+                <div class="info-group">
+                    <label>Membro Desde</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-calendar-alt"></i>
+                        <input type="text" class="info-value" id="displayDate" value="---" readonly>
+                    </div>
+                </div>
+
             </div>
 
             <div class="btn-container">
@@ -333,7 +341,26 @@
             // 3. CARGO
             let cargo = getSafeUserField('cargo', 'role') || 'Colaborador';
 
-            // 4. FOTO
+            // 4. DATA DE CRIAÇÃO (PROCURA VARIÁVEIS COMUNS)
+            let dataCriacao = getSafeUserField('created_at', 'createdAt');
+            if(!dataCriacao) dataCriacao = getSafeUserField('data_criacao', 'criado_em');
+            
+            // Formata a data se existir
+            let dataFormatada = '---';
+            if(dataCriacao) {
+                try {
+                    const dataObj = new Date(dataCriacao);
+                    if(!isNaN(dataObj)) {
+                        dataFormatada = dataObj.toLocaleDateString('pt-BR');
+                    } else {
+                        dataFormatada = dataCriacao; // Se não for data válida, mostra como string
+                    }
+                } catch(e) {
+                    dataFormatada = dataCriacao;
+                }
+            }
+
+            // 5. FOTO
             let foto = getSafeUserField('foto_perfil', 'foto');
             if (!foto) foto = getSafeUserField('avatar', 'image');
 
@@ -346,6 +373,9 @@
 
             const elEmail = document.getElementById('displayEmail');
             if(elEmail) elEmail.value = email;
+
+            const elDate = document.getElementById('displayDate');
+            if(elDate) elDate.value = dataFormatada;
 
             // Foto
             if (foto && foto.length > 10) { 
