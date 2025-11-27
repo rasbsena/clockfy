@@ -146,7 +146,7 @@
            ======================================== */
         .logo-section {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         .brand-name {
@@ -163,6 +163,60 @@
             color: #888;
             font-weight: 500;
             margin-top: 5px;
+        }
+
+        /* ========================================
+           RELÓGIO MUNDIAL (NOVO)
+           ======================================== */
+        .world-clock-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(230, 230, 230, 0.8);
+            border-radius: 16px;
+        }
+
+        .clock-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 85px;
+            position: relative;
+        }
+        
+        /* Divisoria entre relógios */
+        .clock-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: -7px;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 70%;
+            width: 1px;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .clock-time {
+            font-family: 'Montserrat', monospace; /* Monospace para evitar tremor */
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--roxo-escuro);
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.5px;
+        }
+
+        .clock-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #666;
+            margin-top: 3px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         /* ========================================
@@ -318,6 +372,9 @@
         @media (max-width: 360px) {
             .glass-card { padding: 20px; }
             .brand-name { font-size: 24px; }
+            .world-clock-container { gap: 5px; }
+            .clock-item { min-width: 65px; }
+            .clock-time { font-size: 13px; }
         }
     </style>
 </head>
@@ -349,6 +406,21 @@
                 </svg>
                 <div class="brand-name">Clockfy</div>
                 <p class="page-subtitle">Sistema de Registro de Ponto</p>
+            </div>
+
+            <div class="world-clock-container">
+                <div class="clock-item">
+                    <span class="clock-time" id="time-br">--:--:--</span>
+                    <span class="clock-label">🇧🇷 Brasil</span>
+                </div>
+                <div class="clock-item">
+                    <span class="clock-time" id="time-pt">--:--:--</span>
+                    <span class="clock-label">🇵🇹 Lisboa</span>
+                </div>
+                <div class="clock-item">
+                    <span class="clock-time" id="time-us">--:--:--</span>
+                    <span class="clock-label">🇺🇸 NYC</span>
+                </div>
             </div>
 
             <form id="pontoForm">
@@ -417,7 +489,37 @@
             } else {
                 userInfo.innerHTML = `Olá, <strong>Colaborador</strong>`;
             }
+
+            // Inicia o Relógio
+            setInterval(updateWorldClocks, 1000);
+            updateWorldClocks();
         });
+
+        // ========================================
+        // 🌍 LÓGICA DO RELÓGIO MUNDIAL
+        // ========================================
+        function updateWorldClocks() {
+            const now = new Date();
+            
+            const options = { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit', 
+                hour12: false 
+            };
+
+            // Brasil (SP)
+            const timeBR = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', ...options });
+            document.getElementById('time-br').textContent = timeBR;
+
+            // Portugal (Lisboa)
+            const timePT = now.toLocaleTimeString('pt-PT', { timeZone: 'Europe/Lisbon', ...options });
+            document.getElementById('time-pt').textContent = timePT;
+
+            // EUA (New York)
+            const timeUS = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', ...options });
+            document.getElementById('time-us').textContent = timeUS;
+        }
 
         // ========================================
         // 🚪 FUNÇÃO DE LOGOUT
