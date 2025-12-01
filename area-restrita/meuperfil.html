@@ -183,6 +183,13 @@
             color: #333;
             outline: none;
             cursor: default;
+            transition: all 0.3s ease;
+        }
+
+        .info-value:not([readonly]) {
+            background: #fff;
+            border-color: var(--laranja-vibrante);
+            cursor: text;
         }
 
         .input-icon-wrapper {
@@ -201,6 +208,21 @@
         .input-icon-wrapper .info-value {
             padding-left: 40px;
         }
+
+        /* Seção de Senha */
+        .password-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: none; /* Escondido por padrão */
+        }
+        
+        .password-section.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Botões */
         .btn-container {
@@ -231,6 +253,35 @@
             box-shadow: 0 5px 15px rgba(39, 9, 73, 0.3);
         }
 
+        .btn-change-pass {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 146, 0, 0.1);
+            color: var(--laranja-vibrante);
+            border: 1px solid var(--laranja-vibrante);
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-change-pass:hover {
+            background: var(--laranja-vibrante);
+            color: white;
+        }
+
+        .btn-save-pass {
+            width: 100%;
+            padding: 12px;
+            background: var(--laranja-vibrante);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
         .btn-logout-profile {
             background: transparent;
             color: #d32f2f;
@@ -247,6 +298,17 @@
             background: #ffebee;
             border-color: #d32f2f;
         }
+
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            text-align: center;
+            display: none;
+        }
+        .message.success { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
+        .message.error { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
 
         .footer-text {
             text-align: center;
@@ -291,9 +353,35 @@
                     </div>
                 </div>
 
+                <div class="password-section" id="passwordSection">
+                    <div class="info-group">
+                        <label>Nova Senha</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" class="info-value" id="newPass" placeholder="Mínimo 6 caracteres">
+                        </div>
+                    </div>
+                    <div class="info-group" style="margin-top: 15px;">
+                        <label>Confirmar Nova Senha</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" class="info-value" id="confirmPass" placeholder="Repita a senha">
+                        </div>
+                    </div>
+                    <button class="btn-save-pass" onclick="savePassword()">
+                        Confirmar Alteração
+                    </button>
+                </div>
+
+                <div class="message" id="statusMessage"></div>
+
             </div>
 
             <div class="btn-container">
+                <button class="btn-change-pass" id="btnTogglePass" onclick="togglePasswordMode()">
+                    <i class="fas fa-key"></i> Alterar Senha
+                </button>
+
                 <button class="btn-back" onclick="goBack()">
                     <i class="fas fa-arrow-left"></i> Voltar para o Ponto
                 </button>
@@ -311,13 +399,13 @@
     </div>
 
     <script>
+        const WEBHOOK_RESET = 'https://n8n.upperfy.com.br/webhook/senhareset';
+
         // Função segura para pegar dados
         function getSafeUserField(field1, field2) {
-            // Tenta 'usuario_nome'
             let val = localStorage.getItem('usuario_' + field1);
             if (val && val !== 'undefined') return val;
 
-            // Tenta dentro do objeto usuario
             try {
                 const userObj = JSON.parse(localStorage.getItem('usuario'));
                 if (userObj) {
@@ -341,7 +429,7 @@
             // 3. CARGO
             let cargo = getSafeUserField('cargo', 'role') || 'Colaborador';
 
-            // 4. DATA DE CRIAÇÃO (PROCURA VARIÁVEIS COMUNS)
+            // 4. DATA DE CRIAÇÃO (CORRIGIDO PARA BUSCAR NO OBJETO USUARIO)
             let dataCriacao = getSafeUserField('created_at', 'createdAt');
             if(!dataCriacao) dataCriacao = getSafeUserField('data_criacao', 'criado_em');
             
@@ -353,7 +441,7 @@
                     if(!isNaN(dataObj)) {
                         dataFormatada = dataObj.toLocaleDateString('pt-BR');
                     } else {
-                        dataFormatada = dataCriacao; // Se não for data válida, mostra como string
+                        dataFormatada = dataCriacao; 
                     }
                 } catch(e) {
                     dataFormatada = dataCriacao;
@@ -390,6 +478,90 @@
                 }
             }
         });
+
+        // ========================================
+        // LÓGICA DE SENHA
+        // ========================================
+        function togglePasswordMode() {
+            const section = document.getElementById('passwordSection');
+            const btn = document.getElementById('btnTogglePass');
+            
+            if (section.style.display === 'block') {
+                section.style.display = 'none';
+                btn.innerHTML = '<i class="fas fa-key"></i> Alterar Senha';
+                btn.style.background = 'rgba(255, 146, 0, 0.1)';
+                btn.style.color = '#FF3D00';
+            } else {
+                section.style.display = 'block';
+                section.classList.add('active');
+                btn.innerHTML = 'Cancelar Alteração';
+                btn.style.background = 'transparent';
+                btn.style.color = '#666';
+                btn.style.borderColor = '#ccc';
+            }
+        }
+
+        async function savePassword() {
+            const newPass = document.getElementById('newPass').value;
+            const confirmPass = document.getElementById('confirmPass').value;
+            const email = document.getElementById('displayEmail').value;
+            const id = localStorage.getItem('id_funcionario') || getSafeUserField('id', 'id_funcionario');
+
+            if (!newPass || !confirmPass) {
+                return showMessage('Preencha todos os campos de senha.', 'error');
+            }
+
+            if (newPass.length < 6) {
+                return showMessage('A senha deve ter no mínimo 6 caracteres.', 'error');
+            }
+
+            if (newPass !== confirmPass) {
+                return showMessage('As senhas não coincidem.', 'error');
+            }
+
+            showMessage('Atualizando senha...', 'success'); // Feedback provisório
+
+            try {
+                const payload = {
+                    id_funcionario: id,
+                    email: email,
+                    nova_senha: newPass
+                };
+
+                const response = await fetch(WEBHOOK_RESET, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(data.mensagem || 'Senha alterada com sucesso!', 'success');
+                    // Limpa os campos e fecha
+                    document.getElementById('newPass').value = '';
+                    document.getElementById('confirmPass').value = '';
+                    setTimeout(() => togglePasswordMode(), 2000);
+                } else {
+                    showMessage(data.mensagem || 'Erro ao alterar senha.', 'error');
+                }
+
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage('Erro de conexão ao alterar senha.', 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const el = document.getElementById('statusMessage');
+            el.textContent = text;
+            el.className = `message ${type}`;
+            el.style.display = 'block';
+            
+            if(type === 'success') {
+                setTimeout(() => el.style.display = 'none', 5000);
+            }
+        }
 
         function goBack() {
             window.location.href = 'clockfyregistro.html'; 
