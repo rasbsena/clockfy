@@ -399,7 +399,20 @@
         const autenticado = localStorage.getItem('autenticado');
         const idFuncionario = localStorage.getItem('id_funcionario');
         const idEmpresa = localStorage.getItem('id_empresa');
-        const usuarioNome = localStorage.getItem('usuario_nome');
+        // BUSCA DE NOME INTELIGENTE
+        let usuarioNome = localStorage.getItem('usuario_nome');
+        const usuarioJson = localStorage.getItem('usuario');
+        
+        if (!usuarioNome && usuarioJson) {
+            try {
+                const userObj = JSON.parse(usuarioJson);
+                // Procura dentro do objeto JSON se não achou solto
+                usuarioNome = userObj.nome || userObj.name || userObj.nome_completo || userObj.full_name;
+            } catch(e) {
+                console.log('Erro ao ler nome do usuário', e);
+            }
+        }
+
         const usuarioEmail = localStorage.getItem('usuario_email');
         const empresaNome = localStorage.getItem('empresa_nome');
         const token = localStorage.getItem('token');
@@ -410,12 +423,15 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             const userInfo = document.getElementById('userInfo');
+            
+            // Lógica de exibição do nome corrigida
             if (usuarioNome) {
                 const primeiroNome = usuarioNome.split(' ')[0];
                 userInfo.innerHTML = `Olá, <strong>${primeiroNome}</strong>`;
             } else {
                 userInfo.innerHTML = `Olá, <strong>Colaborador</strong>`;
             }
+            
             setInterval(updateWorldClocks, 1000);
             updateWorldClocks();
             
