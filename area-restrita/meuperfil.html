@@ -355,19 +355,29 @@
 
                 <div class="password-section" id="passwordSection">
                     <div class="info-group">
+                        <label>Senha Atual</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-lock-open"></i>
+                            <input type="password" class="info-value" id="currentPass" placeholder="Sua senha atual">
+                        </div>
+                    </div>
+                    
+                    <div class="info-group" style="margin-top: 15px;">
                         <label>Nova Senha</label>
                         <div class="input-icon-wrapper">
                             <i class="fas fa-lock"></i>
                             <input type="password" class="info-value" id="newPass" placeholder="Mínimo 6 caracteres">
                         </div>
                     </div>
+                    
                     <div class="info-group" style="margin-top: 15px;">
                         <label>Confirmar Nova Senha</label>
                         <div class="input-icon-wrapper">
                             <i class="fas fa-lock"></i>
-                            <input type="password" class="info-value" id="confirmPass" placeholder="Repita a senha">
+                            <input type="password" class="info-value" id="confirmPass" placeholder="Repita a nova senha">
                         </div>
                     </div>
+                    
                     <button class="btn-save-pass" onclick="savePassword()">
                         Confirmar Alteração
                     </button>
@@ -502,29 +512,33 @@
         }
 
         async function savePassword() {
+            const currentPass = document.getElementById('currentPass').value; // Senha Atual
             const newPass = document.getElementById('newPass').value;
             const confirmPass = document.getElementById('confirmPass').value;
             const email = document.getElementById('displayEmail').value;
             const id = localStorage.getItem('id_funcionario') || getSafeUserField('id', 'id_funcionario');
 
-            if (!newPass || !confirmPass) {
-                return showMessage('Preencha todos os campos de senha.', 'error');
+            // Validação
+            if (!currentPass || !newPass || !confirmPass) {
+                return showMessage('Preencha todos os campos.', 'error');
             }
 
             if (newPass.length < 6) {
-                return showMessage('A senha deve ter no mínimo 6 caracteres.', 'error');
+                return showMessage('A nova senha deve ter no mínimo 6 caracteres.', 'error');
             }
 
             if (newPass !== confirmPass) {
-                return showMessage('As senhas não coincidem.', 'error');
+                return showMessage('A nova senha e a confirmação não coincidem.', 'error');
             }
 
             showMessage('Atualizando senha...', 'success'); // Feedback provisório
 
             try {
+                // Payload para o n8n
                 const payload = {
                     id_funcionario: id,
                     email: email,
+                    senha_atual: currentPass, // Envia para validação no backend
                     nova_senha: newPass
                 };
 
@@ -539,11 +553,12 @@
                 if (response.ok) {
                     showMessage(data.mensagem || 'Senha alterada com sucesso!', 'success');
                     // Limpa os campos e fecha
+                    document.getElementById('currentPass').value = '';
                     document.getElementById('newPass').value = '';
                     document.getElementById('confirmPass').value = '';
                     setTimeout(() => togglePasswordMode(), 2000);
                 } else {
-                    showMessage(data.mensagem || 'Erro ao alterar senha.', 'error');
+                    showMessage(data.mensagem || 'Erro ao alterar senha. Verifique a senha atual.', 'error');
                 }
 
             } catch (error) {
