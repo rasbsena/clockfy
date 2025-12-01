@@ -253,6 +253,8 @@
       transition: all 0.3s ease;
       z-index: 1000;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
 
     .sidebar.collapsed {
@@ -341,6 +343,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      flex-grow: 1;
     }
 
     .sidebar-btn {
@@ -397,6 +400,43 @@
       padding: 0;
       border: none;
       overflow: hidden;
+    }
+
+    /* ESTILOS NOVOS PARA INFO DA EMPRESA */
+    .sidebar-company-info {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.1);
+      text-align: center;
+      font-size: 11px;
+      color: #cfcfcf;
+      transition: opacity 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sidebar.collapsed .sidebar-company-info {
+      opacity: 0;
+      height: 0;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      border: none;
+    }
+
+    .company-name {
+      color: var(--laranja);
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .company-detail {
+      font-size: 10px;
+      color: #888;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .header {
@@ -759,6 +799,12 @@
     <div class="sidebar-footer">
       Desenvolvido por <strong>Upperfy</strong>
     </div>
+    
+    <div class="sidebar-company-info" id="sidebarCompanyInfo">
+        <div class="company-name" id="compName">Carregando...</div>
+        <div class="company-detail" id="compCNPJ"></div>
+        <div class="company-detail" id="compEmail"></div>
+    </div>
   </aside>
 
   <div class="container">
@@ -851,9 +897,8 @@
       
       console.log('Verificando permissões de admin...');
       
-      // Opção 1: Verificar se existe 'role' direto no localStorage
+      // Opção 1: Verificar se existe 'role' direto no localStorage (com lowercase)
       const role = localStorage.getItem('role');
-      // CORREÇÃO: Verificação insensível a maiúsculas/minúsculas
       if (role && (role.trim() === 'Admin' || role.trim().toLowerCase() === 'admin')) {
         isAdmin = true;
         console.log('✅ Admin detectado via role:', role);
@@ -866,13 +911,13 @@
           const usuario = JSON.parse(usuarioJson);
           console.log('Objeto usuario encontrado:', usuario);
           
-          // Verifica nivel_acesso (com toLowerCase para segurança)
+          // Verifica nivel_acesso (com lowercase)
           if (usuario.nivel_acesso && usuario.nivel_acesso.toLowerCase() === 'admin') {
             isAdmin = true;
             console.log('✅ Admin detectado via usuario.nivel_acesso:', usuario.nivel_acesso);
           }
           
-          // Verifica role dentro do objeto usuario (fallback)
+          // Verifica role dentro do objeto usuario (fallback com lowercase)
           if (!isAdmin && usuario.role && usuario.role.toLowerCase() === 'admin') {
             isAdmin = true;
             console.log('✅ Admin detectado via usuario.role:', usuario.role);
@@ -922,34 +967,54 @@
         document.getElementById('kpiLabelSaldo').textContent = `Saldo de Horas/${mesAtual}`;
         
         // ============================================================
-        // CORREÇÃO: LÓGICA ROBUSTA PARA PEGAR O NOME
+        // LÓGICA DO NOME E EMPRESA (Sidebar & Header)
         // ============================================================
         let nome = localStorage.getItem('usuario_nome');
+        let empresaData = {};
 
-        // Se não achou na chave direta, procura dentro do objeto 'usuario'
-        if (!nome || nome === 'undefined') {
-            try {
-                const userObj = JSON.parse(localStorage.getItem('usuario'));
-                if (userObj) {
-                    // Tenta variações comuns de nome, priorizando o que vimos no log
-                    nome = userObj.nome || userObj.name || userObj.nome_completo || userObj.full_name;
-                }
-            } catch (e) {
-                console.log('Erro ao ler objeto usuario para pegar nome', e);
+        // Tenta ler objeto usuario
+        try {
+            const userObj = JSON.parse(localStorage.getItem('usuario'));
+            if (userObj) {
+                // Se nome não veio solto, pega do objeto
+                if (!nome) nome = userObj.nome || userObj.name || userObj.nome_completo;
             }
-        }
+        } catch (e) {}
 
-        // Se ainda não achou, usa o padrão
+        // Tenta ler objeto empresa
+        try {
+            // Verifica string simples ou objeto JSON
+            const empRaw = localStorage.getItem('empresa');
+            if (empRaw) {
+                if(empRaw.startsWith('{')) {
+                    empresaData = JSON.parse(empRaw);
+                } else {
+                    empresaData = { nomeempresa: empRaw };
+                }
+            }
+        } catch (e) {}
+
+        // Se ainda não achou nome, usa padrão
         if (!nome) nome = 'Usuário';
-        // ============================================================
         
-        // Extrair primeiro nome
+        // Atualiza Nome no Header
         const primeiroNome = nome.split(' ')[0];
         document.getElementById('userName').textContent = primeiroNome;
         
-        // Avatar com inicial do primeiro nome
+        // Avatar com inicial
         const initials = primeiroNome.charAt(0).toUpperCase();
         document.getElementById('userAvatar').textContent = initials;
+
+        // Atualiza Dados da Empresa na Sidebar
+        // Prioriza: nomeempresa (do print), depois nome, depois razao_social
+        const empNome = empresaData.nomeempresa || empresaData.nome || empresaData.razao_social || localStorage.getItem('empresa_nome') || 'Empresa';
+        const empCNPJ = empresaData.cnpj || empresaData.documento || ''; // Se vazio, fica em branco
+        const empEmail = empresaData.email || '';
+
+        document.getElementById('compName').textContent = empNome;
+        document.getElementById('compCNPJ').textContent = empCNPJ;
+        document.getElementById('compEmail').textContent = empEmail;
+        // ============================================================
 
         const localStorageData = {};
         for (let i = 0; i < localStorage.length; i++) {
