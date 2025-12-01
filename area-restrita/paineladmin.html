@@ -485,21 +485,49 @@
 </head>
 <body>
   <script>
+    // ============================================================
+    // 1. LÓGICA DE VERIFICAÇÃO DE ADMIN (SHERLOCK HOLMES)
+    // ============================================================
     const role = localStorage.getItem('role');
     const usuarioJson = localStorage.getItem('usuario');
     let isAdmin = false;
+    let userName = 'Usuário'; 
 
-    if (role === 'Admin') {
+    // Verifica role direta (Case Insensitive: Admin, admin, ADMIN)
+    if (role && (role === 'Admin' || role.toLowerCase() === 'admin')) {
       isAdmin = true;
-    } else if (usuarioJson) {
+    } 
+    
+    // Verifica dentro do objeto usuario
+    if (usuarioJson) {
       try {
         const usuario = JSON.parse(usuarioJson);
-        if (usuario.nivel_acesso === 'Admin' || usuario.role === 'Admin') {
+        
+        // Tenta capturar o nome para uso futuro
+        if(usuario.nome || usuario.name || usuario.nome_completo) {
+            userName = usuario.nome || usuario.name || usuario.nome_completo;
+        }
+
+        // Verifica Nível de Acesso (ignora maiúsculas/minúsculas)
+        if (usuario.nivel_acesso && usuario.nivel_acesso.toLowerCase() === 'admin') {
           isAdmin = true;
         }
-      } catch (e) {}
+        // Verifica Role interna
+        else if (usuario.role && usuario.role.toLowerCase() === 'admin') {
+          isAdmin = true;
+        }
+      } catch (e) {
+        console.error('Erro ao ler dados do usuário:', e);
+      }
     }
 
+    // Se o nome não veio do objeto, tenta pegar do item solto
+    if(userName === 'Usuário') {
+        const nomeSolto = localStorage.getItem('usuario_nome');
+        if(nomeSolto) userName = nomeSolto;
+    }
+
+    // Se não for admin, chuta para o painel comum
     if (!isAdmin) {
       alert('Acesso negado! Apenas administradores podem acessar esta área.');
       window.location.href = 'painel.html';
