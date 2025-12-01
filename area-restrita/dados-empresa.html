@@ -1,1431 +1,702 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
-
 <head>
-
   <meta charset="UTF-8">
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Clockfy - Dados da Empresa</title>
-
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23270949' d='M50,5L25,35h50L50,5z'/%3E%3Ccircle fill='%23f93d00' cx='50' cy='60' r='35'/%3E%3Ccircle fill='%23270949' cx='50' cy='60' r='28'/%3E%3Ccircle fill='%23fff' cx='50' cy='60' r='23'/%3E%3C/svg%3E">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
-
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-
-
   <style>
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     
-
     :root {
-
       --roxo-escuro: #270949;
-
       --roxo-medio: #87148C;
-
       --roxo-vivo: #4F1295;
-
       --laranja: #F93D00;
-
       --laranja-esc: #e03800;
-
       --branco: #fff;
-
       --vidro: rgba(39, 9, 73, 0.6);
-
     }
-
-
 
     body {
-
       font-family: 'Montserrat', sans-serif;
-
       background: linear-gradient(135deg, #270949 0%, #1a0430 100%);
-
       min-height: 100vh;
-
       padding: 20px;
-
       color: #fff;
-
     }
-
-
 
     .container {
-
       max-width: 1400px;
-
       margin: 0 auto;
-
     }
-
-
 
     /* HEADER */
-
     .header {
-
       display: flex;
-
       justify-content: space-between;
-
       align-items: center;
-
       margin-bottom: 30px;
-
       padding: 20px;
-
       background: var(--vidro);
-
       backdrop-filter: blur(10px);
-
       border-radius: 20px;
-
       border: 1px solid rgba(249, 61, 0, 0.1);
-
     }
-
-
 
     .header-left {
-
       display: flex;
-
       align-items: center;
-
       gap: 15px;
-
     }
-
-
 
     .logo {
-
       width: 50px;
-
       height: 50px;
-
     }
-
-
 
     .header-title {
-
       font-size: 28px;
-
       font-weight: 800;
-
     }
-
-
 
     .header-title span {
-
       color: var(--laranja);
-
     }
-
-
 
     .admin-badge {
-
       background: var(--laranja);
-
       color: #fff;
-
       padding: 6px 12px;
-
       border-radius: 8px;
-
       font-size: 12px;
-
       font-weight: 700;
-
       text-transform: uppercase;
-
       letter-spacing: 1px;
-
     }
-
-
 
     .btn {
-
       border: none;
-
       border-radius: 12px;
-
       padding: 12px 24px;
-
       font-weight: 700;
-
       font-size: 14px;
-
       cursor: pointer;
-
       transition: all 0.3s ease;
-
       font-family: 'Montserrat', sans-serif;
-
       display: inline-flex;
-
       align-items: center;
-
       justify-content: center;
-
       gap: 8px;
-
     }
-
-
 
     .btn-primary {
-
       background: var(--laranja);
-
       color: #fff;
-
     }
-
-
 
     .btn-primary:hover {
-
       background: var(--laranja-esc);
-
       transform: translateY(-2px);
-
       box-shadow: 0 6px 20px rgba(249, 61, 0, 0.4);
-
     }
-
-
 
     .btn-secondary {
-
         background: rgba(255, 255, 255, 0.1);
-
         color: #fff;
-
         border: 1px solid rgba(255, 255, 255, 0.2);
-
     }
-
-
 
     .btn-secondary:hover {
-
         background: rgba(255, 255, 255, 0.2);
-
     }
-
-
 
     .btn-ghost {
-
       background: transparent;
-
       color: #fff;
-
       border: 2px solid rgba(255, 255, 255, 0.2);
-
     }
-
-
 
     .btn-ghost:hover {
-
       background: rgba(255, 255, 255, 0.08);
-
       border-color: rgba(255, 255, 255, 0.4);
-
     }
-
-
 
     /* CONTEÚDO PRINCIPAL */
-
     .content-wrapper {
-
       max-width: 900px;
-
       margin: 0 auto;
-
     }
-
-
 
     .card {
-
       background: var(--vidro);
-
       backdrop-filter: blur(10px);
-
       border-radius: 20px;
-
       padding: 40px;
-
       border: 1px solid rgba(249, 61, 0, 0.1);
-
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-
       position: relative;
-
     }
-
-
 
     .section-title {
-
       font-size: 24px;
-
       font-weight: 700;
-
       margin-bottom: 30px;
-
       display: flex;
-
-      justify-content: space-between; /* Alterado para separar título e botão */
-
+      justify-content: space-between; 
       align-items: center;
-
       gap: 12px;
-
       padding-bottom: 20px;
-
       border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-
     }
-
-
 
     .form-grid {
-
       display: grid;
-
       gap: 24px;
-
     }
-
-
 
     .form-row {
-
       display: grid;
-
       grid-template-columns: 1fr 1fr;
-
       gap: 20px;
-
     }
-
-
 
     .form-group {
-
       display: flex;
-
       flex-direction: column;
-
       gap: 8px;
-
     }
-
-
 
     .form-label {
-
       font-size: 13px;
-
       font-weight: 600;
-
       color: #e0e0e0;
-
       margin-left: 4px;
-
     }
-
-
 
     .form-input, .form-select {
-
       width: 100%;
-
       padding: 16px;
-
       border-radius: 12px;
-
       border: 2px solid rgba(255, 255, 255, 0.15);
-
       background: rgba(20, 5, 35, 0.6);
-
       color: #fff;
-
       font-family: 'Montserrat', sans-serif;
-
       font-size: 15px;
-
       transition: all 0.3s ease;
-
     }
-
-
 
     .form-input:focus, .form-select:focus {
-
       outline: none;
-
       border-color: var(--laranja);
-
       background: rgba(20, 5, 35, 0.95);
-
       box-shadow: 0 0 0 4px rgba(249, 61, 0, 0.1);
-
     }
-
-
 
     .form-input:disabled, .form-select:disabled {
-
       background: rgba(255, 255, 255, 0.05);
-
       border-color: rgba(255, 255, 255, 0.05);
-
       color: #aaa;
-
       cursor: not-allowed;
-
       opacity: 0.7;
-
     }
-
-
 
     .loading-overlay {
-
       position: absolute;
-
       top: 0;
-
       left: 0;
-
       right: 0;
-
       bottom: 0;
-
       background: rgba(39, 9, 73, 0.9);
-
       backdrop-filter: blur(5px);
-
       border-radius: 20px;
-
       display: flex;
-
       flex-direction: column;
-
       justify-content: center;
-
       align-items: center;
-
       z-index: 10;
-
       gap: 15px;
-
     }
-
-
 
     .spinner {
-
       width: 50px;
-
       height: 50px;
-
       border: 4px solid rgba(255, 255, 255, 0.1);
-
       border-left-color: var(--laranja);
-
       border-radius: 50%;
-
       animation: spin 1s linear infinite;
-
     }
-
-
 
     .message {
-
       padding: 15px;
-
       border-radius: 12px;
-
       font-weight: 600;
-
       margin-top: 20px;
-
       display: none;
-
       text-align: center;
-
       animation: slideIn 0.3s ease;
-
     }
-
-
 
     .message.success {
-
       background: rgba(34, 197, 94, 0.2);
-
       border: 1px solid rgba(34, 197, 94, 0.4);
-
       color: #86efac;
-
     }
-
-
 
     .message.error {
-
       background: rgba(239, 68, 68, 0.2);
-
       border: 1px solid rgba(239, 68, 68, 0.4);
-
       color: #fca5a5;
-
     }
-
     
-
     .hidden {
-
         display: none !important;
-
     }
-
-
 
     @keyframes spin { 100% { transform: rotate(360deg); } }
-
     @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-
-
     @media (max-width: 768px) {
-
       .form-row { grid-template-columns: 1fr; }
-
       .header { flex-direction: column; gap: 20px; }
-
       .header-left { width: 100%; justify-content: center; }
-
       .btn { width: 100%; margin-bottom: 10px; }
-
       .section-title { flex-direction: column; align-items: flex-start; gap: 15px; }
-
       .section-title button { width: 100%; margin-left: 0 !important; }
-
     }
-
   </style>
-
 </head>
-
 <body>
-
   <script>
-
-    // Verificação de segurança e redirecionamento seguro
-
     const role = localStorage.getItem('role');
-
     const usuarioJson = localStorage.getItem('usuario');
-
     let isAdmin = false;
 
-    let currentUser = null;
-
-
-
-    try {
-
-      if (usuarioJson) {
-
-        try {
-
-            currentUser = JSON.parse(usuarioJson);
-
-            if (typeof currentUser === 'string') {
-
-                currentUser = JSON.parse(currentUser);
-
-            }
-
-        } catch (e) {
-
-            console.error("Erro parsing usuario JSON", e);
-
-        }
-
-
-
-        if (currentUser && (role === 'Admin' || currentUser.nivel_acesso === 'Admin' || currentUser.role === 'Admin')) {
-
-          isAdmin = true;
-
-        }
-
-      }
-
-    } catch (e) {
-
-      console.error("Erro ao ler localStorage", e);
-
-    }
-
-
-
-    // Proteção para não quebrar no preview se falhar o redirecionamento
-
-    if (!isAdmin) {
-
+    // 1. Verifica role direta (Case Insensitive)
+    if (role && (role === 'Admin' || role.toLowerCase() === 'admin')) {
+      isAdmin = true;
+    } 
+    // 2. Verifica dentro do objeto usuario (JSON)
+    else if (usuarioJson) {
       try {
+        const usuario = JSON.parse(usuarioJson);
+        
+        // Verifica se é string dupla
+        let userObj = usuario;
+        if (typeof usuario === 'string') userObj = JSON.parse(usuario);
 
-        alert('Acesso negado! Apenas administradores podem acessar esta área.');
-
-        window.location.href = 'painel.html';
-
+        // Verifica nivel_acesso
+        if (userObj.nivel_acesso && userObj.nivel_acesso.toLowerCase() === 'admin') {
+          isAdmin = true;
+        }
+        // Verifica role interna
+        else if (userObj.role && userObj.role.toLowerCase() === 'admin') {
+          isAdmin = true;
+        }
       } catch (e) {
-
-        console.warn('Redirecionamento bloqueado no preview:', e);
-
+        console.error("Erro parsing usuario JSON", e);
       }
-
     }
 
+    // Proteção de redirecionamento
+    if (!isAdmin) {
+      alert('Acesso negado! Apenas administradores podem acessar esta área.');
+      window.location.href = 'painel.html';
+    }
   </script>
 
-
-
   <div class="container">
-
     <header class="header">
-
       <div class="header-left">
-
         <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-
           <path fill="#270949" d="M50,5L25,35h50L50,5z"/>
-
           <circle fill="#f93d00" cx="50" cy="60" r="35"/>
-
           <circle fill="#270949" cx="50" cy="60" r="28"/>
-
           <circle fill="#fff" cx="50" cy="60" r="23"/>
-
         </svg>
-
         <div>
-
           <div class="header-title">Clock<span>fy</span></div>
-
           <div class="admin-badge">🏢 Gestão</div>
-
         </div>
-
       </div>
-
       <div>
-
-        <button class="btn btn-ghost" onclick="try{window.location.href='painel.html'}catch(e){console.log('Nav')}">
-
-          ← Voltar ao Painel
-
+        <button class="btn btn-ghost" onclick="try{window.location.href='paineladmin.html'}catch(e){console.log('Nav')}">
+          ← Voltar ao Admin
         </button>
-
         <button class="btn btn-primary" onclick="logout()">Sair</button>
-
       </div>
-
     </header>
 
-
-
     <div class="content-wrapper">
-
       <div class="card">
-
-        <!-- Overlay de Carregamento -->
-
         <div class="loading-overlay" id="loadingOverlay">
-
           <div class="spinner"></div>
-
           <p>Buscando dados da empresa...</p>
-
         </div>
-
-
-
-        <!-- Título e Botão Editar (Agora no topo) -->
 
         <div class="section-title">
-
             <div style="display: flex; align-items: center; gap: 10px;">
-
                 <span>🏢 Dados da Organização</span>
-
             </div>
-
             <button type="button" id="btnEdit" class="btn btn-primary" onclick="toggleEditMode(true)" style="font-size: 14px; padding: 10px 20px;">
-
                 📝 Editar Dados
-
             </button>
-
         </div>
 
-
-
         <form id="companyForm">
-
           <div class="form-grid">
-
             
-
-            <!-- Identificação -->
-
             <div class="form-row">
-
               <div class="form-group">
-
                 <label class="form-label">ID da Empresa</label>
-
                 <input type="text" class="form-input" id="idEmpresa" name="id_empresa" readonly disabled>
-
               </div>
-
               <div class="form-group">
-
                 <label class="form-label">CNPJ</label>
-
                 <input type="text" class="form-input" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00" disabled>
-
               </div>
-
             </div>
-
-
 
             <div class="form-group">
-
               <label class="form-label">Nome da Empresa</label>
-
               <input type="text" class="form-input" id="nomeEmpresa" name="nome_empresa" required disabled>
-
             </div>
 
-
-
             <div class="form-row">
-
               <div class="form-group">
-
                 <label class="form-label">Segmento</label>
-
                 <select class="form-select" id="segmento" name="segmento" disabled>
-
                   <option value="">Selecione...</option>
-
                   <option value="Tecnologia">Tecnologia</option>
-
                   <option value="Varejo">Varejo</option>
-
                   <option value="Serviços">Serviços</option>
-
                   <option value="Indústria">Indústria</option>
-
                   <option value="Saúde">Saúde</option>
-
                   <option value="Educação">Educação</option>
-
                   <option value="Outro">Outro</option>
-
                 </select>
-
               </div>
-
               <div class="form-group">
-
                 <label class="form-label">Quantidade de Funcionários</label>
-
                 <select class="form-select" id="porte" name="porte" disabled>
-
                   <option value="">Selecione a faixa...</option>
-
                   <option value="1 a 5">1 a 5 funcionários</option>
-
                   <option value="6 a 10">6 a 10 funcionários</option>
-
                   <option value="11 a 20">11 a 20 funcionários</option>
-
                   <option value="21 a 50">21 a 50 funcionários</option>
-
                   <option value="51 a 100">51 a 100 funcionários</option>
-
                   <option value="Mais de 100">Mais de 100 funcionários</option>
-
                 </select>
-
               </div>
-
             </div>
-
-
-
-            <!-- Contato -->
 
             <div class="form-row">
-
               <div class="form-group">
-
                 <label class="form-label">E-mail Corporativo</label>
-
                 <input type="email" class="form-input" id="emailCorporativo" name="email_corporativo" disabled>
-
               </div>
-
               <div class="form-group">
-
                 <label class="form-label">Telefone / WhatsApp</label>
-
                 <input type="tel" class="form-input" id="telefone" name="telefone" placeholder="(00) 00000-0000" disabled>
-
               </div>
-
             </div>
-
-
-
-            <!-- Endereço -->
 
             <h3 style="font-size: 18px; margin-top: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">📍 Endereço</h3>
-
             
-
             <div class="form-row">
-
               <div class="form-group">
-
                 <label class="form-label">CEP</label>
-
                 <input type="text" class="form-input" id="cep" name="cep" disabled>
-
               </div>
-
               <div class="form-group">
-
                 <label class="form-label">Cidade / UF</label>
-
                 <input type="text" class="form-input" id="cidade" name="cidade_uf" disabled>
-
               </div>
-
             </div>
-
-
 
             <div class="form-group">
-
               <label class="form-label">Logradouro (Rua, Av.)</label>
-
               <input type="text" class="form-input" id="endereco" name="endereco" disabled>
-
             </div>
-
-
-
-            <!-- Botões de Ação (Salvar/Cancelar) -->
 
             <div style="margin-top: 30px; display: flex; gap: 15px;">
-
-              <!-- Botões Escondidos inicialmente -->
-
               <button type="submit" id="btnSave" class="btn btn-primary hidden" style="flex: 2; height: 50px; font-size: 16px;">
-
                 💾 Salvar Alterações
-
               </button>
-
               <button type="button" id="btnCancel" class="btn btn-secondary hidden" onclick="cancelEdit()" style="flex: 1; height: 50px; font-size: 16px;">
-
                 🚫 Cancelar
-
               </button>
-
             </div>
-
             
-
             <div class="message" id="statusMessage"></div>
-
           </div>
-
         </form>
-
       </div>
-
     </div>
-
   </div>
 
-
-
   <script>
-
     // ========== CONFIGURAÇÃO ==========
-
     const WEBHOOK_GET_URL = 'https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-empresa';
-
     const WEBHOOK_UPDATE_URL = 'https://n8n.upperfy.com.br/webhook/2f97bdf7-420-451a-bdee-updateemp';
 
-
-
     // ========== ELEMENTOS ==========
-
     const loadingOverlay = document.getElementById('loadingOverlay');
-
     const form = document.getElementById('companyForm');
-
     const messageEl = document.getElementById('statusMessage');
-
     
-
     // Botões
-
     const btnEdit = document.getElementById('btnEdit');
-
     const btnSave = document.getElementById('btnSave');
-
     const btnCancel = document.getElementById('btnCancel');
 
-
-
     // Variável para guardar estado original (para cancelar)
-
     let originalFormData = {};
 
-
-
-    // Função para coletar TUDO do localStorage (apenas para leitura/envio ao n8n)
-
+    // Função para coletar TUDO do localStorage
     function getAllLocalStorage() {
-
         const data = {};
-
         for (let i = 0; i < localStorage.length; i++) {
-
             const key = localStorage.key(i);
-
             const val = localStorage.getItem(key);
-
             try {
-
-                // Tenta parsear se for JSON
-
                 data[key] = JSON.parse(val);
-
                 // Verifica double parse
-
                 if (typeof data[key] === 'string' && (data[key].startsWith('{') || data[key].startsWith('['))) {
-
                      try { data[key] = JSON.parse(data[key]); } catch(e) {}
-
                 }
-
             } catch (e) {
-
-                // Se não for JSON, manda como string mesmo
-
                 data[key] = val;
-
             }
-
         }
-
         return data;
-
     }
 
-
-
-    // Função auxiliar para encontrar o ID da empresa (Visual apenas)
-
+    // Função "Sherlock" para encontrar o ID da empresa em qualquer lugar
     function getRobustCompanyId(data) {
-
         if (!data) return null;
-
+        
+        // 1. Chaves diretas
         if (data.id_empresa) return data.id_empresa;
-
         if (data.idempresa) return data.idempresa;
-
+        
+        // 2. Dentro do objeto empresa
         if (data.empresa) {
-
             if (data.empresa.id) return data.empresa.id;
-
             if (data.empresa.id_empresa) return data.empresa.id_empresa;
-
             if (data.empresa.idempresa) return data.empresa.idempresa;
-
         }
-
+        
+        // 3. Dentro do objeto usuario
         if (data.usuario) {
-
              if (data.usuario.id_empresa) return data.usuario.id_empresa;
-
              if (data.usuario.idempresa) return data.usuario.idempresa;
-
         }
-
+        
         return null;
-
     }
-
-
 
     // ========== CONTROLE DE EDIÇÃO ==========
-
     function toggleEditMode(enable) {
-
         const inputs = form.querySelectorAll('input:not(#idEmpresa), select');
-
         
-
         inputs.forEach(input => {
-
             input.disabled = !enable;
-
         });
-
-
 
         if (enable) {
-
-            // Entrando no modo edição
-
             saveCurrentState();
-
-            
-
             btnEdit.classList.add('hidden');
-
             btnSave.classList.remove('hidden');
-
             btnCancel.classList.remove('hidden');
-
         } else {
-
-            // Saindo do modo edição
-
             btnEdit.classList.remove('hidden');
-
             btnSave.classList.add('hidden');
-
             btnCancel.classList.add('hidden');
-
         }
-
     }
-
-
 
     function saveCurrentState() {
-
         originalFormData = {
-
             nome: document.getElementById('nomeEmpresa').value,
-
             cnpj: document.getElementById('cnpj').value,
-
             segmento: document.getElementById('segmento').value,
-
             porte: document.getElementById('porte').value,
-
             email: document.getElementById('emailCorporativo').value,
-
             telefone: document.getElementById('telefone').value,
-
             cep: document.getElementById('cep').value,
-
             cidade: document.getElementById('cidade').value,
-
             endereco: document.getElementById('endereco').value
-
         };
-
     }
-
-
 
     function cancelEdit() {
-
         // Restaura valores originais
-
         document.getElementById('nomeEmpresa').value = originalFormData.nome || '';
-
         document.getElementById('cnpj').value = originalFormData.cnpj || '';
-
         document.getElementById('segmento').value = originalFormData.segmento || '';
-
         document.getElementById('porte').value = originalFormData.porte || '';
-
         document.getElementById('emailCorporativo').value = originalFormData.email || '';
-
         document.getElementById('telefone').value = originalFormData.telefone || '';
-
         document.getElementById('cep').value = originalFormData.cep || '';
-
         document.getElementById('cidade').value = originalFormData.cidade || '';
-
         document.getElementById('endereco').value = originalFormData.endereco || '';
 
-
-
-        // Bloqueia campos
-
         toggleEditMode(false);
-
     }
 
-
-
     // ========== AO CARREGAR A PÁGINA ==========
-
     document.addEventListener('DOMContentLoaded', async () => {
-
       // 1. Coleta TODOS os dados do LocalStorage para leitura
-
       const allData = getAllLocalStorage();
-
       
-
       console.log('📦 LocalStorage Completo:', allData);
 
-
-
-      // Tenta achar ID para exibir na tela (UX)
-
+      // Tenta achar ID para exibir na tela usando o Sherlock
       const idEmpresa = getRobustCompanyId(allData);
-
       if(idEmpresa) document.getElementById('idEmpresa').value = idEmpresa;
 
-
-
       // 2. Payload com TUDO + ação
-
       const payload = {
-
-        ...allData, // Espalha todo o localStorage na raiz do JSON para o n8n
-
+        ...allData, 
         acao: 'buscar_dados_empresa',
-
         timestamp: new Date().toISOString()
-
       };
 
-
-
       try {
-
         console.log('📡 Enviando Payload Completo para GET:', payload);
-
         
-
         const response = await fetch(WEBHOOK_GET_URL, {
-
           method: 'POST',
-
           headers: { 'Content-Type': 'application/json' },
-
           body: JSON.stringify(payload)
-
         });
-
-
 
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
-
-
         const responseText = await response.text();
-
         const rawData = responseText ? JSON.parse(responseText) : {};
-
         
-
         console.log('✅ Resposta do n8n:', rawData);
 
-
-
-        // Tratamento da resposta para preencher o formulário
-
         let data = rawData;
-
         if (Array.isArray(rawData)) data = rawData.length > 0 ? rawData[0] : {};
-
-
 
         const empresaData = data.empresa || data; 
 
-
-
         if (empresaData) {
-
           if ((empresaData.id || empresaData.id_empresa) && !document.getElementById('idEmpresa').value) {
-
              document.getElementById('idEmpresa').value = empresaData.id || empresaData.id_empresa;
-
           }
 
-
-
           document.getElementById('nomeEmpresa').value = empresaData.nome || empresaData.nome_empresa || empresaData.nomeempresa || '';
-
           document.getElementById('cnpj').value = empresaData.cnpj || '';
-
           document.getElementById('segmento').value = empresaData.segmento || '';
-
           if(empresaData.porte) document.getElementById('porte').value = empresaData.porte;
-
           document.getElementById('emailCorporativo').value = empresaData.email || '';
-
           document.getElementById('telefone').value = empresaData.telefone || empresaData.whatsapp || '';
-
           document.getElementById('cep').value = empresaData.cep || '';
-
           document.getElementById('cidade').value = empresaData.cidade || '';
-
           document.getElementById('endereco').value = empresaData.endereco || '';
-
         }
 
-
-
       } catch (error) {
-
         console.error('Erro na requisição:', error);
-
       } finally {
-
         loadingOverlay.style.display = 'none';
-
       }
-
     });
 
-
-
     // ========== SALVAR DADOS ==========
-
     form.addEventListener('submit', async (e) => {
-
       e.preventDefault();
-
       
-
       const originalText = btnSave.innerHTML;
-
       btnSave.disabled = true;
-
       btnSave.innerHTML = '<span class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></span> Salvando...';
-
       btnCancel.disabled = true;
-
-
 
       const allData = getAllLocalStorage();
 
-
-
-      // Payload de salvamento: TUDO do storage + dados do formulário
-
       const formData = {
-
         ...allData, 
-
         acao: 'atualizar_empresa',
-
         dados_atualizados: {
-
           id_empresa: document.getElementById('idEmpresa').value,
-
           nome: document.getElementById('nomeEmpresa').value,
-
           cnpj: document.getElementById('cnpj').value,
-
           segmento: document.getElementById('segmento').value,
-
           porte: document.getElementById('porte').value, 
-
           email: document.getElementById('emailCorporativo').value,
-
           telefone: document.getElementById('telefone').value,
-
           cep: document.getElementById('cep').value,
-
           cidade: document.getElementById('cidade').value,
-
           endereco: document.getElementById('endereco').value
-
         }
-
       };
 
-
-
       try {
-
         console.log('📡 Enviando para UPDATE:', WEBHOOK_UPDATE_URL);
-
         const response = await fetch(WEBHOOK_UPDATE_URL, {
-
           method: 'POST',
-
           headers: { 'Content-Type': 'application/json' },
-
           body: JSON.stringify(formData)
-
         });
 
-
-
         if (response.ok) {
-
           showMessage('Dados atualizados com sucesso!', 'success');
-
           
-
-          // --- CORREÇÃO AQUI ---
-
-          // NÃO gravamos 'allData' (que é tudo misturado) de volta no 'usuario'.
-
-          // Apenas lemos o 'usuario' original, atualizamos a empresa dentro dele e salvamos.
-
-          
-
           const currentUserStr = localStorage.getItem('usuario');
-
           if (currentUserStr) {
-
              try {
-
                 let currentUser = JSON.parse(currentUserStr);
-
-                // Double parse check
-
                 if (typeof currentUser === 'string') currentUser = JSON.parse(currentUser);
-
                 
-
-                // Atualiza APENAS o nome da empresa dentro da estrutura existente
-
                 if (!currentUser.empresa) currentUser.empresa = {};
-
                 currentUser.empresa.nomeempresa = formData.dados_atualizados.nome;
-
                 
-
-                // Salva de volta apenas a chave usuario
-
                 localStorage.setItem('usuario', JSON.stringify(currentUser));
-
                 console.log('✅ LocalStorage (usuario) atualizado com segurança.');
-
              } catch(e) {
-
                 console.error('Erro ao atualizar localStorage localmente:', e);
-
              }
-
           }
-
-
 
           toggleEditMode(false);
 
-
-
         } else {
-
           showMessage('Erro ao salvar.', 'error');
-
         }
-
       } catch (error) {
-
         console.error('Erro:', error);
-
         showMessage('Erro de conexão.', 'error');
-
       } finally {
-
         btnSave.disabled = false;
-
         btnSave.innerHTML = originalText;
-
         btnCancel.disabled = false;
-
       }
-
     });
 
-
-
     // ========== UTILITÁRIOS ==========
-
     function showMessage(text, type) {
-
       messageEl.textContent = text;
-
       messageEl.className = `message ${type}`;
-
       messageEl.style.display = 'block';
-
       setTimeout(() => {
-
         messageEl.style.display = 'none';
-
       }, 5000);
-
     }
-
-
 
     function logout() {
-
       if (confirm('Deseja realmente sair?')) {
-
         localStorage.clear();
-
         window.location.href = '../index.html';
-
       }
-
     }
-
   </script>
-
 </body>
-
 </html>
