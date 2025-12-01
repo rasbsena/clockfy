@@ -430,9 +430,15 @@
 
         const result = await response.json(); // Espera JSON de resposta do n8n
 
-        if (response.ok) {
-          showMessage('Funcionário cadastrado com sucesso!', 'success');
-          form.reset(); // Limpa o formulário
+        // LÓGICA DE TRATAMENTO DE RESPOSTA ATUALIZADA
+        if (result.success || result.sucesso || response.ok) {
+            // Verifica explicitamente se success veio falso no JSON (caso de erro tratado pelo n8n)
+            if (result.success === false) {
+                showMessage('Erro ao cadastrar: ' + (result.message || result.mensagem || 'Erro desconhecido'), 'error');
+            } else {
+                showMessage('Funcionário cadastrado com sucesso!', 'success');
+                form.reset(); // Limpa o formulário
+            }
         } else {
           showMessage('Erro ao cadastrar: ' + (result.message || 'Erro desconhecido'), 'error');
         }
