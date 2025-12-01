@@ -686,13 +686,11 @@
   </style>
 </head>
 <body>
-  <!-- Loading Overlay -->
   <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-spinner"></div>
     <div class="loading-text">Carregando seus dados...</div>
   </div>
 
-  <!-- Proteção de acesso -->
   <script>
     const token = localStorage.getItem('token');
     if (!token) {
@@ -700,7 +698,6 @@
     }
   </script>
 
-  <!-- Menu Superior Fixo -->
   <nav class="top-menu">
     <div class="top-menu-left">
       <div class="welcome-text">Bem-vindo, <span id="userName">Usuário</span></div>
@@ -721,13 +718,11 @@
     </div>
   </nav>
 
-  <!-- Botão Flutuante Admin -->
   <div class="admin-widget" id="adminWidget" onclick="window.location.href='https://clockfy.upperfy.com.br/area-restrita/paineladmin.html'">
     <div class="admin-widget-tooltip">Acesso Administrativo</div>
     ⚙️ Painel Admin
   </div>
 
-  <!-- Sidebar Menu Lateral -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-brand">
@@ -767,7 +762,6 @@
   </aside>
 
   <div class="container">
-    <!-- Header -->
     <div class="header">
       <h1 style="font-size: 28px; font-weight: 800;">Painel de Espelho de Ponto</h1>
       <div class="header-actions">
@@ -775,9 +769,7 @@
       </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main-grid">
-      <!-- Left Column - Form and Charts -->
       <div>
         <div class="card">
           <h2 class="card-title">📄 Espelho de Ponto</h2>
@@ -817,7 +809,6 @@
             <div id="message" class="message"></div>
           </form>
 
-          <!-- KPIs -->
           <div class="kpi-grid">
             <div class="kpi-card">
               <div class="kpi-label" id="kpiLabelHoras">Total de Horas</div>
@@ -833,7 +824,6 @@
             </div>
           </div>
 
-          <!-- Charts -->
           <div class="charts-grid">
             <div class="chart-container">
               <div class="chart-title">Horas Trabalhadas/semanal</div>
@@ -863,7 +853,8 @@
       
       // Opção 1: Verificar se existe 'role' direto no localStorage
       const role = localStorage.getItem('role');
-      if (role && role.trim() === 'Admin') {
+      // CORREÇÃO: Verificação insensível a maiúsculas/minúsculas
+      if (role && (role.trim() === 'Admin' || role.trim().toLowerCase() === 'admin')) {
         isAdmin = true;
         console.log('✅ Admin detectado via role:', role);
       }
@@ -875,14 +866,14 @@
           const usuario = JSON.parse(usuarioJson);
           console.log('Objeto usuario encontrado:', usuario);
           
-          // Verifica nivel_acesso
-          if (usuario.nivel_acesso === 'Admin') {
+          // Verifica nivel_acesso (com toLowerCase para segurança)
+          if (usuario.nivel_acesso && usuario.nivel_acesso.toLowerCase() === 'admin') {
             isAdmin = true;
             console.log('✅ Admin detectado via usuario.nivel_acesso:', usuario.nivel_acesso);
           }
           
           // Verifica role dentro do objeto usuario (fallback)
-          if (!isAdmin && usuario.role === 'Admin') {
+          if (!isAdmin && usuario.role && usuario.role.toLowerCase() === 'admin') {
             isAdmin = true;
             console.log('✅ Admin detectado via usuario.role:', usuario.role);
           }
@@ -930,8 +921,27 @@
         document.getElementById('kpiLabelAtraso').textContent = `Minutos de Atraso/${mesAtual}`;
         document.getElementById('kpiLabelSaldo').textContent = `Saldo de Horas/${mesAtual}`;
         
-        // CORREÇÃO: Buscar usuario_nome ao invés de nome
-        const nome = localStorage.getItem('usuario_nome') || 'Usuário';
+        // ============================================================
+        // CORREÇÃO: LÓGICA ROBUSTA PARA PEGAR O NOME
+        // ============================================================
+        let nome = localStorage.getItem('usuario_nome');
+
+        // Se não achou na chave direta, procura dentro do objeto 'usuario'
+        if (!nome || nome === 'undefined') {
+            try {
+                const userObj = JSON.parse(localStorage.getItem('usuario'));
+                if (userObj) {
+                    // Tenta variações comuns de nome, priorizando o que vimos no log
+                    nome = userObj.nome || userObj.name || userObj.nome_completo || userObj.full_name;
+                }
+            } catch (e) {
+                console.log('Erro ao ler objeto usuario para pegar nome', e);
+            }
+        }
+
+        // Se ainda não achou, usa o padrão
+        if (!nome) nome = 'Usuário';
+        // ============================================================
         
         // Extrair primeiro nome
         const primeiroNome = nome.split(' ')[0];
