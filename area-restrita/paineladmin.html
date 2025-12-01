@@ -457,6 +457,33 @@
       color: #fca5a5;
     }
 
+    /* AVISO IMPORTANTE (NOVO) */
+    .warning-box {
+      background: rgba(255, 145, 0, 0.1);
+      border: 1px solid rgba(255, 145, 0, 0.4);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .warning-icon {
+      font-size: 20px;
+      color: #ff9100;
+    }
+
+    .warning-text {
+      font-size: 13px;
+      color: #e0e0e0;
+      line-height: 1.5;
+    }
+
+    .warning-text strong {
+      color: #ff9100;
+    }
+
     @keyframes slideIn {
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -485,49 +512,37 @@
 </head>
 <body>
   <script>
-    // ============================================================
-    // 1. LÓGICA DE VERIFICAÇÃO DE ADMIN (SHERLOCK HOLMES)
-    // ============================================================
     const role = localStorage.getItem('role');
     const usuarioJson = localStorage.getItem('usuario');
     let isAdmin = false;
-    let userName = 'Usuário'; 
 
-    // Verifica role direta (Case Insensitive: Admin, admin, ADMIN)
+    // 1. Verifica role direta (Case Insensitive)
     if (role && (role === 'Admin' || role.toLowerCase() === 'admin')) {
       isAdmin = true;
     } 
-    
-    // Verifica dentro do objeto usuario
-    if (usuarioJson) {
+    // 2. Verifica dentro do objeto usuario (JSON)
+    else if (usuarioJson) {
       try {
         const usuario = JSON.parse(usuarioJson);
         
-        // Tenta capturar o nome para uso futuro
-        if(usuario.nome || usuario.name || usuario.nome_completo) {
-            userName = usuario.nome || usuario.name || usuario.nome_completo;
-        }
+        // Verifica se é string dupla
+        let userObj = usuario;
+        if (typeof usuario === 'string') userObj = JSON.parse(usuario);
 
-        // Verifica Nível de Acesso (ignora maiúsculas/minúsculas)
-        if (usuario.nivel_acesso && usuario.nivel_acesso.toLowerCase() === 'admin') {
+        // Verifica nivel_acesso
+        if (userObj.nivel_acesso && userObj.nivel_acesso.toLowerCase() === 'admin') {
           isAdmin = true;
         }
-        // Verifica Role interna
-        else if (usuario.role && usuario.role.toLowerCase() === 'admin') {
+        // Verifica role interna
+        else if (userObj.role && userObj.role.toLowerCase() === 'admin') {
           isAdmin = true;
         }
       } catch (e) {
-        console.error('Erro ao ler dados do usuário:', e);
+        console.error("Erro parsing usuario JSON", e);
       }
     }
 
-    // Se o nome não veio do objeto, tenta pegar do item solto
-    if(userName === 'Usuário') {
-        const nomeSolto = localStorage.getItem('usuario_nome');
-        if(nomeSolto) userName = nomeSolto;
-    }
-
-    // Se não for admin, chuta para o painel comum
+    // Proteção de redirecionamento
     if (!isAdmin) {
       alert('Acesso negado! Apenas administradores podem acessar esta área.');
       window.location.href = 'painel.html';
@@ -651,6 +666,15 @@
           <h2 class="form-title">📝 Lançar Ponto Antigo</h2>
           <button class="btn-ghost" onclick="closeForm()">✕ Fechar</button>
         </div>
+
+        <div class="warning-box">
+            <div class="warning-icon">⚠️</div>
+            <div class="warning-text">
+                <strong>Atenção:</strong> Para lançamentos no mesmo dia, é obrigatório informar o horário de saída. <br>
+                Para correções pontuais (apenas entrada ou apenas saída), recomendamos realizar o ajuste no dia seguinte para evitar inconsistências no cálculo de horas.
+            </div>
+        </div>
+
         <form id="formLancarSubmit">
           <div class="form-group">
             <label class="form-label">ID do Funcionário</label>
