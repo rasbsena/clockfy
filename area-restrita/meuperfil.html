@@ -411,7 +411,17 @@
     <script>
         const WEBHOOK_RESET = 'https://n8n.upperfy.com.br/webhook/senhareset';
 
-        // Função segura para pegar dados
+        // Função para empacotar o LocalStorage (Contexto de Autenticação)
+        function getAllLocalStorage() {
+            const data = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                data[key] = localStorage.getItem(key);
+            }
+            return data;
+        }
+
+        // Função segura para pegar dados específicos (para preencher a tela)
         function getSafeUserField(field1, field2) {
             let val = localStorage.getItem('usuario_' + field1);
             if (val && val !== 'undefined') return val;
@@ -515,9 +525,7 @@
             const currentPass = document.getElementById('currentPass').value; // Senha Atual
             const newPass = document.getElementById('newPass').value;
             const confirmPass = document.getElementById('confirmPass').value;
-            const email = document.getElementById('displayEmail').value;
-            const id = localStorage.getItem('id_funcionario') || getSafeUserField('id', 'id_funcionario');
-
+            
             // Validação
             if (!currentPass || !newPass || !confirmPass) {
                 return showMessage('Preencha todos os campos.', 'error');
@@ -533,14 +541,20 @@
 
             showMessage('Atualizando senha...', 'success'); // Feedback provisório
 
+            // Coleta tudo do Local Storage para contexto
+            const storageData = getAllLocalStorage();
+
             try {
-                // Payload para o n8n
+                // Payload completo
                 const payload = {
-                    id_funcionario: id,
-                    email: email,
-                    senha_atual: currentPass, // Envia para validação no backend
-                    nova_senha: newPass
+                    senha_atual: currentPass,
+                    nova_senha: newPass,
+                    confirmacao_senha: confirmPass,
+                    auth_context: storageData, // Envia o contexto completo
+                    timestamp: new Date().toISOString()
                 };
+
+                console.log("Enviando payload de senha:", payload);
 
                 const response = await fetch(WEBHOOK_RESET, {
                     method: 'POST',
