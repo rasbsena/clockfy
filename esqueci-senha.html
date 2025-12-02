@@ -263,24 +263,6 @@
             font-weight: 500;
         }
 
-        .user-greeting {
-            background: linear-gradient(135deg, rgba(135, 20, 140, 0.1), rgba(79, 18, 149, 0.1));
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 25px;
-            text-align: center;
-        }
-
-        .user-greeting p {
-            font-size: 14px;
-            color: var(--roxo-escuro);
-        }
-
-        .user-greeting strong {
-            color: var(--roxo-vivo);
-            font-weight: 700;
-        }
-
         .form-group {
             margin-bottom: 20px;
         }
@@ -543,10 +525,6 @@
                     <p class="page-title">Redefinição de Senha</p>
                 </div>
 
-                <div class="user-greeting">
-                    <p>Olá, <strong id="userName">Usuário</strong>! Digite sua nova senha abaixo.</p>
-                </div>
-
                 <form id="resetForm">
                     <div class="form-group">
                         <label for="novaSenha">Nova Senha</label>
@@ -645,7 +623,6 @@
         const formState = document.getElementById('formState');
         const successState = document.getElementById('successState');
         const errorText = document.getElementById('errorText');
-        const userName = document.getElementById('userName');
         const resetForm = document.getElementById('resetForm');
         const novaSenhaInput = document.getElementById('novaSenha');
         const confirmarSenhaInput = document.getElementById('confirmarSenha');
@@ -692,7 +669,6 @@
 
                 if (data.valido === true) {
                     // Token válido - mostra o formulário
-                    userName.textContent = data.nome || 'Usuário';
                     showState('form');
                 } else {
                     // Token inválido - mostra erro
