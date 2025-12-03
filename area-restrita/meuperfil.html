@@ -210,15 +210,15 @@
             padding-left: 40px;
         }
 
-        /* Seção de Senha e PIN */
-        .password-section, .pin-section {
+        /* Seção de Senha, PIN e Dados */
+        .password-section, .pin-section, .data-section {
             margin-top: 20px;
             padding-top: 20px;
             border-top: 1px solid #eee;
             display: none; /* Escondido por padrão */
         }
         
-        .password-section.active, .pin-section.active {
+        .password-section.active, .pin-section.active, .data-section.active {
             display: block;
             animation: slideDown 0.3s ease;
         }
@@ -252,6 +252,23 @@
         .btn-back:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(39, 9, 73, 0.3);
+        }
+
+        .btn-change-data {
+            width: 100%;
+            padding: 12px;
+            background: rgba(135, 20, 140, 0.1);
+            color: var(--roxo-medio);
+            border: 1px solid var(--roxo-medio);
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-change-data:hover {
+            background: var(--roxo-medio);
+            color: white;
         }
 
         .btn-change-pass {
@@ -364,11 +381,53 @@
                 </div>
 
                 <div class="info-group">
+                    <label>WhatsApp</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fab fa-whatsapp"></i>
+                        <input type="text" class="info-value" id="displayWhatsapp" value="---" readonly>
+                    </div>
+                </div>
+
+                <div class="info-group">
                     <label>Membro Desde</label>
                     <div class="input-icon-wrapper">
                         <i class="fas fa-calendar-alt"></i>
                         <input type="text" class="info-value" id="displayDate" value="---" readonly>
                     </div>
+                </div>
+
+                <div class="data-section" id="dataSection">
+                    <div class="info-group">
+                        <label>Nome Completo</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-user"></i>
+                            <input type="text" class="info-value" id="editName" placeholder="Seu nome completo">
+                        </div>
+                    </div>
+                    
+                    <div class="info-group" style="margin-top: 15px;">
+                        <label>E-mail</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" class="info-value" id="editEmail" placeholder="seu@email.com">
+                        </div>
+                    </div>
+                    
+                    <div class="info-group" style="margin-top: 15px;">
+                        <label>WhatsApp</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fab fa-whatsapp"></i>
+                            <input type="text" class="info-value" id="editWhatsapp" placeholder="11999999999">
+                        </div>
+                    </div>
+                    
+                    <button class="btn-save-pass" onclick="savePersonalData()">
+                        Confirmar Atualização
+                    </button>
+
+                    <button class="btn-logout-profile" onclick="toggleDataMode()" style="margin-top: 10px; border: none; color: #666;">
+                        Cancelar
+                    </button>
                 </div>
 
                 <div class="password-section" id="passwordSection">
@@ -440,6 +499,10 @@
             </div>
 
             <div class="btn-container" id="mainActions">
+                <button class="btn-change-data" onclick="toggleDataMode()">
+                    <i class="fas fa-user-edit"></i> Atualizar Dados
+                </button>
+
                 <button class="btn-change-pass" onclick="togglePasswordMode()">
                     <i class="fas fa-key"></i> Alterar Senha
                 </button>
@@ -467,6 +530,7 @@
     <script>
         const WEBHOOK_RESET = 'https://n8n.upperfy.com.br/webhook/senhareset';
         const WEBHOOK_PIN = 'https://n8n.upperfy.com.br/webhook/atualizapin';
+        const WEBHOOK_UPDATE = 'https://n8n.upperfy.com.br/webhook/clock4';
 
         // Função segura para pegar dados
         function getSafeUserField(field1, field2) {
@@ -500,6 +564,7 @@
             let nome = getSafeUserField('nome', 'name') || 'Colaborador';
             let email = getSafeUserField('email', 'mail') || 'Não informado';
             let cargo = getSafeUserField('cargo', 'role') || 'Colaborador';
+            let whatsapp = getSafeUserField('whatsapp', 'telefone') || 'Não informado';
 
             let dataCriacao = getSafeUserField('created_at', 'createdAt');
             if(!dataCriacao) dataCriacao = getSafeUserField('data_criacao', 'criado_em');
@@ -530,6 +595,9 @@
             const elEmail = document.getElementById('displayEmail');
             if(elEmail) elEmail.value = email;
 
+            const elWhatsapp = document.getElementById('displayWhatsapp');
+            if(elWhatsapp) elWhatsapp.value = whatsapp;
+
             const elDate = document.getElementById('displayDate');
             if(elDate) elDate.value = dataFormatada;
 
@@ -549,12 +617,43 @@
         // ========================================
         // TOGGLES DE UI
         // ========================================
+        function toggleDataMode() {
+            const dataSection = document.getElementById('dataSection');
+            const passSection = document.getElementById('passwordSection');
+            const pinSection = document.getElementById('pinSection');
+            const actions = document.getElementById('mainActions');
+            
+            passSection.style.display = 'none';
+            pinSection.style.display = 'none';
+            
+            if (dataSection.style.display === 'block') {
+                dataSection.style.display = 'none';
+                actions.style.display = 'flex';
+                document.getElementById('statusMessage').style.display = 'none';
+            } else {
+                // Preenche os campos com os dados atuais
+                let nome = getSafeUserField('nome', 'name') || '';
+                let email = getSafeUserField('email', 'mail') || '';
+                let whatsapp = getSafeUserField('whatsapp', 'telefone') || '';
+                
+                document.getElementById('editName').value = nome;
+                document.getElementById('editEmail').value = email;
+                document.getElementById('editWhatsapp').value = whatsapp;
+                
+                dataSection.style.display = 'block';
+                dataSection.classList.add('active');
+                actions.style.display = 'none';
+            }
+        }
+
         function togglePasswordMode() {
             const pinSection = document.getElementById('pinSection');
             const passSection = document.getElementById('passwordSection');
+            const dataSection = document.getElementById('dataSection');
             const actions = document.getElementById('mainActions');
             
-            pinSection.style.display = 'none'; // Garante que o outro fecha
+            pinSection.style.display = 'none';
+            dataSection.style.display = 'none';
             
             if (passSection.style.display === 'block') {
                 passSection.style.display = 'none';
@@ -570,9 +669,11 @@
         function togglePinMode() {
             const pinSection = document.getElementById('pinSection');
             const passSection = document.getElementById('passwordSection');
+            const dataSection = document.getElementById('dataSection');
             const actions = document.getElementById('mainActions');
             
-            passSection.style.display = 'none'; // Garante que o outro fecha
+            passSection.style.display = 'none';
+            dataSection.style.display = 'none';
             
             if (pinSection.style.display === 'block') {
                 pinSection.style.display = 'none';
@@ -582,6 +683,69 @@
                 pinSection.style.display = 'block';
                 pinSection.classList.add('active');
                 actions.style.display = 'none';
+            }
+        }
+
+        // ========================================
+        // LÓGICA DE ATUALIZAÇÃO DE DADOS
+        // ========================================
+        async function savePersonalData() {
+            const name = document.getElementById('editName').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            const whatsapp = document.getElementById('editWhatsapp').value.trim();
+            const id = localStorage.getItem('id_funcionario') || getSafeUserField('id', 'id_funcionario');
+
+            if (!name || !email || !whatsapp) {
+                return showMessage('Preencha todos os campos.', 'error');
+            }
+
+            // Validação básica de email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return showMessage('Por favor, insira um e-mail válido.', 'error');
+            }
+
+            showMessage('Atualizando seus dados...', 'success');
+
+            const authContext = getAllLocalStorage();
+
+            try {
+                const payload = {
+                    funcionario_id: id,
+                    name: name,
+                    email: email,
+                    whatsapp: whatsapp,
+                    auth_context: authContext,
+                    timestamp: new Date().toISOString()
+                };
+
+                const response = await fetch(WEBHOOK_UPDATE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && (data.success || data.sucesso)) {
+                    // Atualiza os dados no localStorage
+                    localStorage.setItem('usuario_nome', name);
+                    localStorage.setItem('usuario_email', email);
+                    localStorage.setItem('usuario_whatsapp', whatsapp);
+                    
+                    // Atualiza a exibição
+                    document.getElementById('displayName').textContent = name;
+                    document.getElementById('displayEmail').value = email;
+                    document.getElementById('displayWhatsapp').value = whatsapp;
+                    
+                    showMessage(data.mensagem || 'Dados atualizados com sucesso!', 'success');
+                    setTimeout(() => toggleDataMode(), 2000);
+                } else {
+                    showMessage(data.mensagem || 'Erro ao atualizar dados.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage('Erro de conexão ao atualizar dados.', 'error');
             }
         }
 
@@ -644,7 +808,7 @@
         }
 
         // ========================================
-        // LÓGICA DE PIN (NOVA)
+        // LÓGICA DE PIN
         // ========================================
         async function requestPinUpdate() {
             const emailConfirm = document.getElementById('pinEmail').value;
@@ -680,7 +844,7 @@
                     document.getElementById('pinEmail').value = '';
                     document.getElementById('pinPassword').value = '';
                     
-                    setTimeout(() => togglePinMode(), 4000); // Tempo maior para ler a mensagem
+                    setTimeout(() => togglePinMode(), 4000);
                 }, 1000);
 
             } catch (error) {
@@ -695,7 +859,7 @@
             el.className = `message ${type}`;
             el.style.display = 'block';
             
-            if(type === 'success' && text !== 'Validando e alterando senha...' && text !== 'Enviando solicitação...') {
+            if(type === 'success' && text !== 'Validando e alterando senha...' && text !== 'Enviando solicitação...' && text !== 'Atualizando seus dados...') {
                 setTimeout(() => el.style.display = 'none', 5000);
             }
         }
