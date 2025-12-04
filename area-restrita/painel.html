@@ -861,8 +861,8 @@
               <div class="kpi-value" id="kpiTotalHoras">—</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-label" id="kpiLabelAtraso">Minutos de Atraso</div>
-              <div class="kpi-value" id="kpiAtraso">—</div>
+              <div class="kpi-label" id="kpiLabelJornada">Jornada Cumprida</div>
+              <div class="kpi-value" id="kpiJornada">—</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-label" id="kpiLabelSaldo">Saldo de Horas</div>
@@ -876,8 +876,8 @@
               <canvas id="chartHoras"></canvas>
             </div>
             <div class="chart-container">
-              <div class="chart-title">Atrasos (min)/semanal</div>
-              <canvas id="chartAtraso"></canvas>
+              <div class="chart-title">Previsto x Trabalhado/semanal</div>
+              <canvas id="chartPrevisto"></canvas>
             </div>
             <div class="chart-container">
               <div class="chart-title">Saldo Diário/semanal</div>
@@ -949,7 +949,7 @@
     const loadingOverlay = document.getElementById('loadingOverlay');
 
     // ========== VARIÁVEIS GLOBAIS ==========
-    let chartHoras, chartAtraso, chartSaldo;
+    let chartHoras, chartPrevisto, chartSaldo;
     let dashboardData = null;
 
     // ========== INICIALIZAÇÃO ==========
@@ -963,7 +963,7 @@
         const mesAtual = meses[new Date().getMonth()];
         
         document.getElementById('kpiLabelHoras').textContent = `Total de Horas/${mesAtual}`;
-        document.getElementById('kpiLabelAtraso').textContent = `Minutos de Atraso/${mesAtual}`;
+        document.getElementById('kpiLabelJornada').textContent = `Jornada Cumprida/${mesAtual}`;
         document.getElementById('kpiLabelSaldo').textContent = `Saldo de Horas/${mesAtual}`;
         
         // ============================================================
@@ -1073,7 +1073,7 @@
       console.log('Atualizando KPIs com:', resumo);
       
       document.getElementById('kpiTotalHoras').textContent = resumo.total_horas_mes || '—';
-      document.getElementById('kpiAtraso').textContent = resumo.total_atraso_min + ' min' || '—';
+      document.getElementById('kpiJornada').textContent = (resumo.jornada_cumprida_pct !== undefined ? resumo.jornada_cumprida_pct + '%' : '—');
       document.getElementById('kpiSaldo').textContent = resumo.saldo_total || '—';
     }
 
@@ -1099,11 +1099,39 @@
         }
       };
 
+      // Opções específicas para o gráfico com legenda
+      const chartOptionsWithLegend = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { 
+            display: true,
+            position: 'top',
+            labels: {
+              color: '#ccc',
+              font: { size: 10 },
+              boxWidth: 12,
+              padding: 8
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#ccc', font: { size: 10 } },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          },
+          y: {
+            ticks: { color: '#ccc', font: { size: 10 } },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          }
+        }
+      };
+
       if (chartHoras) chartHoras.destroy();
-      if (chartAtraso) chartAtraso.destroy();
+      if (chartPrevisto) chartPrevisto.destroy();
       if (chartSaldo) chartSaldo.destroy();
 
-      // Chart Horas
+      // Chart Horas Trabalhadas
       chartHoras = new Chart(document.getElementById('chartHoras'), {
         type: 'bar',
         data: {
@@ -1119,20 +1147,29 @@
         options: chartOptions
       });
 
-      // Chart Atraso
-      chartAtraso = new Chart(document.getElementById('chartAtraso'), {
+      // Chart Previsto x Trabalhado (NOVO)
+      chartPrevisto = new Chart(document.getElementById('chartPrevisto'), {
         type: 'bar',
         data: {
           labels: chartData.dias,
-          datasets: [{
-            label: 'Atraso',
-            data: chartData.atraso,
-            backgroundColor: 'rgba(239, 68, 68, 0.7)',
-            borderColor: 'rgba(239, 68, 68, 1)',
-            borderWidth: 1
-          }]
+          datasets: [
+            {
+              label: 'Previsto',
+              data: chartData.meta,
+              backgroundColor: 'rgba(135, 20, 140, 0.7)',
+              borderColor: 'rgba(135, 20, 140, 1)',
+              borderWidth: 1
+            },
+            {
+              label: 'Trabalhado',
+              data: chartData.horas,
+              backgroundColor: 'rgba(249, 61, 0, 0.7)',
+              borderColor: 'rgba(249, 61, 0, 1)',
+              borderWidth: 1
+            }
+          ]
         },
-        options: chartOptions
+        options: chartOptionsWithLegend
       });
 
       // Chart Saldo
