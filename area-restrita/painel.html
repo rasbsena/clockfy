@@ -1,12 +1,1390 @@
-annotation: {
-  annotations: {
-    zeroLine: {
-      type: 'line',
-      yMin: 0,
-      yMax: 0,
-      borderColor: '#F93D00',  // Laranja
-      borderWidth: 2,
-      borderDash: [5, 5]       // Linha tracejada
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clockfy - Painel de Espelho de Ponto</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23270949' d='M50,5L25,35h50L50,5z'/%3E%3Ccircle fill='%23f93d00' cx='50' cy='60' r='35'/%3E%3Ccircle fill='%23270949' cx='50' cy='60' r='28'/%3E%3Ccircle fill='%23fff' cx='50' cy='60' r='23'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --roxo-escuro: #270949;
+      --roxo-medio: #87148C;
+      --roxo-vivo: #4F1295;
+      --laranja: #F93D00;
+      --laranja-esc: #e03800;
+      --branco: #fff;
+      --vidro: rgba(39, 9, 73, 0.6);
     }
-  }
-}
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #270949 0%, #1a0430 100%);
+      min-height: 100vh;
+      padding: 20px;
+      padding-left: 280px;
+      padding-top: 80px;
+      color: #fff;
+      transition: padding-left 0.3s ease;
+    }
+
+    body.sidebar-collapsed {
+      padding-left: 80px;
+    }
+
+    /* MENU SUPERIOR FIXO */
+    .top-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--vidro);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(249, 61, 0, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      z-index: 1001;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .top-menu-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .welcome-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .welcome-text span {
+      color: var(--laranja);
+      font-weight: 700;
+    }
+
+    .top-menu-center {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .top-menu-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .top-menu-link {
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .top-menu-link:hover {
+      background: rgba(249, 61, 0, 0.1);
+      color: var(--laranja);
+    }
+
+    .top-menu-link.profile {
+      background: rgba(249, 61, 0, 0.1);
+      border: 1px solid rgba(249, 61, 0, 0.3);
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--roxo-vivo), var(--roxo-medio));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+      border: 2px solid var(--laranja);
+    }
+
+    /* BOTÃO FLUTUANTE ADMIN */
+    .admin-widget {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, var(--laranja), var(--laranja-esc));
+      border-radius: 50px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(249, 61, 0, 0.5);
+      transition: all 0.3s ease;
+      z-index: 9998;
+      animation: pulse-admin 2s ease-in-out infinite;
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .admin-widget.show {
+      display: flex;
+    }
+
+    .admin-widget:hover {
+      transform: scale(1.05) translateY(-5px);
+      box-shadow: 0 12px 35px rgba(249, 61, 0, 0.7);
+    }
+
+    @keyframes pulse-admin {
+      0%, 100% {
+        box-shadow: 0 8px 25px rgba(249, 61, 0, 0.5);
+      }
+      50% {
+        box-shadow: 0 8px 40px rgba(249, 61, 0, 0.8);
+      }
+    }
+
+    .admin-widget-tooltip {
+      position: absolute;
+      right: calc(100% + 15px);
+      background: rgba(39, 9, 73, 0.95);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      border: 1px solid rgba(249, 61, 0, 0.3);
+    }
+
+    .admin-widget:hover .admin-widget-tooltip {
+      opacity: 1;
+    }
+
+    /* LOADING OVERLAY */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(39, 9, 73, 0.95);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-spinner {
+      width: 80px;
+      height: 80px;
+      border: 6px solid rgba(249, 61, 0, 0.2);
+      border-top-color: var(--laranja);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .container {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 60px;
+      height: calc(100vh - 60px);
+      width: 260px;
+      background: var(--vidro);
+      backdrop-filter: blur(10px);
+      border-right: 1px solid rgba(249, 61, 0, 0.15);
+      padding: 24px;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar.collapsed {
+      width: 60px;
+      padding: 24px 10px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      gap: 10px;
+    }
+
+    .sidebar.collapsed .sidebar-header {
+      flex-direction: column;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar.collapsed .sidebar-brand {
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+    }
+
+    .sidebar-brand svg {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo-text {
+      font-size: 18px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .sidebar-logo-text span {
+      color: var(--laranja);
+    }
+
+    .toggle-btn {
+      background: rgba(249, 61, 0, 0.1);
+      border: 1px solid rgba(249, 61, 0, 0.3);
+      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .toggle-btn:hover {
+      background: rgba(249, 61, 0, 0.2);
+      border-color: rgba(249, 61, 0, 0.5);
+    }
+
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #cfcfcf;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar.collapsed .sidebar-title {
+      opacity: 0;
+      height: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .sidebar-shortcuts {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex-grow: 1;
+    }
+
+    .sidebar-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Montserrat', sans-serif;
+      text-align: left;
+    }
+
+    .sidebar-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(249, 61, 0, 0.4);
+      transform: translateX(5px);
+    }
+
+    .sidebar.collapsed .sidebar-btn {
+      padding: 12px;
+      justify-content: center;
+    }
+
+    .sidebar-btn-text {
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar.collapsed .sidebar-btn-text {
+      opacity: 0;
+      width: 0;
+      overflow: hidden;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      font-size: 11px;
+      color: #888;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar.collapsed .sidebar-footer {
+      opacity: 0;
+      height: 0;
+      padding: 0;
+      border: none;
+      overflow: hidden;
+    }
+
+    /* ESTILOS NOVOS PARA INFO DA EMPRESA */
+    .sidebar-company-info {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.1);
+      text-align: center;
+      font-size: 11px;
+      color: #cfcfcf;
+      transition: opacity 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sidebar.collapsed .sidebar-company-info {
+      opacity: 0;
+      height: 0;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      border: none;
+    }
+
+    .company-name {
+      color: var(--laranja);
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .company-detail {
+      font-size: 10px;
+      color: #888;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .btn-primary {
+      background: var(--laranja);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--laranja-esc);
+      box-shadow: 0 6px 20px rgba(249, 61, 0, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #fff;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .main-grid {
+      display: block;
+    }
+
+    .card {
+      background: var(--vidro);
+      border-radius: 20px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(249, 61, 0, 0.1);
+    }
+
+    .card-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-subtitle {
+      color: #a8a8a8;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #e0e0e0;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      background: rgba(20, 5, 35, 0.8);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--laranja);
+      background: rgba(20, 5, 35, 0.95);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .kpi-card {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #cfcfcf;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .kpi-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .chart-container {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .chart-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #cfcfcf;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    canvas {
+      max-height: 160px;
+      width: 100% !important;
+      height: 160px !important;
+    }
+
+    .chart-container canvas {
+      max-width: 100%;
+    }
+
+    .shortcuts {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.success {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      color: #86efac;
+    }
+
+    .message.error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .loader {
+      width: 16px;
+      height: 16px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: #888;
+      font-size: 12px;
+    }
+
+    @media (max-width: 1200px) {
+      body {
+        padding-left: 20px;
+      }
+
+      body.sidebar-collapsed {
+        padding-left: 20px;
+      }
+
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .top-menu {
+        padding: 0 15px;
+      }
+
+      .top-menu-center {
+        display: none;
+      }
+
+      .top-menu-right {
+        gap: 10px;
+      }
+
+      .top-menu-link span:not(.avatar) {
+        display: none;
+      }
+
+      .admin-widget {
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Carregando seus dados...</div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '../index.html';
+    }
+  </script>
+
+  <nav class="top-menu">
+    <div class="top-menu-left">
+      <div class="welcome-text">Bem-vindo, <span id="userName">Usuário</span></div>
+    </div>
+    <div class="top-menu-center">
+      <a href="https://plataforma.upperfy.com.br" target="_blank" class="top-menu-link">
+        <span>🚀 Plataforma Upperfy</span>
+      </a>
+      <a href="https://upperfy.com.br" target="_blank" class="top-menu-link">
+        <span>🌐 Conheça a Upperfy</span>
+      </a>
+    </div>
+    <div class="top-menu-right">
+      <a href="https://clockfy.upperfy.com.br/area-restrita/meuperfil.html" class="top-menu-link profile">
+        <div class="avatar" id="userAvatar">U</div>
+        <span>Meu Perfil Upperfy</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="admin-widget" id="adminWidget" onclick="window.location.href='https://clockfy.upperfy.com.br/area-restrita/paineladmin.html'">
+    <div class="admin-widget-tooltip">Acesso Administrativo</div>
+    ⚙️ Painel Admin
+  </div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+          <path fill="#270949" d="M50,5L25,35h50L50,5z"/>
+          <circle fill="#f93d00" cx="50" cy="60" r="35"/>
+          <circle fill="#270949" cx="50" cy="60" r="28"/>
+          <circle fill="#fff" cx="50" cy="60" r="23"/>
+        </svg>
+        <div class="sidebar-logo-text">Clock<span>fy</span></div>
+      </div>
+      <button class="toggle-btn" onclick="toggleSidebar()" title="Recolher/Expandir">
+        <span id="toggleIcon">◀</span>
+      </button>
+    </div>
+
+    <div class="sidebar-title">⚡ Atalhos</div>
+
+    <div class="sidebar-shortcuts">
+      <button class="sidebar-btn" onclick="window.location.href='https://clockfy.upperfy.com.br/area-restrita/clockfyregistro.html'">
+        <span>🕐</span>
+        <span class="sidebar-btn-text">Registrar Ponto</span>
+      </button>
+      <button class="sidebar-btn" onclick="window.location.href='https://wa.me/5511918583146?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20para%20o%20Clockfy'">
+        <span>📋</span>
+        <span class="sidebar-btn-text">Obter Suporte</span>
+      </button>
+      <button class="sidebar-btn" onclick="navigateTo('dashboard.html')">
+        <span>📊</span>
+        <span class="sidebar-btn-text">Dashboard</span>
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      Desenvolvido por <strong>Upperfy</strong>
+    </div>
+    
+    <div class="sidebar-company-info" id="sidebarCompanyInfo">
+        <div class="company-name" id="compName">Carregando...</div>
+        <div class="company-detail" id="compCNPJ"></div>
+        <div class="company-detail" id="compEmail"></div>
+    </div>
+  </aside>
+
+  <div class="container">
+    <div class="header">
+      <h1 style="font-size: 28px; font-weight: 800;">Painel de Espelho de Ponto</h1>
+      <div class="header-actions">
+        <button class="btn btn-primary" onclick="logout()">Sair</button>
+      </div>
+    </div>
+
+    <div class="main-grid">
+      <div>
+        <div class="card">
+          <h2 class="card-title">📄 Espelho de Ponto</h2>
+          <p class="card-subtitle">Gere o relatório completo do seu ponto em PDF</p>
+
+          <form id="reportForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="month">Mês</label>
+                <select id="month" required>
+                  <option value="">Selecione o mês</option>
+                  <option value="01">Janeiro</option>
+                  <option value="02">Fevereiro</option>
+                  <option value="03">Março</option>
+                  <option value="04">Abril</option>
+                  <option value="05">Maio</option>
+                  <option value="06">Junho</option>
+                  <option value="07">Julho</option>
+                  <option value="08">Agosto</option>
+                  <option value="09">Setembro</option>
+                  <option value="10">Outubro</option>
+                  <option value="11">Novembro</option>
+                  <option value="12">Dezembro</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="year">Ano</label>
+                <input type="number" id="year" min="2023" max="2030" value="2025" required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="generateBtn" style="width: 100%;">
+              <span id="btnText">Receber Espelho de Ponto por E-mail</span>
+              <span class="loader" id="btnLoader"></span>
+            </button>
+
+            <div id="message" class="message"></div>
+          </form>
+
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-label" id="kpiLabelHoras">Total de Horas</div>
+              <div class="kpi-value" id="kpiTotalHoras">—</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label" id="kpiLabelJornada">Jornada Cumprida</div>
+              <div class="kpi-value" id="kpiJornada">—</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label" id="kpiLabelSaldo">Saldo de Horas</div>
+              <div class="kpi-value" id="kpiSaldo">—</div>
+            </div>
+          </div>
+
+          <div class="charts-grid">
+            <div class="chart-container">
+              <div class="chart-title">Horas Trabalhadas/semanal</div>
+              <canvas id="chartHoras"></canvas>
+            </div>
+            <div class="chart-container">
+              <div class="chart-title">Previsto x Trabalhado/semanal</div>
+              <canvas id="chartPrevisto"></canvas>
+            </div>
+            <div class="chart-container">
+              <div class="chart-title">Saldo Diário/semanal</div>
+              <canvas id="chartSaldo"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== FUNÇÃO DE FORMATAÇÃO DECIMAL → HH:mm ==========
+    function decimalToHHmm(decimal) {
+      if (decimal === 0 || decimal === null || decimal === undefined) return '0:00';
+      
+      const isNegative = decimal < 0;
+      const absDecimal = Math.abs(decimal);
+      
+      const hours = Math.floor(absDecimal);
+      const minutes = Math.round((absDecimal - hours) * 60);
+      
+      const formatted = `${hours}:${String(minutes).padStart(2, '0')}`;
+      return isNegative ? `-${formatted}` : formatted;
+    }
+
+    // ========== VERIFICAÇÃO E EXIBIÇÃO DO WIDGET ADMIN ==========
+    (function checkAdminWidget() {
+      const adminWidget = document.getElementById('adminWidget');
+      let isAdmin = false;
+      
+      console.log('Verificando permissões de admin...');
+      
+      const role = localStorage.getItem('role');
+      if (role && (role.trim() === 'Admin' || role.trim().toLowerCase() === 'admin')) {
+        isAdmin = true;
+        console.log('✅ Admin detectado via role:', role);
+      }
+      
+      const usuarioJson = localStorage.getItem('usuario');
+      if (!isAdmin && usuarioJson) {
+        try {
+          const usuario = JSON.parse(usuarioJson);
+          console.log('Objeto usuario encontrado:', usuario);
+          
+          if (usuario.nivel_acesso && usuario.nivel_acesso.toLowerCase() === 'admin') {
+            isAdmin = true;
+            console.log('✅ Admin detectado via usuario.nivel_acesso:', usuario.nivel_acesso);
+          }
+          
+          if (!isAdmin && usuario.role && usuario.role.toLowerCase() === 'admin') {
+            isAdmin = true;
+            console.log('✅ Admin detectado via usuario.role:', usuario.role);
+          }
+        } catch (e) {
+          console.error('Erro ao parsear usuario do localStorage:', e);
+        }
+      }
+      
+      if (isAdmin) {
+        adminWidget.classList.add('show');
+        console.log('🎉 Widget admin ATIVADO');
+      } else {
+        console.log('❌ Widget admin NÃO exibido - Usuário não é Admin');
+      }
+    })();
+
+    // ========== CONFIGURAÇÃO ==========
+    const N8N_WEBHOOK_URL = 'https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-painelclockfy';
+    const N8N_ESPELHO_URL = 'https://n8n.upperfy.com.br/webhook/18c1a3aa-f03a-4823-98b1-espelhoponto';
+
+    // ========== ELEMENTOS DO DOM ==========
+    const reportForm = document.getElementById('reportForm');
+    const generateBtn = document.getElementById('generateBtn');
+    const btnText = document.getElementById('btnText');
+    const btnLoader = document.getElementById('btnLoader');
+    const message = document.getElementById('message');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    // ========== VARIÁVEIS GLOBAIS ==========
+    let chartHoras, chartPrevisto, chartSaldo;
+    let dashboardData = null;
+
+    // ========== INICIALIZAÇÃO ==========
+    async function initializePage() {
+      try {
+        console.log('Iniciando carregamento dos dados do N8N...');
+        
+        const meses = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 
+                       'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
+        const mesAtual = meses[new Date().getMonth()];
+        
+        document.getElementById('kpiLabelHoras').textContent = `Total de Horas/${mesAtual}`;
+        document.getElementById('kpiLabelJornada').textContent = `Jornada Cumprida/${mesAtual}`;
+        document.getElementById('kpiLabelSaldo').textContent = `Saldo de Horas/${mesAtual}`;
+        
+        let nome = localStorage.getItem('usuario_nome');
+        let empresaData = {};
+
+        try {
+            const userObj = JSON.parse(localStorage.getItem('usuario'));
+            if (userObj) {
+                if (!nome) nome = userObj.nome || userObj.name || userObj.nome_completo;
+            }
+        } catch (e) {}
+
+        try {
+            const empRaw = localStorage.getItem('empresa');
+            if (empRaw) {
+                if(empRaw.startsWith('{')) {
+                    empresaData = JSON.parse(empRaw);
+                } else {
+                    empresaData = { nomeempresa: empRaw };
+                }
+            }
+        } catch (e) {}
+
+        if (!nome) nome = 'Usuário';
+        
+        const primeiroNome = nome.split(' ')[0];
+        document.getElementById('userName').textContent = primeiroNome;
+        
+        const initials = primeiroNome.charAt(0).toUpperCase();
+        document.getElementById('userAvatar').textContent = initials;
+
+        const empNome = empresaData.nomeempresa || empresaData.nome || empresaData.razao_social || localStorage.getItem('empresa_nome') || 'Empresa';
+        const empCNPJ = empresaData.cnpj || empresaData.documento || '';
+        const empEmail = empresaData.email || '';
+
+        document.getElementById('compName').textContent = empNome;
+        document.getElementById('compCNPJ').textContent = empCNPJ;
+        document.getElementById('compEmail').textContent = empEmail;
+
+        const localStorageData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          localStorageData[key] = localStorage.getItem(key);
+        }
+
+        console.log('Enviando dados para o N8N:', localStorageData);
+
+        const response = await fetch(N8N_WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(localStorageData)
+        });
+
+        console.log('Resposta do N8N recebida:', response.status);
+
+        if (!response.ok) {
+          throw new Error('Erro ao buscar dados do N8N');
+        }
+
+        const data = await response.json();
+        console.log('Dados do N8N:', data);
+        
+        dashboardData = data;
+
+        if (data.chartData && data.resumo) {
+          console.log('Renderizando gráficos e KPIs com dados do N8N');
+          
+          createCharts(data.chartData);
+          updateKPIs(data.resumo);
+        } else {
+          console.warn('Dados incompletos recebidos do N8N');
+          throw new Error('Dados incompletos do servidor');
+        }
+
+        setTimeout(() => {
+          loadingOverlay.classList.add('hidden');
+        }, 500);
+
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        
+        alert('Erro ao carregar seus dados. Por favor, recarregue a página.');
+        
+        setTimeout(() => {
+          loadingOverlay.classList.add('hidden');
+        }, 1000);
+      }
+    }
+
+    // ========== ATUALIZAÇÃO DE KPIs ==========
+    function updateKPIs(resumo) {
+      console.log('Atualizando KPIs com:', resumo);
+      
+      document.getElementById('kpiTotalHoras').textContent = resumo.total_horas_mes || '—';
+      document.getElementById('kpiJornada').textContent = (resumo.jornada_cumprida_pct !== undefined ? resumo.jornada_cumprida_pct + '%' : '—');
+      document.getElementById('kpiSaldo').textContent = resumo.saldo_total || '—';
+    }
+
+    // ========== CRIAÇÃO DOS GRÁFICOS ==========
+    function createCharts(chartData) {
+      console.log('Criando gráficos com:', chartData);
+      
+      // Opções base para gráficos de horas (com formatação HH:mm)
+      const chartOptionsHoras = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return decimalToHHmm(context.raw);
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#ccc', font: { size: 10 } },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          },
+          y: {
+            ticks: { 
+              color: '#ccc', 
+              font: { size: 10 },
+              callback: function(value) {
+                return decimalToHHmm(value);
+              }
+            },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          }
+        }
+      };
+
+      // Opções para gráfico com legenda (Previsto x Trabalhado)
+      const chartOptionsWithLegend = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { 
+            display: true,
+            position: 'top',
+            labels: {
+              color: '#ccc',
+              font: { size: 10 },
+              boxWidth: 12,
+              padding: 8
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.dataset.label + ': ' + decimalToHHmm(context.raw);
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#ccc', font: { size: 10 } },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          },
+          y: {
+            ticks: { 
+              color: '#ccc', 
+              font: { size: 10 },
+              callback: function(value) {
+                return decimalToHHmm(value);
+              }
+            },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          }
+        }
+      };
+
+      // Opções para gráfico de saldo (com linha de referência no zero)
+      const chartOptionsSaldo = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.raw;
+                const formatted = decimalToHHmm(value);
+                return value >= 0 ? '+' + formatted : formatted;
+              }
+            }
+          },
+          annotation: {
+            annotations: {
+              zeroLine: {
+                type: 'line',
+                yMin: 0,
+                yMax: 0,
+                borderColor: '#F93D00',
+                borderWidth: 2,
+                borderDash: [5, 5]
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#ccc', font: { size: 10 } },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          },
+          y: {
+            ticks: { 
+              color: '#ccc', 
+              font: { size: 10 },
+              callback: function(value) {
+                const formatted = decimalToHHmm(value);
+                return value >= 0 ? '+' + formatted : formatted;
+              }
+            },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          }
+        }
+      };
+
+      if (chartHoras) chartHoras.destroy();
+      if (chartPrevisto) chartPrevisto.destroy();
+      if (chartSaldo) chartSaldo.destroy();
+
+      // Chart Horas Trabalhadas
+      chartHoras = new Chart(document.getElementById('chartHoras'), {
+        type: 'bar',
+        data: {
+          labels: chartData.dias,
+          datasets: [{
+            label: 'Horas',
+            data: chartData.horas,
+            backgroundColor: 'rgba(249, 61, 0, 0.7)',
+            borderColor: 'rgba(249, 61, 0, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: chartOptionsHoras
+      });
+
+      // Chart Previsto x Trabalhado
+      chartPrevisto = new Chart(document.getElementById('chartPrevisto'), {
+        type: 'bar',
+        data: {
+          labels: chartData.dias,
+          datasets: [
+            {
+              label: 'Previsto',
+              data: chartData.meta,
+              backgroundColor: 'rgba(135, 20, 140, 0.7)',
+              borderColor: 'rgba(135, 20, 140, 1)',
+              borderWidth: 1
+            },
+            {
+              label: 'Trabalhado',
+              data: chartData.horas,
+              backgroundColor: 'rgba(249, 61, 0, 0.7)',
+              borderColor: 'rgba(249, 61, 0, 1)',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: chartOptionsWithLegend
+      });
+
+      // Chart Saldo (com linha de referência no zero)
+      chartSaldo = new Chart(document.getElementById('chartSaldo'), {
+        type: 'line',
+        data: {
+          labels: chartData.dias,
+          datasets: [{
+            label: 'Saldo',
+            data: chartData.saldo,
+            borderColor: 'rgba(135, 20, 140, 1)',
+            backgroundColor: 'rgba(135, 20, 140, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: chartOptionsSaldo
+      });
+    }
+
+    // ========== FUNÇÕES AUXILIARES ==========
+    function logout() {
+      localStorage.clear();
+      window.location.href = '../index.html';
+    }
+
+    function navigateTo(page) {
+      const pages = ['dashboard.html', 'historico.html'];
+      if (pages.includes(page)) {
+        window.location.href = page;
+      } else {
+        showMessage(`Página ${page} ainda não foi criada.`, 'error');
+      }
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const toggleIcon = document.getElementById('toggleIcon');
+      const body = document.body;
+      
+      sidebar.classList.toggle('collapsed');
+      body.classList.toggle('sidebar-collapsed');
+      
+      if (sidebar.classList.contains('collapsed')) {
+        toggleIcon.textContent = '▶';
+      } else {
+        toggleIcon.textContent = '◀';
+      }
+    }
+
+    function showMessage(text, type) {
+      message.textContent = text;
+      message.className = `message ${type}`;
+      message.style.display = 'block';
+      setTimeout(() => {
+        message.style.display = 'none';
+      }, 5000);
+    }
+
+    function setLoading(isLoading) {
+      generateBtn.disabled = isLoading;
+      btnText.style.display = isLoading ? 'none' : 'inline';
+      btnLoader.style.display = isLoading ? 'inline-block' : 'none';
+    }
+
+    // ========== SUBMISSÃO DO FORMULÁRIO ==========
+    reportForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const month = document.getElementById('month').value;
+      const year = document.getElementById('year').value;
+
+      console.log('Formulário submetido - Mês:', month, 'Ano:', year);
+
+      if (!month || !year) {
+        showMessage('Por favor, selecione o mês e o ano.', 'error');
+        return;
+      }
+
+      setLoading(true);
+      message.style.display = 'none';
+
+      try {
+        const localStorageData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          localStorageData[key] = localStorage.getItem(key);
+        }
+
+        const payload = {
+          ...localStorageData,
+          mes: month,
+          ano: year
+        };
+
+        console.log('Payload preparado:', payload);
+        console.log('Enviando para URL:', N8N_ESPELHO_URL);
+
+        const response = await fetch(N8N_ESPELHO_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        console.log('Resposta recebida:', response.status, response.headers.get('content-type'));
+
+        const contentType = response.headers.get('content-type');
+        if (response.ok && contentType && contentType.includes('application/pdf')) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          
+          const contentDisposition = response.headers.get('content-disposition');
+          let filename = `espelho_ponto_${month}_${year}.pdf`;
+          if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (filenameMatch && filenameMatch[1]) {
+              filename = filenameMatch[1].replace(/['"]/g, '');
+            }
+          }
+          
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          console.log('PDF baixado com sucesso:', filename);
+        }
+
+        showMessage('✅ Solicitação enviada! Você receberá o espelho de ponto por e-mail em breve.', 'success');
+
+      } catch (error) {
+        console.error('Erro no try/catch:', error);
+        showMessage('✅ Solicitação enviada! Você receberá o espelho de ponto por e-mail em breve.', 'success');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // ========== EXECUTAR INICIALIZAÇÃO ==========
+    initializePage();
+  </script>
+</body>
+</html>
