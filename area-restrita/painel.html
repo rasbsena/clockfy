@@ -1201,7 +1201,7 @@
       if (chartPrevisto) chartPrevisto.destroy();
       if (chartSaldo) chartSaldo.destroy();
 
-      // Chart Horas Trabalhadas
+      // Chart Horas Trabalhadas (mostra hoje)
       chartHoras = new Chart(document.getElementById('chartHoras'), {
         type: 'bar',
         data: {
@@ -1217,7 +1217,7 @@
         options: chartOptionsHoras
       });
 
-      // Chart Previsto x Trabalhado
+      // Chart Previsto x Trabalhado (usa horasFechado - só até ontem)
       chartPrevisto = new Chart(document.getElementById('chartPrevisto'), {
         type: 'bar',
         data: {
@@ -1232,7 +1232,7 @@
             },
             {
               label: 'Trabalhado',
-              data: chartData.horas,
+              data: chartData.horasFechado || chartData.horas,
               backgroundColor: 'rgba(249, 61, 0, 0.7)',
               borderColor: 'rgba(249, 61, 0, 1)',
               borderWidth: 1
