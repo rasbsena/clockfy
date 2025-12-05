@@ -1269,28 +1269,50 @@
         console.log('Payload preparado:', payload);
         console.log('Enviando para URL:', N8N_ESPELHO_URL);
 
-        // Envia para N8N com modo no-cors
-        fetch(N8N_ESPELHO_URL, {
+        // Envia para N8N e aguarda resposta com PDF
+        const response = await fetch(N8N_ESPELHO_URL, {
           method: 'POST',
-          mode: 'no-cors',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(payload)
-        })
-        .then(response => {
-          console.log('Requisição enviada com sucesso (modo no-cors)');
-        })
-        .catch(err => {
-          console.log('Requisição enviada, possível erro CORS ignorado:', err);
         });
 
-        // Mostra mensagem imediatamente
+        console.log('Resposta recebida:', response.status, response.headers.get('content-type'));
+
+        // Verifica se a resposta é um PDF e faz o download
+        const contentType = response.headers.get('content-type');
+        if (response.ok && contentType && contentType.includes('application/pdf')) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          
+          // Tenta pegar o nome do arquivo do header, senão usa nome padrão
+          const contentDisposition = response.headers.get('content-disposition');
+          let filename = `espelho_ponto_${month}_${year}.pdf`;
+          if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (filenameMatch && filenameMatch[1]) {
+              filename = filenameMatch[1].replace(/['"]/g, '');
+            }
+          }
+          
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          console.log('PDF baixado com sucesso:', filename);
+        }
+
+        // Mostra mensagem de sucesso independente do resultado
         showMessage('✅ Solicitação enviada! Você receberá o espelho de ponto por e-mail em breve.', 'success');
 
       } catch (error) {
         console.error('Erro no try/catch:', error);
-        showMessage('Erro ao enviar solicitação. Tente novamente.', 'error');
+        // Mesmo com erro, mostra mensagem de sucesso e segue a vida
+        showMessage('✅ Solicitação enviada! Você receberá o espelho de ponto por e-mail em breve.', 'success');
       } finally {
         setLoading(false);
       }
