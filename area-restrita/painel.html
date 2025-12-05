@@ -890,6 +890,20 @@
   </div>
 
   <script>
+    // ========== FUNÇÃO DE FORMATAÇÃO DECIMAL → HH:mm ==========
+    function decimalToHHmm(decimal) {
+      if (decimal === 0 || decimal === null || decimal === undefined) return '0:00';
+      
+      const isNegative = decimal < 0;
+      const absDecimal = Math.abs(decimal);
+      
+      const hours = Math.floor(absDecimal);
+      const minutes = Math.round((absDecimal - hours) * 60);
+      
+      const formatted = `${hours}:${String(minutes).padStart(2, '0')}`;
+      return isNegative ? `-${formatted}` : formatted;
+    }
+
     // ========== VERIFICAÇÃO E EXIBIÇÃO DO WIDGET ADMIN ==========
     (function checkAdminWidget() {
       const adminWidget = document.getElementById('adminWidget');
@@ -897,27 +911,23 @@
       
       console.log('Verificando permissões de admin...');
       
-      // Opção 1: Verificar se existe 'role' direto no localStorage (com lowercase)
       const role = localStorage.getItem('role');
       if (role && (role.trim() === 'Admin' || role.trim().toLowerCase() === 'admin')) {
         isAdmin = true;
         console.log('✅ Admin detectado via role:', role);
       }
       
-      // Opção 2: Verificar dentro do objeto 'usuario' (JSON)
       const usuarioJson = localStorage.getItem('usuario');
       if (!isAdmin && usuarioJson) {
         try {
           const usuario = JSON.parse(usuarioJson);
           console.log('Objeto usuario encontrado:', usuario);
           
-          // Verifica nivel_acesso (com lowercase)
           if (usuario.nivel_acesso && usuario.nivel_acesso.toLowerCase() === 'admin') {
             isAdmin = true;
             console.log('✅ Admin detectado via usuario.nivel_acesso:', usuario.nivel_acesso);
           }
           
-          // Verifica role dentro do objeto usuario (fallback com lowercase)
           if (!isAdmin && usuario.role && usuario.role.toLowerCase() === 'admin') {
             isAdmin = true;
             console.log('✅ Admin detectado via usuario.role:', usuario.role);
@@ -927,7 +937,6 @@
         }
       }
       
-      // Exibe ou esconde o widget
       if (isAdmin) {
         adminWidget.classList.add('show');
         console.log('🎉 Widget admin ATIVADO');
@@ -957,7 +966,6 @@
       try {
         console.log('Iniciando carregamento dos dados do N8N...');
         
-        // Atualizar títulos dos KPIs com o mês atual
         const meses = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 
                        'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
         const mesAtual = meses[new Date().getMonth()];
@@ -966,24 +974,17 @@
         document.getElementById('kpiLabelJornada').textContent = `Jornada Cumprida/${mesAtual}`;
         document.getElementById('kpiLabelSaldo').textContent = `Saldo de Horas/${mesAtual}`;
         
-        // ============================================================
-        // LÓGICA DO NOME E EMPRESA (Sidebar & Header)
-        // ============================================================
         let nome = localStorage.getItem('usuario_nome');
         let empresaData = {};
 
-        // Tenta ler objeto usuario
         try {
             const userObj = JSON.parse(localStorage.getItem('usuario'));
             if (userObj) {
-                // Se nome não veio solto, pega do objeto
                 if (!nome) nome = userObj.nome || userObj.name || userObj.nome_completo;
             }
         } catch (e) {}
 
-        // Tenta ler objeto empresa
         try {
-            // Verifica string simples ou objeto JSON
             const empRaw = localStorage.getItem('empresa');
             if (empRaw) {
                 if(empRaw.startsWith('{')) {
@@ -994,27 +995,21 @@
             }
         } catch (e) {}
 
-        // Se ainda não achou nome, usa padrão
         if (!nome) nome = 'Usuário';
         
-        // Atualiza Nome no Header
         const primeiroNome = nome.split(' ')[0];
         document.getElementById('userName').textContent = primeiroNome;
         
-        // Avatar com inicial
         const initials = primeiroNome.charAt(0).toUpperCase();
         document.getElementById('userAvatar').textContent = initials;
 
-        // Atualiza Dados da Empresa na Sidebar
-        // Prioriza: nomeempresa (do print), depois nome, depois razao_social
         const empNome = empresaData.nomeempresa || empresaData.nome || empresaData.razao_social || localStorage.getItem('empresa_nome') || 'Empresa';
-        const empCNPJ = empresaData.cnpj || empresaData.documento || ''; // Se vazio, fica em branco
+        const empCNPJ = empresaData.cnpj || empresaData.documento || '';
         const empEmail = empresaData.email || '';
 
         document.getElementById('compName').textContent = empNome;
         document.getElementById('compCNPJ').textContent = empCNPJ;
         document.getElementById('compEmail').textContent = empEmail;
-        // ============================================================
 
         const localStorageData = {};
         for (let i = 0; i < localStorage.length; i++) {
@@ -1081,11 +1076,19 @@
     function createCharts(chartData) {
       console.log('Criando gráficos com:', chartData);
       
-      const chartOptions = {
+      // Opções base para gráficos de horas (com formatação HH:mm)
+      const chartOptionsHoras = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { display: false }
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return decimalToHHmm(context.raw);
+              }
+            }
+          }
         },
         scales: {
           x: {
@@ -1093,13 +1096,19 @@
             grid: { color: 'rgba(255, 255, 255, 0.05)' }
           },
           y: {
-            ticks: { color: '#ccc', font: { size: 10 } },
+            ticks: { 
+              color: '#ccc', 
+              font: { size: 10 },
+              callback: function(value) {
+                return decimalToHHmm(value);
+              }
+            },
             grid: { color: 'rgba(255, 255, 255, 0.05)' }
           }
         }
       };
 
-      // Opções específicas para o gráfico com legenda
+      // Opções para gráfico com legenda (Previsto x Trabalhado)
       const chartOptionsWithLegend = {
         responsive: true,
         maintainAspectRatio: false,
@@ -1113,6 +1122,13 @@
               boxWidth: 12,
               padding: 8
             }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.dataset.label + ': ' + decimalToHHmm(context.raw);
+              }
+            }
           }
         },
         scales: {
@@ -1121,7 +1137,48 @@
             grid: { color: 'rgba(255, 255, 255, 0.05)' }
           },
           y: {
+            ticks: { 
+              color: '#ccc', 
+              font: { size: 10 },
+              callback: function(value) {
+                return decimalToHHmm(value);
+              }
+            },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          }
+        }
+      };
+
+      // Opções para gráfico de saldo (pode ter valores negativos)
+      const chartOptionsSaldo = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const value = context.raw;
+                const formatted = decimalToHHmm(value);
+                return value >= 0 ? '+' + formatted : formatted;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
             ticks: { color: '#ccc', font: { size: 10 } },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          },
+          y: {
+            ticks: { 
+              color: '#ccc', 
+              font: { size: 10 },
+              callback: function(value) {
+                const formatted = decimalToHHmm(value);
+                return value >= 0 ? '+' + formatted : formatted;
+              }
+            },
             grid: { color: 'rgba(255, 255, 255, 0.05)' }
           }
         }
@@ -1144,10 +1201,10 @@
             borderWidth: 1
           }]
         },
-        options: chartOptions
+        options: chartOptionsHoras
       });
 
-      // Chart Previsto x Trabalhado (NOVO)
+      // Chart Previsto x Trabalhado
       chartPrevisto = new Chart(document.getElementById('chartPrevisto'), {
         type: 'bar',
         data: {
@@ -1187,7 +1244,7 @@
             fill: true
           }]
         },
-        options: chartOptions
+        options: chartOptionsSaldo
       });
     }
 
@@ -1269,7 +1326,6 @@
         console.log('Payload preparado:', payload);
         console.log('Enviando para URL:', N8N_ESPELHO_URL);
 
-        // Envia para N8N e aguarda resposta com PDF
         const response = await fetch(N8N_ESPELHO_URL, {
           method: 'POST',
           headers: {
@@ -1280,7 +1336,6 @@
 
         console.log('Resposta recebida:', response.status, response.headers.get('content-type'));
 
-        // Verifica se a resposta é um PDF e faz o download
         const contentType = response.headers.get('content-type');
         if (response.ok && contentType && contentType.includes('application/pdf')) {
           const blob = await response.blob();
@@ -1288,7 +1343,6 @@
           const a = document.createElement('a');
           a.href = url;
           
-          // Tenta pegar o nome do arquivo do header, senão usa nome padrão
           const contentDisposition = response.headers.get('content-disposition');
           let filename = `espelho_ponto_${month}_${year}.pdf`;
           if (contentDisposition) {
@@ -1306,12 +1360,10 @@
           console.log('PDF baixado com sucesso:', filename);
         }
 
-        // Mostra mensagem de sucesso independente do resultado
         showMessage('✅ Solicitação enviada! Você receberá o espelho de ponto por e-mail em breve.', 'success');
 
       } catch (error) {
         console.error('Erro no try/catch:', error);
-        // Mesmo com erro, mostra mensagem de sucesso e segue a vida
         showMessage('✅ Solicitação enviada! Você receberá o espelho de ponto por e-mail em breve.', 'success');
       } finally {
         setLoading(false);
