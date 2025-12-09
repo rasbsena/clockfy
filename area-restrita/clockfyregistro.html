@@ -530,7 +530,7 @@
                     },
                     {
                         enableHighAccuracy: true,
-                        timeout: 20000, // Tempo maior para garantir
+                        timeout: 20000,
                         maximumAge: 0
                     }
                 );
@@ -638,9 +638,8 @@
             // === TRAVA DE SEGURANÇA CRÍTICA ===
             if (userLocation.lat === null) {
                 showMessage('⚠️ Localização obrigatória! Por favor, autorize o acesso ao GPS e aguarde.', 'error');
-                // Tenta pedir de novo caso o usuário tenha fechado sem querer
                 requestLocation();
-                return; // INTERROMPE O ENVIO
+                return;
             }
 
             submitBtn.disabled = true;
@@ -649,10 +648,15 @@
             message.style.display = 'none';
 
             try {
+                // CORREÇÃO: Agora usa horário de Brasília (America/Sao_Paulo - UTC-3)
+                const now = new Date();
+                const brasiliaTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+                const timestamp = brasiliaTime.toISOString();
+
                 const payload = {
                     pin: pin,
                     photo: capturedPhoto,
-                    timestamp: new Date().toISOString(),
+                    timestamp: timestamp,
                     latitude: userLocation.lat,
                     longitude: userLocation.long,
                     precision: userLocation.acc,
