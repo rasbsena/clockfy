@@ -1128,7 +1128,16 @@
       e.preventDefault();
       
       const form = e.target;
+      
+      // Coleta dados do localStorage
+      const localStorageData = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        localStorageData[key] = localStorage.getItem(key);
+      }
+      
       const formData = {
+        ...localStorageData,
         acao: 'enviar_espelho',
         funcionario_id: form.funcionario_id.value,
         mes: form.mes.value,
