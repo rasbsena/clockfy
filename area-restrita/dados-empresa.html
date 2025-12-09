@@ -140,6 +140,7 @@
       border: 1px solid rgba(249, 61, 0, 0.1);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
       position: relative;
+      margin-bottom: 20px;
     }
 
     .section-title {
@@ -257,6 +258,86 @@
         display: none !important;
     }
 
+    /* TABELA DE FUNCIONÁRIOS */
+    .table-container {
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+
+    .employees-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .employees-table thead th {
+      background: rgba(249, 61, 0, 0.2);
+      padding: 14px 12px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #fff;
+      border-bottom: 2px solid rgba(249, 61, 0, 0.3);
+    }
+
+    .employees-table thead th:first-child {
+      border-radius: 10px 0 0 0;
+    }
+
+    .employees-table thead th:last-child {
+      border-radius: 0 10px 0 0;
+    }
+
+    .employees-table tbody tr {
+      transition: all 0.2s ease;
+    }
+
+    .employees-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .employees-table tbody td {
+      padding: 14px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      color: #e0e0e0;
+    }
+
+    .role-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .role-badge.admin {
+      background: rgba(249, 61, 0, 0.2);
+      color: var(--laranja);
+      border: 1px solid rgba(249, 61, 0, 0.4);
+    }
+
+    .role-badge.user {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+    }
+
+    .no-employees {
+      text-align: center;
+      padding: 40px 20px;
+      color: #a8a8a8;
+      font-size: 14px;
+    }
+
+    .employees-count {
+      font-size: 14px;
+      color: #a8a8a8;
+      font-weight: 500;
+    }
+
     @keyframes spin { 100% { transform: rotate(360deg); } }
     @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -267,6 +348,8 @@
       .btn { width: 100%; margin-bottom: 10px; }
       .section-title { flex-direction: column; align-items: flex-start; gap: 15px; }
       .section-title button { width: 100%; margin-left: 0 !important; }
+      .employees-table { font-size: 12px; }
+      .employees-table thead th, .employees-table tbody td { padding: 10px 8px; }
     }
   </style>
 </head>
@@ -436,6 +519,35 @@
           </div>
         </form>
       </div>
+
+      <!-- CARD DE FUNCIONÁRIOS -->
+      <div class="card">
+        <div class="section-title">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span>👥 Funcionários Cadastrados</span>
+            <span class="employees-count" id="employeesCount"></span>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="employees-table" id="employeesTable">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Função</th>
+                <th>WhatsApp</th>
+                <th>Carga Horária</th>
+              </tr>
+            </thead>
+            <tbody id="employeesTableBody">
+              <tr>
+                <td colspan="5" class="no-employees">Carregando funcionários...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -549,6 +661,45 @@
         toggleEditMode(false);
     }
 
+    // ========== RENDERIZAR TABELA DE FUNCIONÁRIOS ==========
+    function renderEmployeesTable(funcionarios) {
+      const tbody = document.getElementById('employeesTableBody');
+      const countEl = document.getElementById('employeesCount');
+
+      if (!funcionarios || !Array.isArray(funcionarios) || funcionarios.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="no-employees">Nenhum funcionário cadastrado</td></tr>';
+        countEl.textContent = '(0)';
+        return;
+      }
+
+      countEl.textContent = `(${funcionarios.length})`;
+
+      const html = funcionarios.map(func => {
+        const nome = func.nome_completo || func.nome || '-';
+        const email = func.email || '-';
+        const whatsapp = func.numero_whatsapp || func.whatsapp || '-';
+        const cargaHoraria = func.carga_horaria_diaria || func.carga_horaria || '-';
+        
+        // Converte role: user -> Colaborador, admin -> Administrador
+        let roleRaw = func.role || func.nivel_acesso || 'user';
+        roleRaw = roleRaw.toLowerCase();
+        const roleLabel = roleRaw === 'admin' ? 'Administrador' : 'Colaborador';
+        const roleClass = roleRaw === 'admin' ? 'admin' : 'user';
+
+        return `
+          <tr>
+            <td>${nome}</td>
+            <td>${email}</td>
+            <td><span class="role-badge ${roleClass}">${roleLabel}</span></td>
+            <td>${whatsapp}</td>
+            <td>${cargaHoraria}h</td>
+          </tr>
+        `;
+      }).join('');
+
+      tbody.innerHTML = html;
+    }
+
     // ========== AO CARREGAR A PÁGINA ==========
     document.addEventListener('DOMContentLoaded', async () => {
       // 1. Coleta TODOS os dados do LocalStorage para leitura
@@ -604,8 +755,13 @@
           document.getElementById('endereco').value = empresaData.endereco || '';
         }
 
+        // Renderiza tabela de funcionários
+        const funcionarios = data.funcionarios || [];
+        renderEmployeesTable(funcionarios);
+
       } catch (error) {
         console.error('Erro na requisição:', error);
+        renderEmployeesTable([]);
       } finally {
         loadingOverlay.style.display = 'none';
       }
