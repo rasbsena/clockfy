@@ -532,18 +532,105 @@
         const WEBHOOK_PIN = 'https://n8n.upperfy.com.br/webhook/atualizapin';
         const WEBHOOK_UPDATE = 'https://n8n.upperfy.com.br/webhook/clock4';
 
-        // Função segura para pegar dados
-        function getSafeUserField(field1, field2) {
-            let val = localStorage.getItem('usuario_' + field1);
-            if (val && val !== 'undefined') return val;
+        // ========================================
+        // FUNÇÃO ROBUSTA PARA BUSCAR DADOS
+        // ========================================
+        function getUsuarioData() {
+            const dados = {
+                nome: null,
+                email: null,
+                nivel_acesso: null,
+                whatsapp: null,
+                created_at: null,
+                foto: null,
+                id: null
+            };
 
-            try {
-                const userObj = JSON.parse(localStorage.getItem('usuario'));
-                if (userObj) {
-                    return userObj[field1] || userObj[field2];
+            // Lista de chaves possíveis no localStorage
+            const possiveisChaves = [
+                'dadosLogin',
+                'loginData', 
+                'authData',
+                'usuario',
+                'user',
+                'userData',
+                'sessao',
+                'session'
+            ];
+
+            // Tenta encontrar o objeto principal
+            for (const chave of possiveisChaves) {
+                const valor = localStorage.getItem(chave);
+                if (valor) {
+                    try {
+                        const obj = JSON.parse(valor);
+                        
+                        // Se tem objeto 'usuario' dentro (estrutura do JSON mostrado)
+                        if (obj.usuario) {
+                            dados.nome = obj.usuario.nome || obj.usuario.name;
+                            dados.email = obj.usuario.email || obj.usuario.mail;
+                            dados.nivel_acesso = obj.usuario.nivel_acesso || obj.usuario.role || obj.usuario.cargo;
+                            dados.whatsapp = obj.usuario.whatsapp || obj.usuario.telefone || obj.usuario.phone;
+                            dados.created_at = obj.usuario.created_at || obj.usuario.createdAt || obj.usuario.data_criacao;
+                            dados.foto = obj.usuario.foto || obj.usuario.foto_perfil || obj.usuario.avatar;
+                            dados.id = obj.usuario.id || obj.id_funcionario;
+                        } 
+                        // Se é o próprio objeto usuario
+                        else if (obj.nome || obj.name || obj.email) {
+                            dados.nome = obj.nome || obj.name;
+                            dados.email = obj.email || obj.mail;
+                            dados.nivel_acesso = obj.nivel_acesso || obj.role || obj.cargo;
+                            dados.whatsapp = obj.whatsapp || obj.telefone || obj.phone;
+                            dados.created_at = obj.created_at || obj.createdAt || obj.data_criacao;
+                            dados.foto = obj.foto || obj.foto_perfil || obj.avatar;
+                            dados.id = obj.id || obj.id_funcionario;
+                        }
+
+                        // Se encontrou dados, para de procurar
+                        if (dados.nome || dados.email) break;
+
+                    } catch (e) {
+                        // Não é JSON válido, ignora
+                    }
                 }
-            } catch (e) {}
-            return null;
+            }
+
+            // Fallback: tenta chaves individuais com prefixo 'usuario_'
+            if (!dados.nome) dados.nome = localStorage.getItem('usuario_nome');
+            if (!dados.email) dados.email = localStorage.getItem('usuario_email');
+            if (!dados.nivel_acesso) dados.nivel_acesso = localStorage.getItem('usuario_nivel_acesso') || localStorage.getItem('usuario_cargo');
+            if (!dados.whatsapp) dados.whatsapp = localStorage.getItem('usuario_whatsapp');
+            if (!dados.created_at) dados.created_at = localStorage.getItem('usuario_created_at');
+            if (!dados.foto) dados.foto = localStorage.getItem('usuario_foto');
+            if (!dados.id) dados.id = localStorage.getItem('id_funcionario');
+
+            // Fallback: tenta chaves diretas sem prefixo
+            if (!dados.nome) dados.nome = localStorage.getItem('nome');
+            if (!dados.email) dados.email = localStorage.getItem('email');
+            if (!dados.nivel_acesso) dados.nivel_acesso = localStorage.getItem('nivel_acesso') || localStorage.getItem('cargo');
+            if (!dados.whatsapp) dados.whatsapp = localStorage.getItem('whatsapp');
+            if (!dados.id) dados.id = localStorage.getItem('id_funcionario');
+
+            return dados;
+        }
+
+        // Função para formatar nível de acesso
+        function formatarNivelAcesso(nivel) {
+            if (!nivel) return 'Colaborador';
+            
+            const mapeamento = {
+                'admin': 'Administrador',
+                'administrator': 'Administrador',
+                'user': 'Colaborador',
+                'colaborador': 'Colaborador',
+                'manager': 'Gerente',
+                'gerente': 'Gerente',
+                'supervisor': 'Supervisor',
+                'rh': 'RH',
+                'hr': 'RH'
+            };
+
+            return mapeamento[nivel.toLowerCase()] || nivel;
         }
 
         // Função para coletar TODO o localStorage
@@ -561,51 +648,47 @@
         // ========================================
         document.addEventListener('DOMContentLoaded', () => {
             
-            let nome = getSafeUserField('nome', 'name') || 'Colaborador';
-            let email = getSafeUserField('email', 'mail') || 'Não informado';
-            let cargo = getSafeUserField('cargo', 'role') || 'Colaborador';
-            let whatsapp = getSafeUserField('whatsapp', 'telefone') || 'Não informado';
+            const usuario = getUsuarioData();
 
-            let dataCriacao = getSafeUserField('created_at', 'createdAt');
-            if(!dataCriacao) dataCriacao = getSafeUserField('data_criacao', 'criado_em');
-            
-            let dataFormatada = '---';
-            if(dataCriacao) {
+            // Nome
+            const elName = document.getElementById('displayName');
+            if(elName) elName.textContent = usuario.nome || 'Não informado';
+
+            // Nível de acesso / Cargo
+            const elRole = document.getElementById('displayRole');
+            if(elRole) elRole.textContent = formatarNivelAcesso(usuario.nivel_acesso);
+
+            // Email
+            const elEmail = document.getElementById('displayEmail');
+            if(elEmail) elEmail.value = usuario.email || 'Não informado';
+
+            // WhatsApp
+            const elWhatsapp = document.getElementById('displayWhatsapp');
+            if(elWhatsapp) elWhatsapp.value = usuario.whatsapp || 'Não informado';
+
+            // Data de criação
+            let dataFormatada = 'Não informado';
+            if(usuario.created_at) {
                 try {
-                    const dataObj = new Date(dataCriacao);
+                    const dataObj = new Date(usuario.created_at);
                     if(!isNaN(dataObj)) {
                         dataFormatada = dataObj.toLocaleDateString('pt-BR');
                     } else {
-                        dataFormatada = dataCriacao; 
+                        dataFormatada = usuario.created_at;
                     }
                 } catch(e) {
-                    dataFormatada = dataCriacao;
+                    dataFormatada = usuario.created_at;
                 }
             }
-
-            let foto = getSafeUserField('foto_perfil', 'foto');
-            if (!foto) foto = getSafeUserField('avatar', 'image');
-
-            const elName = document.getElementById('displayName');
-            if(elName) elName.textContent = nome;
-
-            const elRole = document.getElementById('displayRole');
-            if(elRole) elRole.textContent = cargo;
-
-            const elEmail = document.getElementById('displayEmail');
-            if(elEmail) elEmail.value = email;
-
-            const elWhatsapp = document.getElementById('displayWhatsapp');
-            if(elWhatsapp) elWhatsapp.value = whatsapp;
-
             const elDate = document.getElementById('displayDate');
             if(elDate) elDate.value = dataFormatada;
 
-            if (foto && foto.length > 10) { 
+            // Foto
+            if (usuario.foto && usuario.foto.length > 10) {
                 const imgElement = document.getElementById('userPhoto');
                 const iconElement = document.getElementById('defaultAvatar');
                 if(imgElement) {
-                    imgElement.src = foto;
+                    imgElement.src = usuario.foto;
                     imgElement.style.display = 'block';
                 }
                 if(iconElement) {
@@ -631,14 +714,11 @@
                 actions.style.display = 'flex';
                 document.getElementById('statusMessage').style.display = 'none';
             } else {
-                // Preenche os campos com os dados atuais
-                let nome = getSafeUserField('nome', 'name') || '';
-                let email = getSafeUserField('email', 'mail') || '';
-                let whatsapp = getSafeUserField('whatsapp', 'telefone') || '';
+                const usuario = getUsuarioData();
                 
-                document.getElementById('editName').value = nome;
-                document.getElementById('editEmail').value = email;
-                document.getElementById('editWhatsapp').value = whatsapp;
+                document.getElementById('editName').value = usuario.nome || '';
+                document.getElementById('editEmail').value = usuario.email || '';
+                document.getElementById('editWhatsapp').value = usuario.whatsapp || '';
                 
                 dataSection.style.display = 'block';
                 dataSection.classList.add('active');
@@ -693,13 +773,13 @@
             const name = document.getElementById('editName').value.trim();
             const email = document.getElementById('editEmail').value.trim();
             const whatsapp = document.getElementById('editWhatsapp').value.trim();
-            const id = localStorage.getItem('id_funcionario') || getSafeUserField('id', 'id_funcionario');
+            const usuario = getUsuarioData();
+            const id = usuario.id || localStorage.getItem('id_funcionario');
 
             if (!name || !email || !whatsapp) {
                 return showMessage('Preencha todos os campos.', 'error');
             }
 
-            // Validação básica de email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
                 return showMessage('Por favor, insira um e-mail válido.', 'error');
@@ -728,12 +808,10 @@
                 const data = await response.json();
 
                 if (response.ok && (data.success || data.sucesso)) {
-                    // Atualiza os dados no localStorage
                     localStorage.setItem('usuario_nome', name);
                     localStorage.setItem('usuario_email', email);
                     localStorage.setItem('usuario_whatsapp', whatsapp);
                     
-                    // Atualiza a exibição
                     document.getElementById('displayName').textContent = name;
                     document.getElementById('displayEmail').value = email;
                     document.getElementById('displayWhatsapp').value = whatsapp;
@@ -757,7 +835,8 @@
             const newPass = document.getElementById('newPass').value;
             const confirmPass = document.getElementById('confirmPass').value;
             const email = document.getElementById('displayEmail').value;
-            const id = localStorage.getItem('id_funcionario') || getSafeUserField('id', 'id_funcionario');
+            const usuario = getUsuarioData();
+            const id = usuario.id || localStorage.getItem('id_funcionario');
 
             if (!currentPass || !newPass || !confirmPass) {
                 return showMessage('Preencha todos os campos.', 'error');
@@ -830,14 +909,12 @@
                     timestamp: new Date().toISOString()
                 };
 
-                // Envia para o n8n (não importa o retorno, mostra mensagem padrão)
                 fetch(WEBHOOK_PIN, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 }).catch(e => console.log('Envio background:', e));
 
-                // Feedback Padrão de Segurança (Sempre sucesso visual)
                 setTimeout(() => {
                     showMessage('Sua solicitação foi recebida e em caso de aprovação o novo pin será enviado no seu e-mail.', 'success');
                     
@@ -848,7 +925,6 @@
                 }, 1000);
 
             } catch (error) {
-                // Mesmo no erro de rede, mostra a mensagem padrão para não vazar info
                 showMessage('Sua solicitação foi recebida e em caso de aprovação o novo pin será enviado no seu e-mail.', 'success');
             }
         }
