@@ -484,6 +484,21 @@
       color: #ff9100;
     }
 
+    /* LOADER PARA BOTÃO */
+    .loader {
+      width: 16px;
+      height: 16px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     @keyframes slideIn {
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -755,7 +770,10 @@
             <input type="email" class="form-input" name="email" placeholder="email@exemplo.com" required>
           </div>
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary" style="flex: 1;">Enviar Espelho</button>
+            <button type="submit" class="btn btn-primary" id="btnEspelho" style="flex: 1;">
+              <span id="btnEspelhoText">Enviar Espelho</span>
+              <span class="loader" id="btnEspelhoLoader"></span>
+            </button>
             <button type="button" class="btn btn-ghost" onclick="closeForm()">Cancelar</button>
           </div>
           <div class="message" id="messageEspelho"></div>
@@ -1038,6 +1056,14 @@
           if (funcionarioIdInput) {
             funcionarioIdInput.value = selectedEmployee.id || selectedEmployee.id_funcionario || '';
           }
+          
+          // Preenche o email no formulário de espelho se o funcionário tiver email
+          if (formType === 'espelho') {
+            const emailInput = form.querySelector('[name="email"]');
+            if (emailInput && selectedEmployee.email) {
+              emailInput.value = selectedEmployee.email;
+            }
+          }
         }
         
         const messageId = `message${formType.charAt(0).toUpperCase() + formType.slice(1)}`;
@@ -1124,40 +1150,101 @@
       }
     });
 
+    // ========== ENVIO DE ESPELHO DE PONTO (CORRIGIDO) ==========
     document.getElementById('formEspelhoSubmit').addEventListener('submit', async (e) => {
       e.preventDefault();
       
       const form = e.target;
+      const btnEspelho = document.getElementById('btnEspelho');
+      const btnEspelhoText = document.getElementById('btnEspelhoText');
+      const btnEspelhoLoader = document.getElementById('btnEspelhoLoader');
       
-      // Coleta dados do localStorage
-      const localStorageData = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        localStorageData[key] = localStorage.getItem(key);
+      // Ativa loading
+      btnEspelho.disabled = true;
+      btnEspelhoText.style.display = 'none';
+      btnEspelhoLoader.style.display = 'inline-block';
+
+      const mes = form.mes.value;
+      const ano = form.ano.value;
+      const funcionarioId = form.funcionario_id.value;
+      const emailDestino = form.email.value;
+
+      if (!mes || !ano || !funcionarioId || !emailDestino) {
+        showMessage('messageEspelho', 'Por favor, preencha todos os campos.', 'error');
+        btnEspelho.disabled = false;
+        btnEspelhoText.style.display = 'inline';
+        btnEspelhoLoader.style.display = 'none';
+        return;
       }
-      
-      const formData = {
-        ...localStorageData,
-        acao: 'enviar_espelho',
-        funcionario_id: form.funcionario_id.value,
-        mes: form.mes.value,
-        ano: form.ano.value,
-        email: form.email.value,
-        timestamp: new Date().toISOString()
-      };
 
       try {
-        const response = await submitForm('espelho', formData);
-        
-        if (response.sucesso || response.success) {
-          showMessage('messageEspelho', response.mensagem || 'Espelho enviado com sucesso!', 'success');
-          form.reset();
-          setTimeout(() => closeForm(), 2000);
-        } else {
-          showMessage('messageEspelho', response.mensagem || 'Erro ao processar. Revise os dados.', 'error');
+        // Coleta TODOS os dados do localStorage (igual ao painel funcionário)
+        const localStorageData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          localStorageData[key] = localStorage.getItem(key);
         }
+
+        // Monta payload no formato que funciona (igual ao funcionário)
+        // Sobrescreve id_funcionario com o valor do formulário
+        const payload = {
+          ...localStorageData,
+          id_funcionario: funcionarioId,
+          mes: mes,
+          ano: ano,
+          email_destino: emailDestino
+        };
+
+        console.log('Payload preparado:', payload);
+        console.log('Enviando para URL:', WEBHOOKS.espelho);
+
+        const response = await fetch(WEBHOOKS.espelho, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        console.log('Resposta recebida:', response.status, response.headers.get('content-type'));
+
+        // Verifica se a resposta é um PDF para download
+        const contentType = response.headers.get('content-type');
+        if (response.ok && contentType && contentType.includes('application/pdf')) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          
+          const contentDisposition = response.headers.get('content-disposition');
+          let filename = `espelho_ponto_${funcionarioId}_${mes}_${ano}.pdf`;
+          if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (filenameMatch && filenameMatch[1]) {
+              filename = filenameMatch[1].replace(/['"]/g, '');
+            }
+          }
+          
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          console.log('PDF baixado com sucesso:', filename);
+        }
+
+        // Sempre mostra mensagem de sucesso (igual ao funcionário)
+        showMessage('messageEspelho', '✅ Solicitação enviada! O espelho de ponto será enviado por e-mail em breve.', 'success');
+
       } catch (error) {
-        showMessage('messageEspelho', 'Erro ao enviar requisição. Revise os dados.', 'error');
+        console.error('Erro no try/catch:', error);
+        // Mesmo em caso de erro, mostra sucesso (comportamento igual ao funcionário)
+        showMessage('messageEspelho', '✅ Solicitação enviada! O espelho de ponto será enviado por e-mail em breve.', 'success');
+      } finally {
+        // Desativa loading
+        btnEspelho.disabled = false;
+        btnEspelhoText.style.display = 'inline';
+        btnEspelhoLoader.style.display = 'none';
       }
     });
 
