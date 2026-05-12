@@ -221,6 +221,13 @@
 
     .card.unlocked {
       background: linear-gradient(135deg, var(--laranja-vibrante), var(--laranja-claro));
+      flex-direction: column;
+    }
+
+    .card.unlocked .card-icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 10px;
     }
 
     .card.unlocked h2 {
@@ -288,12 +295,15 @@
     <div class="grid">
       <!-- Sistemas Liberados -->
       <div class="card unlocked" onclick="acessarSistema('clockfy', 'clockfyregistro.html')">
+        <svg class="card-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="42" cy="42" r="24" fill="none" stroke="white" stroke-width="5" opacity="0.85"/><path d="M42 26V42L52 52" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/><circle cx="42" cy="42" r="3" fill="white" opacity="0.85"/><circle cx="72" cy="72" r="14" fill="white" opacity="0.85"/><path d="M66 72L70 76L78 68" fill="none" stroke="var(--laranja-vibrante)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <h2>Clockfy</h2>
       </div>
       <div class="card unlocked" onclick="acessarSistema('upperchat', 'https://chat.upperfy.com.br')">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg>
         <h2>UpperChat</h2>
       </div>
       <div class="card unlocked" onclick="acessarSistema('uppercrm', 'https://crm.upperfy.com.br')">
+        <svg class="card-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M25 35H45V45H25ZM55 35H75V45H55ZM25 50H75V60H25ZM25 65H60V75H25Z" fill="white" opacity="0.85"/><circle cx="72" cy="70" r="12" fill="white" opacity="0.85"/><path d="M68 70L71 73L77 67" stroke="var(--laranja-vibrante)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <h2>UpperCRM</h2>
       </div>
 
