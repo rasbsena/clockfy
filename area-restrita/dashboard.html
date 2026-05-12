@@ -339,7 +339,7 @@
     const empresaNome = localStorage.getItem('empresa_nome');
 
     // ========================================
-    // 🔒 VERIFICAÇÃO DE AUTENTICAÇÃO
+    // VERIFICAÇÃO DE AUTENTICAÇÃO
     // ========================================
     if (autenticado !== 'true' || !idFuncionario || !idEmpresa) {
       console.log('Usuário não autenticado. Redirecionando...');
@@ -347,7 +347,7 @@
     }
 
     // ========================================
-    // 👤 PERSONALIZAÇÃO DA INTERFACE
+    // PERSONALIZAÇÃO DA INTERFACE
     // ========================================
     window.addEventListener('DOMContentLoaded', () => {
       // Atualizar título de boas-vindas
@@ -380,7 +380,7 @@
     });
 
     // ========================================
-    // 🔗 FUNÇÃO PARA ACESSAR SISTEMAS
+    // FUNÇÃO PARA ACESSAR SISTEMAS
     // Prepara dados para envio ao n8n quando necessário
     // ========================================
     function acessarSistema(sistema, url) {
@@ -409,7 +409,7 @@
     }
 
     // ========================================
-    // 🚪 FUNÇÃO DE LOGOUT
+    // FUNÇÃO DE LOGOUT
     // ========================================
     function logout() {
       if (confirm('Deseja realmente sair?')) {
@@ -431,7 +431,7 @@
     }
 
     // ========================================
-    // 📊 FUNÇÃO AUXILIAR: Obter dados para n8n
+    // FUNÇÃO AUXILIAR: Obter dados para n8n
     // Use essa função sempre que precisar enviar dados ao n8n
     // ========================================
     function obterDadosUsuario() {
