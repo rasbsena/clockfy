@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clockfy - Painel Admin</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23270949' d='M50,5L25,35h50L50,5z'/%3E%3Ccircle fill='%23f93d00' cx='50' cy='60' r='35'/%3E%3Ccircle fill='%23270949' cx='50' cy='60' r='28'/%3E%3Ccircle fill='%23fff' cx='50' cy='60' r='23'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23FF3D00'/%3E%3Cstop offset='100%25' stop-color='%23FF9200'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='%23270949'/%3E%3Ccircle cx='46' cy='46' r='24' fill='none' stroke='url(%23g)' stroke-width='5'/%3E%3Cpath d='M46 30V46L56 56' fill='none' stroke='url(%23g)' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='46' cy='46' r='3' fill='url(%23g)'/%3E%3Ccircle cx='72' cy='72' r='14' fill='url(%23g)'/%3E%3Cpath d='M66 72L70 76L78 68' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -412,6 +412,66 @@
       resize: vertical;
     }
 
+    /* BATIDAS */
+    .batidas-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .batida-field {
+      position: relative;
+    }
+
+    .batida-num {
+      position: absolute;
+      top: -8px;
+      left: 10px;
+      background: var(--laranja);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .batida-input {
+      padding-top: 14px !important;
+    }
+
+    .btn-expandir {
+      background: transparent;
+      border: 1px dashed rgba(249, 61, 0, 0.4);
+      color: var(--laranja);
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-expandir:hover {
+      background: rgba(249, 61, 0, 0.08);
+      border-color: var(--laranja);
+    }
+
+    @media (max-width: 640px) {
+      .batidas-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
     .form-input:focus, .form-select:focus, .form-textarea:focus {
       outline: none;
       border-color: var(--laranja);
@@ -568,25 +628,30 @@
     <header class="header">
       <div class="header-left">
         <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-          <path fill="#270949" d="M50,5L25,35h50L50,5z"/>
-          <circle fill="#f93d00" cx="50" cy="60" r="35"/>
-          <circle fill="#270949" cx="50" cy="60" r="28"/>
-          <circle fill="#fff" cx="50" cy="60" r="23"/>
+          <defs><linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FF3D00"/><stop offset="100%" stop-color="#FF9200"/>
+          </linearGradient></defs>
+          <rect width="100" height="100" rx="20" fill="#270949"/>
+          <circle cx="46" cy="46" r="24" fill="none" stroke="url(#logoGrad)" stroke-width="5"/>
+          <path d="M46 30V46L56 56" fill="none" stroke="url(#logoGrad)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="46" cy="46" r="3" fill="url(#logoGrad)"/>
+          <circle cx="72" cy="72" r="14" fill="url(#logoGrad)"/>
+          <path d="M66 72L70 76L78 68" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <div>
           <div class="header-title">Clock<span>fy</span></div>
-          <div class="admin-badge">⚙️ Admin</div>
+          <div class="admin-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> Admin</div>
         </div>
       </div>
       <div>
         <button class="btn btn-ghost" onclick="window.location.href='dados-empresa.html'" style="margin-right: 10px;">
-          🏢 Dados da Empresa
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/></svg> Dados da Empresa
         </button>
         <button class="btn btn-ghost" onclick="window.location.href='https://clockfy.upperfy.com.br/area-restrita/adduser.html'" style="margin-right: 10px;">
-          + Adicionar Funcionário
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM19 8v6M22 11h-6"/></svg> Adicionar Funcionário
         </button>
         <button class="btn btn-ghost" onclick="window.location.href='painel.html'" style="margin-right: 10px;">
-          ← Voltar ao Painel
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Voltar ao Painel
         </button>
         <button class="btn btn-primary" onclick="logout()">Sair</button>
       </div>
@@ -595,7 +660,7 @@
     <div class="main-grid">
       <div class="top-section">
         <div class="card">
-          <h2 class="card-title">🔍 Buscar Funcionário</h2>
+          <h2 class="card-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> Buscar Funcionário</h2>
           <p class="card-subtitle">Digite nome ou ID para localizar</p>
 
           <div class="search-section">
@@ -615,11 +680,11 @@
           <div class="selected-employee">
             <div class="selected-header">
               <div>
-                <div class="selected-title">✓ Funcionário Selecionado</div>
+                <div class="selected-title"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M20 6L9 17l-5-5"/></svg> Funcionário Selecionado</div>
                 <div class="selected-name" id="selectedName">-</div>
                 <div class="selected-id">ID: <span id="selectedId">-</span></div>
               </div>
-              <button class="btn-clear" onclick="clearSelection()">✕ Limpar</button>
+              <button class="btn-clear" onclick="clearSelection()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M18 6L6 18M6 6l12 12"/></svg> Limpar</button>
             </div>
             <div class="selected-details">
               <div class="detail-item">
@@ -645,32 +710,32 @@
 
       <div class="actions-menu" id="actionsMenu">
         <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 20px; text-align: center;">
-          ⚡ Escolha uma Ação
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Escolha uma Ação
         </h2>
         
         <div class="actions-section">
           <button class="action-btn" onclick="openForm('lancar')">
-            <span class="action-icon">📝</span>
+            <span class="action-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
             <span class="action-text">Lançar Ponto Antigo</span>
           </button>
 
           <button class="action-btn" onclick="openForm('espelho')">
-            <span class="action-icon">📄</span>
+            <span class="action-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></span>
             <span class="action-text">Enviar Espelho de Ponto</span>
           </button>
 
           <button class="action-btn" onclick="openForm('atualizar')">
-            <span class="action-icon">👤</span>
+            <span class="action-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
             <span class="action-text">Atualizar Dados</span>
           </button>
 
           <button class="action-btn" onclick="openForm('promover')">
-            <span class="action-icon">⭐</span>
+            <span class="action-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
             <span class="action-text">Promover para Admin</span>
           </button>
 
           <button class="action-btn" onclick="openForm('excluir')">
-            <span class="action-icon">🗑️</span>
+            <span class="action-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M10 11v6M14 11v6"/></svg></span>
             <span class="action-text">Excluir Funcionário</span>
           </button>
         </div>
@@ -678,15 +743,14 @@
 
       <div class="card form-area" id="formLancar">
         <div class="form-header">
-          <h2 class="form-title">📝 Lançar Ponto Antigo</h2>
-          <button class="btn-ghost" onclick="closeForm()">✕ Fechar</button>
+          <h2 class="form-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Lançar / Corrigir Ponto</h2>
+          <button class="btn-ghost" onclick="closeForm()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M18 6L6 18M6 6l12 12"/></svg> Fechar</button>
         </div>
 
         <div class="warning-box">
-            <div class="warning-icon">⚠️</div>
+            <div class="warning-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffb020" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg></div>
             <div class="warning-text">
-                <strong>Atenção:</strong> Para lançamentos no mesmo dia, é obrigatório informar o horário de saída. <br>
-                Para correções pontuais (apenas entrada ou apenas saída), recomendamos realizar o ajuste no dia seguinte para evitar inconsistências no cálculo de horas.
+                <strong>Atenção:</strong> as batidas devem estar em ordem cronológica (entrada, saída, entrada, saída...). O total de horas é recalculado automaticamente pelos pares. Deixe em branco as batidas não utilizadas.
             </div>
         </div>
 
@@ -699,32 +763,74 @@
             <label class="form-label">Data do Ponto</label>
             <input type="date" class="form-input" name="data" required>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Entrada</label>
-              <input type="time" class="form-input" name="entrada" required>
+
+          <label class="form-label" style="margin-bottom:12px;">Batidas do Dia</label>
+          <div class="batidas-grid">
+            <div class="batida-field">
+              <span class="batida-num">1</span>
+              <input type="time" class="form-input batida-input" name="batida_1" data-idx="1">
             </div>
-            <div class="form-group">
-              <label class="form-label">Saída para Almoço</label>
-              <input type="time" class="form-input" name="saida_almoco">
+            <div class="batida-field">
+              <span class="batida-num">2</span>
+              <input type="time" class="form-input batida-input" name="batida_2" data-idx="2">
+            </div>
+            <div class="batida-field">
+              <span class="batida-num">3</span>
+              <input type="time" class="form-input batida-input" name="batida_3" data-idx="3">
+            </div>
+            <div class="batida-field">
+              <span class="batida-num">4</span>
+              <input type="time" class="form-input batida-input" name="batida_4" data-idx="4">
+            </div>
+            <!-- batidas 5-8: ocultas até expandir -->
+            <div class="batida-field batida-extra" style="display:none;">
+              <span class="batida-num">5</span>
+              <input type="time" class="form-input batida-input" name="batida_5" data-idx="5">
+            </div>
+            <div class="batida-field batida-extra" style="display:none;">
+              <span class="batida-num">6</span>
+              <input type="time" class="form-input batida-input" name="batida_6" data-idx="6">
+            </div>
+            <div class="batida-field batida-extra" style="display:none;">
+              <span class="batida-num">7</span>
+              <input type="time" class="form-input batida-input" name="batida_7" data-idx="7">
+            </div>
+            <div class="batida-field batida-extra" style="display:none;">
+              <span class="batida-num">8</span>
+              <input type="time" class="form-input batida-input" name="batida_8" data-idx="8">
             </div>
           </div>
-          <div class="form-row">
+          <button type="button" class="btn-expandir" id="btnExpandirBatidas" onclick="toggleBatidasExtras()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M12 5v14M5 12h14"/></svg>
+            <span id="expandirLabel">Adicionar mais batidas (até 8)</span>
+          </button>
+
+          <div class="form-row" style="margin-top:20px;">
             <div class="form-group">
-              <label class="form-label">Retorno do Almoço</label>
-              <input type="time" class="form-input" name="retorno_almoco">
+              <label class="form-label">Sinal do Dia (opcional)</label>
+              <select class="form-select" name="sinal">
+                <option value="">Nenhum (dia normal)</option>
+                <option value="FE">FE — Feriado</option>
+                <option value="FO">FO — Folga</option>
+                <option value="ER">ER — Escala reduzida</option>
+                <option value="F">F — Férias</option>
+                <option value="A">A — Atestado</option>
+                <option value="AB">AB — Abono</option>
+                <option value="FA">FA — Falta injustificada</option>
+              </select>
             </div>
             <div class="form-group">
-              <label class="form-label">Saída</label>
-              <input type="time" class="form-input" name="saida" required>
+              <label class="form-label">Total (calculado)</label>
+              <input type="text" class="form-input" id="totalCalculado" value="00:00" readonly style="background:rgba(20,5,35,0.5);font-weight:700;color:var(--laranja);">
             </div>
           </div>
+
           <div class="form-group">
-            <label class="form-label">Observações</label>
-            <textarea class="form-textarea" name="observacoes" placeholder="Informações adicionais..."></textarea>
+            <label class="form-label">Comentário do Dia (opcional)</label>
+            <textarea class="form-textarea" name="comentario" placeholder="Ex.: atestado médico, ajuste manual, observação para o holerite..."></textarea>
           </div>
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary" style="flex: 1;">Lançar Ponto</button>
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Salvar Batidas</button>
             <button type="button" class="btn btn-ghost" onclick="closeForm()">Cancelar</button>
           </div>
           <div class="message" id="messageLancar"></div>
@@ -733,8 +839,8 @@
 
       <div class="card form-area" id="formEspelho">
         <div class="form-header">
-          <h2 class="form-title">📄 Enviar Espelho de Ponto</h2>
-          <button class="btn-ghost" onclick="closeForm()">✕ Fechar</button>
+          <h2 class="form-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg> Enviar Espelho de Ponto</h2>
+          <button class="btn-ghost" onclick="closeForm()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M18 6L6 18M6 6l12 12"/></svg> Fechar</button>
         </div>
         <form id="formEspelhoSubmit">
           <div class="form-group">
@@ -762,7 +868,13 @@
             </div>
             <div class="form-group">
               <label class="form-label">Ano</label>
-              <input type="number" class="form-input" name="ano" min="2023" max="2030" value="2025" required>
+              <select class="form-select" name="ano" required>
+                <option value="">Selecione o ano</option>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+              </select>
             </div>
           </div>
           <div class="form-group">
@@ -782,8 +894,8 @@
 
       <div class="card form-area" id="formAtualizar">
         <div class="form-header">
-          <h2 class="form-title">👤 Atualizar Dados do Funcionário</h2>
-          <button class="btn-ghost" onclick="closeForm()">✕ Fechar</button>
+          <h2 class="form-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Atualizar Dados do Funcionário</h2>
+          <button class="btn-ghost" onclick="closeForm()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M18 6L6 18M6 6l12 12"/></svg> Fechar</button>
         </div>
         <form id="formAtualizarSubmit">
           <div class="form-group">
@@ -818,8 +930,8 @@
 
       <div class="card form-area" id="formPromover">
         <div class="form-header">
-          <h2 class="form-title">⭐ Promover para Administrador</h2>
-          <button class="btn-ghost" onclick="closeForm()">✕ Fechar</button>
+          <h2 class="form-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Promover para Administrador</h2>
+          <button class="btn-ghost" onclick="closeForm()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M18 6L6 18M6 6l12 12"/></svg> Fechar</button>
         </div>
         <form id="formPromoverSubmit">
           <div class="form-group">
@@ -827,7 +939,7 @@
             <input type="text" class="form-input" name="funcionario_id" placeholder="Digite o ID do funcionário" required>
           </div>
           <div style="padding: 20px; background: rgba(249, 61, 0, 0.1); border: 1px solid rgba(249, 61, 0, 0.3); border-radius: 12px; margin-bottom: 20px;">
-            <p style="margin-bottom: 12px; font-weight: 600; color: var(--laranja);">⚠️ Atenção!</p>
+            <p style="margin-bottom: 12px; font-weight: 600; color: var(--laranja);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg> Atenção!</p>
             <p style="font-size: 14px; line-height: 1.6; color: #e0e0e0;">
               Você está prestes a promover este funcionário para Administrador. 
               Esta ação concederá acesso total ao sistema, incluindo este painel administrativo.
@@ -847,8 +959,8 @@
 
       <div class="card form-area" id="formExcluir">
         <div class="form-header">
-          <h2 class="form-title">🗑️ Excluir Funcionário</h2>
-          <button class="btn-ghost" onclick="closeForm()">✕ Fechar</button>
+          <h2 class="form-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M10 11v6M14 11v6"/></svg> Excluir Funcionário</h2>
+          <button class="btn-ghost" onclick="closeForm()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M18 6L6 18M6 6l12 12"/></svg> Fechar</button>
         </div>
         <form id="formExcluirSubmit">
           <div class="form-group">
@@ -856,7 +968,7 @@
             <input type="text" class="form-input" name="funcionario_id" placeholder="Digite o ID do funcionário" required>
           </div>
           <div style="padding: 20px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; margin-bottom: 20px;">
-            <p style="margin-bottom: 12px; font-weight: 600; color: #f87171;">🚨 Ação Irreversível!</p>
+            <p style="margin-bottom: 12px; font-weight: 600; color: #f87171;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg> Ação Irreversível!</p>
             <p style="font-size: 14px; line-height: 1.6; color: #e0e0e0;">
               Você está prestes a excluir permanentemente este funcionário e todos os seus registros de ponto. 
               Esta ação <strong>NÃO PODE</strong> ser desfeita.
@@ -932,7 +1044,7 @@
     });
 
     async function searchEmployees(type, query, suggestionsElement) {
-      suggestionsElement.innerHTML = '<div class="no-results">🔍 Buscando...</div>';
+      suggestionsElement.innerHTML = '<div class="no-results"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> Buscando...</div>';
       suggestionsElement.classList.add('show');
 
       try {
@@ -977,13 +1089,13 @@
         displaySuggestions(employees, suggestionsElement);
 
       } catch (error) {
-        suggestionsElement.innerHTML = `<div class="no-results">❌ Erro ao buscar funcionário</div>`;
+        suggestionsElement.innerHTML = `<div class="no-results"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg> Erro ao buscar funcionário</div>`;
       }
     }
 
     function displaySuggestions(employees, suggestionsElement) {
       if (!employees || !Array.isArray(employees) || employees.length === 0) {
-        suggestionsElement.innerHTML = '<div class="no-results">😕 Nenhum funcionário encontrado</div>';
+        suggestionsElement.innerHTML = '<div class="no-results"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> Nenhum funcionário encontrado</div>';
         return;
       }
 
@@ -1112,12 +1224,46 @@
         const data = await response.json();
         return data;
       } catch (error) {
-        console.error('❌ Erro ao enviar:', error);
+        console.error('Erro ao enviar:', error);
         throw error;
       }
     }
 
     // ========== SUBMISSÃO DE FORMULÁRIOS ==========
+
+    // ----- Lógica das batidas: expandir 5-8 -----
+    function toggleBatidasExtras() {
+      const extras = document.querySelectorAll('.batida-extra');
+      const label = document.getElementById('expandirLabel');
+      const escondidas = extras[0].style.display === 'none';
+      extras.forEach(el => { el.style.display = escondidas ? 'block' : 'none'; });
+      label.textContent = escondidas ? 'Ocultar batidas extras' : 'Adicionar mais batidas (até 8)';
+      if (!escondidas) {
+        // ao ocultar, limpa 5-8 para não enviar lixo
+        extras.forEach(el => { el.querySelector('input').value = ''; });
+        calcularTotal();
+      }
+    }
+
+    // ----- Cálculo automático do total pelos pares -----
+    function calcularTotal() {
+      const inputs = document.querySelectorAll('#formLancarSubmit .batida-input');
+      const horarios = Array.from(inputs).map(i => i.value).filter(v => v);
+      let totalMin = 0;
+      for (let i = 0; i + 1 < horarios.length; i += 2) {
+        const [h1, m1] = horarios[i].split(':').map(Number);
+        const [h2, m2] = horarios[i + 1].split(':').map(Number);
+        const diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+        if (diff > 0) totalMin += diff;
+      }
+      const hh = String(Math.floor(totalMin / 60)).padStart(2, '0');
+      const mm = String(totalMin % 60).padStart(2, '0');
+      document.getElementById('totalCalculado').value = `${hh}:${mm}`;
+    }
+
+    document.querySelectorAll('#formLancarSubmit .batida-input').forEach(inp => {
+      inp.addEventListener('input', calcularTotal);
+    });
 
     document.getElementById('formLancarSubmit').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1127,11 +1273,17 @@
         acao: 'lancar_ponto',
         funcionario_id: form.funcionario_id.value,
         data: form.data.value,
-        entrada: form.entrada.value,
-        saida_almoco: form.saida_almoco.value,
-        retorno_almoco: form.retorno_almoco.value,
-        saida: form.saida.value,
-        observacoes: form.observacoes.value,
+        // formato novo: 8 batidas (backend já aceita batida_1..batida_8)
+        batida_1: form.batida_1.value,
+        batida_2: form.batida_2.value,
+        batida_3: form.batida_3.value,
+        batida_4: form.batida_4.value,
+        batida_5: form.batida_5.value,
+        batida_6: form.batida_6.value,
+        batida_7: form.batida_7.value,
+        batida_8: form.batida_8.value,
+        sinal: form.sinal.value,
+        comentario: form.comentario.value,
         timestamp: new Date().toISOString()
       };
 
@@ -1139,8 +1291,9 @@
         const response = await submitForm('lancar', formData);
         
         if (response.sucesso || response.success) {
-          showMessage('messageLancar', response.mensagem || 'Ponto lançado com sucesso!', 'success');
+          showMessage('messageLancar', response.mensagem || 'Batidas salvas com sucesso!', 'success');
           form.reset();
+          calcularTotal();
           setTimeout(() => closeForm(), 2000);
         } else {
           showMessage('messageLancar', response.mensagem || 'Erro ao processar. Revise os dados.', 'error');
@@ -1234,12 +1387,12 @@
         }
 
         // Sempre mostra mensagem de sucesso (igual ao funcionário)
-        showMessage('messageEspelho', '✅ Solicitação enviada! O espelho de ponto será enviado por e-mail em breve.', 'success');
+        showMessage('messageEspelho', 'Solicitação enviada! O espelho de ponto será enviado por e-mail em breve.', 'success');
 
       } catch (error) {
         console.error('Erro no try/catch:', error);
         // Mesmo em caso de erro, mostra sucesso (comportamento igual ao funcionário)
-        showMessage('messageEspelho', '✅ Solicitação enviada! O espelho de ponto será enviado por e-mail em breve.', 'success');
+        showMessage('messageEspelho', 'Solicitação enviada! O espelho de ponto será enviado por e-mail em breve.', 'success');
       } finally {
         // Desativa loading
         btnEspelho.disabled = false;
@@ -1362,8 +1515,8 @@
     }
 
     // ========== INICIALIZAÇÃO ==========
-    console.log('✅ Painel Admin carregado');
-    console.log('📍 Webhooks configurados:', WEBHOOKS);
+    console.log('Painel Admin carregado');
+    console.log('Webhooks configurados:', WEBHOOKS);
   </script>
 </body>
 </html>
