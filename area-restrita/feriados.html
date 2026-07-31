@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clockfy - Feriados</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23FF3D00'/%3E%3Cstop offset='100%25' stop-color='%23FF9200'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='%23270949'/%3E%3Ccircle cx='46' cy='46' r='24' fill='none' stroke='url(%23g)' stroke-width='5'/%3E%3Cpath d='M46 30V46L56 56' fill='none' stroke='url(%23g)' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='46' cy='46' r='3' fill='url(%23g)'/%3E%3Ccircle cx='72' cy='72' r='14' fill='url(%23g)'/%3E%3Cpath d='M66 72L70 76L78 68' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --roxo-escuro: #270949;
+      --roxo-medio: #87148C;
+      --roxo-vivo: #4F1295;
+      --laranja: #F93D00;
+      --laranja-esc: #e03800;
+      --branco: #fff;
+      --vidro: rgba(39, 9, 73, 0.6);
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #270949 0%, #1a0430 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #fff;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: var(--vidro);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      border: 1px solid rgba(249, 61, 0, 0.1);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 15px; }
+    .logo { width: 50px; height: 50px; }
+    .header-title { font-size: 28px; font-weight: 800; }
+    .header-title span { color: var(--laranja); }
+
+    .admin-badge {
+      background: var(--laranja);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .btn-primary { background: var(--laranja); color: #fff; }
+    .btn-primary:hover {
+      background: var(--laranja-esc);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(249, 61, 0, 0.4);
+    }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-ghost {
+      background: transparent;
+      color: #fff;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--vidro);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid rgba(249, 61, 0, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-subtitle { color: #a8a8a8; font-size: 14px; margin-bottom: 20px; }
+
+    /* FORMULÁRIOS */
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #e0e0e0;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      background: rgba(20, 5, 35, 0.8);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--laranja);
+      background: rgba(20, 5, 35, 0.95);
+    }
+
+    .linha-ano { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+    .linha-ano > div { flex: 1; min-width: 160px; }
+
+    /* LISTA DE FERIADOS */
+    .feriado-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .feriado-item:hover { background: rgba(249, 61, 0, 0.08); }
+    .feriado-item.ja-cadastrado { opacity: 0.55; }
+
+    .feriado-item input[type="checkbox"] {
+      width: 18px; height: 18px;
+      accent-color: var(--laranja);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .feriado-data {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--laranja);
+      min-width: 92px;
+    }
+
+    .feriado-nome { font-size: 14px; flex: 1; }
+    .feriado-dow { font-size: 11px; color: #999; margin-left: 6px; }
+
+    .tag {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .tag-ok { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+    .tag-movel { background: rgba(135, 20, 140, 0.3); color: #e9b8ec; }
+    .tag-manual { background: rgba(249, 61, 0, 0.2); color: #ffb08a; }
+    .tag-passado { background: rgba(255, 145, 0, 0.2); color: #ffb020; }
+
+    .btn-remover {
+      background: transparent;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      border-radius: 8px;
+      padding: 5px 9px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .btn-remover:hover { background: rgba(239, 68, 68, 0.2); }
+
+    .acoes-lista { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+
+    .btn-mini {
+      background: transparent;
+      border: 1px dashed rgba(249, 61, 0, 0.4);
+      color: var(--laranja);
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-mini:hover { background: rgba(249, 61, 0, 0.08); border-color: var(--laranja); }
+
+    .vazio { padding: 20px; text-align: center; color: #a8a8a8; font-size: 14px; }
+
+    /* AVISOS E MENSAGENS */
+    .warning-box {
+      background: rgba(255, 145, 0, 0.1);
+      border: 1px solid rgba(255, 145, 0, 0.4);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      display: none;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .warning-box.show { display: flex; }
+    .warning-text { font-size: 13px; color: #e0e0e0; line-height: 1.5; }
+    .warning-text strong { color: #ff9100; }
+
+    .message {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-top: 16px;
+      display: none;
+    }
+    .message.show { display: block; }
+    .message.success {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      color: #86efac;
+    }
+    .message.error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .loader {
+      width: 16px; height: 16px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+      margin-left: 8px;
+    }
+    .loader.show { display: inline-block; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .barra-salvar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: 20px;
+    }
+    .contador { font-size: 13px; color: #cfcfcf; }
+    .contador strong { color: var(--laranja); font-size: 16px; }
+
+    @media (max-width: 640px) {
+      .feriado-data { min-width: auto; }
+      .header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // ========== GUARDA DE ACESSO (admin ou rh) ==========
+    (function () {
+      const role = localStorage.getItem('role');
+      const usuarioJson = localStorage.getItem('usuario');
+      let permitido = false;
+
+      if (role && ['admin', 'rh'].includes(role.trim().toLowerCase())) {
+        permitido = true;
+      } else if (usuarioJson) {
+        try {
+          let u = JSON.parse(usuarioJson);
+          if (typeof u === 'string') u = JSON.parse(u);
+          const r = ((u.role || u.nivel_acesso || '') + '').trim().toLowerCase();
+          if (['admin', 'rh'].includes(r)) permitido = true;
+        } catch (e) {}
+      }
+
+      if (!permitido) {
+        alert('Acesso negado! Apenas RH e administradores podem acessar esta área.');
+        window.location.href = 'painel.html';
+      }
+    })();
+  </script>
+
+  <div class="container">
+    <header class="header">
+      <div class="header-left">
+        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+          <defs><linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FF3D00"/><stop offset="100%" stop-color="#FF9200"/>
+          </linearGradient></defs>
+          <rect width="100" height="100" rx="20" fill="#270949"/>
+          <circle cx="46" cy="46" r="24" fill="none" stroke="url(#logoGrad)" stroke-width="5"/>
+          <path d="M46 30V46L56 56" fill="none" stroke="url(#logoGrad)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="46" cy="46" r="3" fill="url(#logoGrad)"/>
+          <circle cx="72" cy="72" r="14" fill="url(#logoGrad)"/>
+          <path d="M66 72L70 76L78 68" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div>
+          <div class="header-title">Clock<span>fy</span></div>
+          <div class="admin-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            Feriados
+          </div>
+        </div>
+      </div>
+      <div>
+        <button class="btn btn-ghost" onclick="window.location.href='painelrh.html'" style="margin-right: 10px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Voltar ao Painel RH
+        </button>
+        <button class="btn btn-primary" onclick="logout()">Sair</button>
+      </div>
+    </header>
+
+    <!-- ANO -->
+    <div class="card">
+      <h2 class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Calendário de Feriados
+      </h2>
+      <p class="card-subtitle">Selecione o ano para carregar os feriados da sua empresa</p>
+      <div class="linha-ano">
+        <div>
+          <label class="form-label" for="anoSelect">Ano</label>
+          <select class="form-select" id="anoSelect"></select>
+        </div>
+        <div style="flex:0 0 auto;">
+          <button class="btn btn-primary" id="btnCarregar" onclick="carregarAno()">
+            <span id="btnCarregarText">Carregar</span>
+            <span class="loader" id="loaderCarregar"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NACIONAIS -->
+    <div class="card">
+      <h2 class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        Feriados Nacionais
+      </h2>
+      <p class="card-subtitle">Marque os que a sua empresa observa. Os já cadastrados aparecem sinalizados.</p>
+      <div class="acoes-lista">
+        <button class="btn-mini" onclick="marcarTodos(true)">Marcar todos</button>
+        <button class="btn-mini" onclick="marcarTodos(false)">Desmarcar todos</button>
+      </div>
+      <div id="listaNacionais"></div>
+    </div>
+
+    <!-- MANUAIS -->
+    <div class="card">
+      <h2 class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Feriados Municipais, Estaduais e Dias Off
+      </h2>
+      <p class="card-subtitle">Inclua manualmente datas que não constam na lista nacional</p>
+      <div class="linha-ano" style="margin-bottom:18px;">
+        <div>
+          <label class="form-label" for="dataManual">Data</label>
+          <input type="date" class="form-input" id="dataManual">
+        </div>
+        <div style="flex:2;">
+          <label class="form-label" for="descManual">Descrição</label>
+          <input type="text" class="form-input" id="descManual" placeholder="Ex.: Aniversário da cidade, recesso, dia off..." maxlength="120">
+        </div>
+        <div style="flex:0 0 auto;">
+          <button class="btn btn-ghost" onclick="adicionarManual()">Adicionar</button>
+        </div>
+      </div>
+      <div id="listaManuais"></div>
+    </div>
+
+    <!-- JÁ CADASTRADOS -->
+    <div class="card">
+      <h2 class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        Já Cadastrados em <span id="anoTitulo">—</span>
+      </h2>
+      <p class="card-subtitle">Feriados que já constam no sistema para este ano</p>
+      <div id="listaCadastrados"><div class="vazio">Carregando...</div></div>
+    </div>
+
+    <!-- SALVAR -->
+    <div class="card">
+      <div class="warning-box" id="avisoRetroativo">
+        <div>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffb020" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        </div>
+        <div class="warning-text">
+          <strong>Atenção:</strong> há datas anteriores a hoje na seleção. Cadastrar um feriado retroativo altera o cálculo do banco de horas daquele dia, zerando a meta e transformando as horas trabalhadas em crédito.
+        </div>
+      </div>
+
+      <div class="barra-salvar">
+        <div class="contador"><strong id="contadorSel">0</strong> feriado(s) selecionado(s) para cadastrar</div>
+        <button class="btn btn-primary" id="btnSalvar" onclick="salvarFeriados()" style="margin-left:auto;">
+          <span id="btnSalvarText">Cadastrar Feriados</span>
+          <span class="loader" id="loaderSalvar"></span>
+        </button>
+      </div>
+      <div class="message" id="mensagem"></div>
+    </div>
+  </div>
+
+  <script>
+    // ========== CONFIGURAÇÃO ==========
+    const WEBHOOK_FERIADOS = 'https://n8n.upperfy.com.br/webhook/clockfy-feriados';
+
+    // ========== ESTADO ==========
+    let anoAtual = new Date().getFullYear();
+    let cadastrados = [];   // vindos do banco: [{data, data_br, descricao}]
+    let manuais = [];       // adicionados na tela: [{data, descricao}]
+
+    // ========== HELPERS ==========
+    function getLocalStorageData() {
+      const dados = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const chave = localStorage.key(i);
+        dados[chave] = localStorage.getItem(chave);
+      }
+      return dados;
+    }
+
+    function hojeSP() {
+      return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+    }
+
+    function dataBr(iso) {
+      const [a, m, d] = iso.split('-');
+      return d + '/' + m + '/' + a;
+    }
+
+    function diaSemana(iso) {
+      const nomes = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      return nomes[new Date(iso + 'T12:00:00Z').getUTCDay()];
+    }
+
+    // ========== FERIADOS NACIONAIS ==========
+    // Páscoa pelo algoritmo de Meeus/Butcher — base dos feriados móveis
+    function calcularPascoa(ano) {
+      const a = ano % 19, b = Math.floor(ano / 100), c = ano % 100;
+      const d = Math.floor(b / 4), e = b % 4;
+      const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - d - g + 15) % 30;
+      const i = Math.floor(c / 4), k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const mes = Math.floor((h + l - 7 * m + 114) / 31);
+      const dia = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(Date.UTC(ano, mes - 1, dia));
+    }
+
+    function somaDias(data, n) {
+      const x = new Date(data);
+      x.setUTCDate(x.getUTCDate() + n);
+      return x.toISOString().slice(0, 10);
+    }
+
+    function feriadosNacionais(ano) {
+      const fixos = [
+        ['01-01', 'Confraternização Universal'],
+        ['04-21', 'Tiradentes'],
+        ['05-01', 'Dia do Trabalho'],
+        ['09-07', 'Independência do Brasil'],
+        ['10-12', 'Nossa Senhora Aparecida'],
+        ['11-02', 'Finados'],
+        ['11-15', 'Proclamação da República'],
+        ['11-20', 'Consciência Negra'],
+        ['12-25', 'Natal']
+      ].map(([md, nome]) => ({ data: ano + '-' + md, descricao: nome, movel: false }));
+
+      const pascoa = calcularPascoa(ano);
+      const moveis = [
+        [-48, 'Segunda-feira de Carnaval'],
+        [-47, 'Carnaval'],
+        [-46, 'Quarta-feira de Cinzas'],
+        [-2,  'Sexta-feira Santa'],
+        [60,  'Corpus Christi']
+      ].map(([off, nome]) => ({ data: somaDias(pascoa, off), descricao: nome, movel: true }));
+
+      return [...fixos, ...moveis].sort((x, y) => x.data.localeCompare(y.data));
+    }
+
+    // ========== RENDERIZAÇÃO ==========
+    function estaCadastrado(iso) {
+      return cadastrados.some(c => c.data === iso);
+    }
+
+    function renderNacionais() {
+      const lista = feriadosNacionais(anoAtual);
+      const hoje = hojeSP();
+      const el = document.getElementById('listaNacionais');
+
+      el.innerHTML = lista.map((f, idx) => {
+        const jaTem = estaCadastrado(f.data);
+        const passado = f.data < hoje;
+        return `
+          <div class="feriado-item ${jaTem ? 'ja-cadastrado' : ''}">
+            <input type="checkbox" class="chk-nacional" data-data="${f.data}" data-desc="${f.descricao}"
+                   id="nac${idx}" ${jaTem ? 'checked disabled' : ''} onchange="atualizarContador()">
+            <span class="feriado-data">${dataBr(f.data)}</span>
+            <label class="feriado-nome" for="nac${idx}">
+              ${f.descricao}<span class="feriado-dow">${diaSemana(f.data)}</span>
+            </label>
+            ${f.movel ? '<span class="tag tag-movel">Móvel</span>' : ''}
+            ${passado && !jaTem ? '<span class="tag tag-passado">Data passada</span>' : ''}
+            ${jaTem ? '<span class="tag tag-ok">Cadastrado</span>' : ''}
+          </div>`;
+      }).join('');
+
+      atualizarContador();
+    }
+
+    function renderManuais() {
+      const el = document.getElementById('listaManuais');
+      if (!manuais.length) {
+        el.innerHTML = '<div class="vazio">Nenhuma data adicionada manualmente.</div>';
+        atualizarContador();
+        return;
+      }
+      const hoje = hojeSP();
+      el.innerHTML = manuais.map((f, i) => `
+        <div class="feriado-item">
+          <span class="feriado-data">${dataBr(f.data)}</span>
+          <span class="feriado-nome">${f.descricao}<span class="feriado-dow">${diaSemana(f.data)}</span></span>
+          <span class="tag tag-manual">Manual</span>
+          ${f.data < hoje ? '<span class="tag tag-passado">Data passada</span>' : ''}
+          <button class="btn-remover" onclick="removerManual(${i})">Remover</button>
+        </div>`).join('');
+      atualizarContador();
+    }
+
+    function renderCadastrados() {
+      const el = document.getElementById('listaCadastrados');
+      if (!cadastrados.length) {
+        el.innerHTML = '<div class="vazio">Nenhum feriado cadastrado para ' + anoAtual + '.</div>';
+        return;
+      }
+      el.innerHTML = cadastrados.map(c => `
+        <div class="feriado-item ja-cadastrado">
+          <span class="feriado-data">${c.data_br || dataBr(c.data)}</span>
+          <span class="feriado-nome">${c.descricao}<span class="feriado-dow">${diaSemana(c.data)}</span></span>
+          <span class="tag tag-ok">Cadastrado</span>
+        </div>`).join('');
+    }
+
+    // ========== SELEÇÃO ==========
+    function coletarSelecionados() {
+      const sel = [];
+      document.querySelectorAll('.chk-nacional').forEach(chk => {
+        if (chk.checked && !chk.disabled) {
+          sel.push({ data: chk.dataset.data, descricao: chk.dataset.desc });
+        }
+      });
+      manuais.forEach(m => sel.push({ data: m.data, descricao: m.descricao }));
+      return sel;
+    }
+
+    function atualizarContador() {
+      const sel = coletarSelecionados();
+      document.getElementById('contadorSel').textContent = sel.length;
+      document.getElementById('btnSalvar').disabled = sel.length === 0;
+
+      const hoje = hojeSP();
+      const temRetro = sel.some(s => s.data < hoje);
+      document.getElementById('avisoRetroativo').classList.toggle('show', temRetro);
+    }
+
+    function marcarTodos(valor) {
+      document.querySelectorAll('.chk-nacional').forEach(chk => {
+        if (!chk.disabled) chk.checked = valor;
+      });
+      atualizarContador();
+    }
+
+    // ========== MANUAIS ==========
+    function adicionarManual() {
+      const dataEl = document.getElementById('dataManual');
+      const descEl = document.getElementById('descManual');
+      const data = dataEl.value;
+      const desc = descEl.value.trim();
+
+      if (!data) { mostrarMensagem('Informe a data do feriado.', 'error'); return; }
+      if (!desc) { mostrarMensagem('Informe a descrição do feriado.', 'error'); return; }
+      if (Number(data.slice(0, 4)) !== anoAtual) {
+        mostrarMensagem('A data deve pertencer ao ano selecionado (' + anoAtual + ').', 'error');
+        return;
+      }
+      if (manuais.some(m => m.data === data)) {
+        mostrarMensagem('Essa data já foi adicionada à lista.', 'error');
+        return;
+      }
+      if (estaCadastrado(data)) {
+        mostrarMensagem('Essa data já está cadastrada no sistema.', 'error');
+        return;
+      }
+
+      manuais.push({ data, descricao: desc });
+      manuais.sort((a, b) => a.data.localeCompare(b.data));
+      dataEl.value = '';
+      descEl.value = '';
+      renderManuais();
+    }
+
+    function removerManual(i) {
+      manuais.splice(i, 1);
+      renderManuais();
+    }
+
+    // ========== BACKEND ==========
+    async function carregarAno() {
+      anoAtual = Number(document.getElementById('anoSelect').value);
+      document.getElementById('anoTitulo').textContent = anoAtual;
+      manuais = [];
+      renderManuais();
+
+      const btn = document.getElementById('btnCarregar');
+      const loader = document.getElementById('loaderCarregar');
+      btn.disabled = true; loader.classList.add('show');
+      document.getElementById('listaCadastrados').innerHTML = '<div class="vazio">Carregando...</div>';
+
+      try {
+        const resp = await fetch(WEBHOOK_FERIADOS, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...getLocalStorageData(),
+            acao: 'listar',
+            ano: anoAtual
+          })
+        });
+        const dados = await resp.json();
+        cadastrados = Array.isArray(dados.feriados) ? dados.feriados : [];
+      } catch (e) {
+        cadastrados = [];
+        mostrarMensagem('Não foi possível carregar os feriados já cadastrados.', 'error');
+      } finally {
+        btn.disabled = false; loader.classList.remove('show');
+        renderCadastrados();
+        renderNacionais();
+      }
+    }
+
+    async function salvarFeriados() {
+      const selecionados = coletarSelecionados();
+      if (!selecionados.length) return;
+
+      const btn = document.getElementById('btnSalvar');
+      const loader = document.getElementById('loaderSalvar');
+      btn.disabled = true; loader.classList.add('show');
+
+      try {
+        const resp = await fetch(WEBHOOK_FERIADOS, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...getLocalStorageData(),
+            acao: 'gravar',
+            ano: anoAtual,
+            feriados: selecionados
+          })
+        });
+        const dados = await resp.json();
+
+        if (dados.sucesso) {
+          mostrarMensagem(dados.mensagem || 'Feriados cadastrados com sucesso!', 'success');
+          manuais = [];
+          renderManuais();
+          await carregarAno();
+        } else {
+          mostrarMensagem(dados.mensagem || 'Não foi possível cadastrar os feriados.', 'error');
+        }
+      } catch (e) {
+        mostrarMensagem('Erro de comunicação com o servidor. Tente novamente.', 'error');
+      } finally {
+        btn.disabled = false; loader.classList.remove('show');
+        atualizarContador();
+      }
+    }
+
+    // ========== AUXILIARES ==========
+    function mostrarMensagem(texto, tipo) {
+      const el = document.getElementById('mensagem');
+      el.textContent = texto;
+      el.className = 'message ' + tipo + ' show';
+      setTimeout(() => el.classList.remove('show'), 6000);
+    }
+
+    function logout() {
+      if (confirm('Deseja realmente sair?')) {
+        localStorage.clear();
+        window.location.href = '../index.html';
+      }
+    }
+
+    // ========== INICIALIZAÇÃO ==========
+    (function init() {
+      const anoBase = new Date().getFullYear();
+      const sel = document.getElementById('anoSelect');
+      for (let a = anoBase - 1; a <= anoBase + 2; a++) {
+        const opt = document.createElement('option');
+        opt.value = a; opt.textContent = a;
+        if (a === anoBase) opt.selected = true;
+        sel.appendChild(opt);
+      }
+      document.getElementById('anoTitulo').textContent = anoBase;
+      carregarAno();
+    })();
+  </script>
+</body>
+</html>
