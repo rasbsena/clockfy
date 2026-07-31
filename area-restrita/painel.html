@@ -186,6 +186,40 @@
       opacity: 1;
     }
 
+    /* BOTÃO FLUTUANTE RH */
+    .rh-widget {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, var(--roxo-vivo), var(--roxo-medio));
+      border-radius: 50px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(79, 18, 149, 0.5);
+      transition: all 0.3s ease;
+      z-index: 9997;
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .rh-widget.show {
+      display: flex;
+    }
+
+    .rh-widget:hover {
+      transform: scale(1.05) translateY(-5px);
+      box-shadow: 0 12px 35px rgba(79, 18, 149, 0.7);
+    }
+
+    .rh-widget.com-admin {
+      bottom: 100px;
+    }
+
     /* LOADING OVERLAY */
     .loading-overlay {
       position: fixed;
@@ -764,6 +798,10 @@
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> Painel Admin
   </div>
 
+  <div class="rh-widget" id="rhWidget" onclick="window.location.href='https://clockfy.upperfy.com.br/area-restrita/painelrh.html'">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> Painel RH
+  </div>
+
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-brand">
@@ -947,6 +985,35 @@
         console.log('Widget admin ATIVADO');
       } else {
         console.log('Widget admin NÃO exibido - Usuário não é Admin');
+      }
+    })();
+
+    // ========== VERIFICAÇÃO E EXIBIÇÃO DO WIDGET RH ==========
+    (function checkRhWidget() {
+      const rhWidget = document.getElementById('rhWidget');
+      const adminWidget = document.getElementById('adminWidget');
+      let ehRh = false;
+
+      const roleLs = localStorage.getItem('role');
+      if (roleLs && roleLs.trim().toLowerCase() === 'rh') ehRh = true;
+
+      if (!ehRh) {
+        try {
+          const u = JSON.parse(localStorage.getItem('usuario'));
+          const userObj = (typeof u === 'string') ? JSON.parse(u) : u;
+          if (userObj) {
+            const r = (userObj.role || userObj.nivel_acesso || '').trim().toLowerCase();
+            if (r === 'rh') ehRh = true;
+          }
+        } catch (e) {}
+      }
+
+      if (ehRh) {
+        rhWidget.classList.add('show');
+        if (adminWidget && adminWidget.classList.contains('show')) {
+          rhWidget.classList.add('com-admin');
+        }
+        console.log('Widget RH ATIVADO');
       }
     })();
 
