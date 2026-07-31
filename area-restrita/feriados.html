@@ -413,6 +413,22 @@
       <div id="listaCadastrados"><div class="vazio">Carregando...</div></div>
     </div>
 
+    <!-- BUSCA ONLINE -->
+    <div class="card">
+      <h2 class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+        Buscar feriados online
+      </h2>
+      <p class="card-subtitle">Consulta fontes públicas e traz feriados estaduais e municipais que não constam na lista nacional. Os que já aparecem nesta tela são ignorados.</p>
+
+      <button class="btn btn-ghost" id="btnBuscarOnline" onclick="buscarOnline()">
+        <span>Consultar fontes públicas</span>
+        <span class="loader" id="loaderBuscar"></span>
+      </button>
+
+      <div id="resultadoBusca" style="margin-top:16px;"></div>
+    </div>
+
     <!-- SALVAR -->
     <div class="card">
       <div class="warning-box" id="avisoRetroativo">
@@ -438,6 +454,8 @@
   <script>
     // ========== CONFIGURAÇÃO ==========
     const WEBHOOK_FERIADOS = 'https://n8n.upperfy.com.br/webhook/clockfy-feriados';
+    const WEBHOOK_FERIADOS_API = 'https://n8n.upperfy.com.br/webhook/clockfy-feriados-api';
+    let resultadoOnline = [];
 
     // ========== ESTADO ==========
     let anoAtual = new Date().getFullYear();
@@ -641,6 +659,99 @@
     }
 
     // ========== BACKEND ==========
+    // ========== BUSCA ONLINE (APIs externas) ==========
+    async function buscarOnline() {
+      const btn = document.getElementById('btnBuscarOnline');
+      const loader = document.getElementById('loaderBuscar');
+      const box = document.getElementById('resultadoBusca');
+
+      btn.disabled = true; loader.classList.add('show');
+      box.innerHTML = '<div class="vazio">Consultando fontes públicas...</div>';
+
+      // Tudo que a tela já mostra nao deve voltar na busca
+      const conhecidas = [];
+      document.querySelectorAll('.chk-nacional').forEach(c => conhecidas.push(c.dataset.data));
+      cadastrados.forEach(c => conhecidas.push(c.data));
+      manuais.forEach(m => conhecidas.push(m.data));
+
+      try {
+        const resp = await fetch(WEBHOOK_FERIADOS_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...getLocalStorageData(),
+            ano: anoAtual,
+            datas_conhecidas: conhecidas
+          })
+        });
+        const dados = await resp.json();
+        resultadoOnline = Array.isArray(dados.feriados) ? dados.feriados : [];
+        renderResultadoOnline(dados.mensagem);
+      } catch (e) {
+        resultadoOnline = [];
+        box.innerHTML = '<div class="vazio">Não foi possível consultar as fontes online agora.</div>';
+      } finally {
+        btn.disabled = false; loader.classList.remove('show');
+      }
+    }
+
+    function corTipo(tipo) {
+      if (tipo === 'municipal') return 'background:rgba(79,18,149,0.45);color:#c4a8f0;';
+      if (tipo === 'estadual') return 'background:rgba(135,20,140,0.35);color:#e6a8e9;';
+      if (tipo === 'facultativo') return 'background:rgba(255,145,0,0.2);color:#ffc98a;';
+      return 'background:rgba(249,61,0,0.2);color:#ffb08a;';
+    }
+
+    function renderResultadoOnline(mensagem) {
+      const box = document.getElementById('resultadoBusca');
+
+      if (!resultadoOnline.length) {
+        box.innerHTML = '<div class="vazio">' + (mensagem || 'Nenhum feriado novo encontrado.') + '</div>';
+        return;
+      }
+
+      const itens = resultadoOnline.map((f, i) => `
+        <div class="feriado-item">
+          <input type="checkbox" class="chk-online" id="onl${i}" data-idx="${i}" checked>
+          <span class="feriado-data">${f.data_br}</span>
+          <label class="feriado-nome" for="onl${i}">
+            ${f.descricao}<span class="feriado-dow">${diaSemana(f.data)}</span>
+          </label>
+          <span class="tag" style="${corTipo(f.tipo)}">${f.tipo || 'nacional'}</span>
+          <span class="tag" style="background:rgba(255,255,255,0.08);color:#aaa;">${f.origem || ''}</span>
+        </div>`).join('');
+
+      box.innerHTML = `
+        <div style="font-size:13px;color:#cfcfcf;margin-bottom:10px;">${mensagem || ''}</div>
+        ${itens}
+        <button class="btn btn-primary" style="margin-top:14px;" onclick="adicionarSelecionadosOnline()">
+          Adicionar selecionados à lista
+        </button>`;
+    }
+
+    function adicionarSelecionadosOnline() {
+      let adicionados = 0, ignorados = 0;
+
+      document.querySelectorAll('.chk-online').forEach(chk => {
+        if (!chk.checked) return;
+        const f = resultadoOnline[Number(chk.dataset.idx)];
+        if (!f) return;
+        if (estaCadastrado(f.data) || manuais.some(m => m.data === f.data)) { ignorados++; return; }
+        manuais.push({ data: f.data, descricao: f.descricao });
+        adicionados++;
+      });
+
+      manuais.sort((a, b) => a.data.localeCompare(b.data));
+      renderManuais();
+
+      document.getElementById('resultadoBusca').innerHTML = '';
+      resultadoOnline = [];
+
+      let msg = adicionados + ' feriado(s) adicionado(s) à lista. Confira e clique em Cadastrar Feriados.';
+      if (ignorados) msg += ' ' + ignorados + ' já estava(m) na lista.';
+      mostrarMensagem(msg, adicionados ? 'success' : 'error');
+    }
+
     async function carregarAno() {
       anoAtual = Number(document.getElementById('anoSelect').value);
       document.getElementById('anoTitulo').textContent = anoAtual;
