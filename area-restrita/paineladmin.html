@@ -1246,6 +1246,15 @@
     }
 
     // ----- Cálculo automático do total pelos pares -----
+    // Coleta todo o localStorage para enviar ao backend (identidade do admin + validação de tenant)
+    function getLocalStorageData() {
+      const dados = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const chave = localStorage.key(i);
+        dados[chave] = localStorage.getItem(chave);
+      }
+      return dados;
+    }
     function calcularTotal() {
       const inputs = document.querySelectorAll('#formLancarSubmit .batida-input');
       const horarios = Array.from(inputs).map(i => i.value).filter(v => v);
@@ -1270,7 +1279,8 @@
       
       const form = e.target;
       const formData = {
-        // localStorage completo: identifica o admin e permite validar admin/tenant no backend         ...(function () {           const d = {};           for (let i = 0; i < localStorage.length; i++) {             const k = localStorage.key(i);             d[k] = localStorage.getItem(k);           }           return d;         })(),         acao: 'lancar_ponto',
+        ...getLocalStorageData(),
+        acao: 'lancar_ponto',
         funcionario_id: form.funcionario_id.value,
         data: form.data.value,
         // formato novo: 8 batidas (backend já aceita batida_1..batida_8)
