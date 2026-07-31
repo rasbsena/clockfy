@@ -1270,7 +1270,7 @@
       
       const form = e.target;
       const formData = {
-        acao: 'lancar_ponto',
+        // localStorage completo: identifica o admin e permite validar admin/tenant no backend         ...(function () {           const d = {};           for (let i = 0; i < localStorage.length; i++) {             const k = localStorage.key(i);             d[k] = localStorage.getItem(k);           }           return d;         })(),         acao: 'lancar_ponto',
         funcionario_id: form.funcionario_id.value,
         data: form.data.value,
         // formato novo: 8 batidas (backend já aceita batida_1..batida_8)
