@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clockfy - Escalas</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23FF3D00'/%3E%3Cstop offset='100%25' stop-color='%23FF9200'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='%23270949'/%3E%3Ccircle cx='46' cy='46' r='24' fill='none' stroke='url(%23g)' stroke-width='5'/%3E%3Cpath d='M46 30V46L56 56' fill='none' stroke='url(%23g)' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='46' cy='46' r='3' fill='url(%23g)'/%3E%3Ccircle cx='72' cy='72' r='14' fill='url(%23g)'/%3E%3Cpath d='M66 72L70 76L78 68' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --roxo-escuro: #270949; --roxo-medio: #87148C; --roxo-vivo: #4F1295;
+      --laranja: #F93D00; --laranja-esc: #e03800; --branco: #fff;
+      --vidro: rgba(39, 9, 73, 0.6);
+    }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #270949 0%, #1a0430 100%);
+      min-height: 100vh; padding: 20px; color: #fff;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 30px; padding: 20px; background: var(--vidro);
+      backdrop-filter: blur(10px); border-radius: 20px;
+      border: 1px solid rgba(249, 61, 0, 0.1);
+    }
+    .header-left { display: flex; align-items: center; gap: 15px; }
+    .logo { width: 50px; height: 50px; }
+    .header-title { font-size: 28px; font-weight: 800; }
+    .header-title span { color: var(--laranja); }
+    .admin-badge {
+      background: var(--laranja); color: #fff; padding: 6px 12px;
+      border-radius: 8px; font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .btn {
+      border: none; border-radius: 12px; padding: 12px 24px; font-weight: 700;
+      font-size: 14px; cursor: pointer; transition: all 0.3s ease;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .btn-primary { background: var(--laranja); color: #fff; }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--laranja-esc); transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(249, 61, 0, 0.4);
+    }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-ghost { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,0.2); }
+    .btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.4); }
+    .btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
+    .card {
+      background: var(--vidro); backdrop-filter: blur(10px); border-radius: 20px;
+      padding: 24px; border: 1px solid rgba(249,61,0,0.1);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4); margin-bottom: 20px;
+    }
+    .card-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+    .card-subtitle { color: #a8a8a8; font-size: 14px; margin-bottom: 20px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #e0e0e0; }
+    .form-input, .form-select {
+      width: 100%; padding: 12px 14px; border-radius: 10px;
+      border: 2px solid rgba(255,255,255,0.15); background: rgba(20,5,35,0.8);
+      color: #fff; font-family: 'Montserrat', sans-serif; font-size: 14px;
+    }
+    .form-input:focus, .form-select:focus { outline: none; border-color: var(--laranja); }
+    /* BUSCA */
+    .suggestions { margin-top: 10px; max-height: 260px; overflow-y: auto; display: none; }
+    .suggestions.show { display: block; }
+    .suggestion-item {
+      padding: 12px 16px; background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+      margin-bottom: 8px; cursor: pointer; transition: all 0.3s ease;
+    }
+    .suggestion-item:hover { background: rgba(249,61,0,0.1); border-color: rgba(249,61,0,0.3); }
+    .suggestion-name { font-weight: 600; margin-bottom: 4px; }
+    .suggestion-info { font-size: 12px; color: #a8a8a8; }
+    .vazio { padding: 20px; text-align: center; color: #888; font-size: 13px;
+             border: 1px dashed rgba(255,255,255,0.15); border-radius: 10px; }
+    /* SELECIONADO */
+    .selecionado {
+      padding: 16px 20px; background: rgba(249,61,0,0.1);
+      border: 2px solid rgba(249,61,0,0.3); border-radius: 16px;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .sel-nome { font-size: 18px; font-weight: 800; }
+    .sel-info { font-size: 12px; color: #cfcfcf; margin-top: 2px; }
+    /* CALENDÁRIO */
+    .cal-topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+    .cal-mes { font-size: 18px; font-weight: 800; text-transform: capitalize; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+    .cal-dow {
+      text-align: center; font-size: 11px; font-weight: 700; color: #a8a8a8;
+      text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 4px;
+    }
+    .cal-dia {
+      aspect-ratio: 1 / 0.85; border-radius: 10px; padding: 6px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer; transition: all 0.15s ease; display: flex;
+      flex-direction: column; justify-content: space-between; min-height: 62px;
+    }
+    .cal-dia:hover { border-color: rgba(249,61,0,0.5); background: rgba(249,61,0,0.08); }
+    .cal-dia.vazio-cel { background: transparent; border: none; cursor: default; }
+    .cal-dia.fds { background: rgba(255,255,255,0.02); border-style: dashed; color: #777; }
+    .cal-dia.feriado { background: rgba(135,20,140,0.25); border-color: rgba(135,20,140,0.5); }
+    .cal-dia.folga { background: rgba(79,18,149,0.45); border-color: rgba(150,110,240,0.6); }
+    .cal-dia.reduzida { background: rgba(255,145,0,0.22); border-color: rgba(255,145,0,0.55); }
+    .cal-num { font-size: 14px; font-weight: 700; }
+    .cal-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+    .tag-folga { color: #c4a8f0; }
+    .tag-reduzida { color: #ffc98a; }
+    .tag-feriado { color: #e6a8e9; }
+    .cal-meta { font-size: 9px; color: #999; }
+    .legenda { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; font-size: 12px; color: #cfcfcf; }
+    .leg-item { display: flex; align-items: center; gap: 6px; }
+    .leg-cor { width: 14px; height: 14px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); }
+    /* STATUS */
+    .status-badge {
+      display: inline-block; padding: 5px 12px; border-radius: 8px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .st-rascunho { background: rgba(255,255,255,0.12); color: #ccc; }
+    .st-aguardando { background: rgba(255,145,0,0.2); color: #ffc98a; }
+    .st-aprovada { background: rgba(34,197,94,0.2); color: #86efac; }
+    .st-recusada { background: rgba(239,68,68,0.2); color: #fca5a5; }
+    .st-expirada { background: rgba(150,150,150,0.2); color: #bbb; }
+    .warning-box {
+      background: rgba(255,145,0,0.1); border: 1px solid rgba(255,145,0,0.4);
+      border-radius: 12px; padding: 16px; margin-bottom: 20px;
+      display: none; align-items: flex-start; gap: 12px;
+    }
+    .warning-box.show { display: flex; }
+    .warning-text { font-size: 13px; color: #e0e0e0; line-height: 1.5; }
+    .warning-text strong { color: #ff9100; }
+    .message { padding: 12px 16px; border-radius: 10px; font-size: 14px; margin-top: 16px; display: none; }
+    .message.show { display: block; }
+    .message.success { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.4); color: #86efac; }
+    .message.error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; }
+    .barra { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .contador { font-size: 13px; color: #cfcfcf; font-weight: 600; }
+    .contador strong { color: var(--laranja); font-size: 16px; }
+    .loader {
+      width: 16px; height: 16px; border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite;
+      display: none; vertical-align: middle; margin-left: 6px;
+    }
+    .loader.show { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .oculto { display: none !important; }
+    @media (max-width: 720px) {
+      .cal-dia { min-height: 52px; padding: 4px; }
+      .cal-num { font-size: 12px; }
+      .cal-tag, .cal-meta { font-size: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    (function guarda() {
+      const role = localStorage.getItem('role');
+      const usuarioJson = localStorage.getItem('usuario');
+      let ok = false;
+      if (role && ['admin','rh'].includes(role.trim().toLowerCase())) ok = true;
+      else if (usuarioJson) {
+        try {
+          let u = JSON.parse(usuarioJson);
+          if (typeof u === 'string') u = JSON.parse(u);
+          const r = (u.role || u.nivel_acesso || '').trim().toLowerCase();
+          if (['admin','rh'].includes(r)) ok = true;
+        } catch (e) {}
+      }
+      if (!ok) {
+        alert('Acesso negado! Apenas RH e administradores podem acessar esta área.');
+        window.location.href = 'painel.html';
+      }
+    })();
+  </script>
+
+  <div class="container">
+    <header class="header">
+      <div class="header-left">
+        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+          <defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FF3D00"/><stop offset="100%" stop-color="#FF9200"/>
+          </linearGradient></defs>
+          <rect width="100" height="100" rx="20" fill="#270949"/>
+          <circle cx="46" cy="46" r="24" fill="none" stroke="url(#lg)" stroke-width="5"/>
+          <path d="M46 30V46L56 56" fill="none" stroke="url(#lg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="46" cy="46" r="3" fill="url(#lg)"/>
+          <circle cx="72" cy="72" r="14" fill="url(#lg)"/>
+          <path d="M66 72L70 76L78 68" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div>
+          <div class="header-title">Clock<span>fy</span></div>
+          <div class="admin-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+            Escalas
+          </div>
+        </div>
+      </div>
+      <div>
+        <button class="btn btn-ghost" onclick="window.location.href='painelrh.html'" style="margin-right:10px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Voltar ao Painel RH
+        </button>
+        <button class="btn btn-primary" onclick="logout()">Sair</button>
+      </div>
+    </header>
+
+    <!-- PASSO 1: FUNCIONÁRIO -->
+    <div class="card">
+      <h2 class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        1. Escolha o funcionário
+      </h2>
+      <p class="card-subtitle">A escala é montada individualmente, um funcionário por vez.</p>
+
+      <div id="blocoBusca">
+        <label class="form-label">Buscar por nome</label>
+        <input type="text" class="form-input" id="buscaNome" placeholder="Digite pelo menos 3 caracteres...">
+        <div class="suggestions" id="sugestoes"></div>
+      </div>
+
+      <div id="blocoSelecionado" class="oculto">
+        <div class="selecionado">
+          <div>
+            <div class="sel-nome" id="selNome">-</div>
+            <div class="sel-info">ID <span id="selId">-</span> · carga de <span id="selCarga">-</span>h por dia útil</div>
+          </div>
+          <button class="btn btn-ghost" onclick="trocarFuncionario()" style="padding:8px 16px;font-size:13px;">Trocar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASSO 2: MÊS -->
+    <div class="card oculto" id="cardMes">
+      <h2 class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        2. Mês de referência
+      </h2>
+      <p class="card-subtitle">Só é possível montar escala para meses que ainda não começaram.</p>
+      <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+        <div style="min-width:220px;">
+          <label class="form-label">Mês</label>
+          <select class="form-select" id="selectMes"></select>
+        </div>
+        <button class="btn btn-ghost" id="btnCarregar" onclick="carregarEscala()">
+          <span>Carregar</span><span class="loader" id="loaderCarregar"></span>
+        </button>
+        <div style="margin-left:auto;" id="boxStatus"></div>
+      </div>
+    </div>
+
+    <!-- PASSO 3: CALENDÁRIO -->
+    <div class="card oculto" id="cardCal">
+      <h2 class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        3. Marque as exceções
+      </h2>
+      <p class="card-subtitle">
+        Clique num dia para alternar entre <strong>normal → folga → escala reduzida</strong>.
+        Dias sem marcação seguem o padrão: dia útil cumpre a carga, fim de semana e feriado não cobram meta.
+      </p>
+
+      <div class="warning-box" id="avisoBloqueio">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffb020" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        <div class="warning-text" id="textoBloqueio"></div>
+      </div>
+
+      <div class="cal-topo">
+        <div class="cal-mes" id="calMes">-</div>
+        <button class="btn-ghost btn" id="btnLimpar" onclick="limparMarcacoes()" style="padding:8px 16px;font-size:13px;">Limpar marcações</button>
+      </div>
+
+      <div class="cal-grid" id="calDow"></div>
+      <div class="cal-grid" id="calGrid" style="margin-top:8px;"></div>
+
+      <div class="legenda">
+        <div class="leg-item"><span class="leg-cor" style="background:rgba(255,255,255,0.06);"></span> Dia útil (cumpre carga)</div>
+        <div class="leg-item"><span class="leg-cor" style="background:rgba(255,255,255,0.02);border-style:dashed;"></span> Fim de semana</div>
+        <div class="leg-item"><span class="leg-cor" style="background:rgba(135,20,140,0.25);"></span> Feriado</div>
+        <div class="leg-item"><span class="leg-cor" style="background:rgba(79,18,149,0.45);"></span> Folga</div>
+        <div class="leg-item"><span class="leg-cor" style="background:rgba(255,145,0,0.22);"></span> Escala reduzida</div>
+      </div>
+    </div>
+
+    <!-- PASSO 4: AÇÕES -->
+    <div class="card oculto" id="cardAcoes">
+      <div class="barra">
+        <div class="contador">
+          <strong id="contadorExc">0</strong> exceção(ões) marcada(s) ·
+          meta do mês: <strong id="metaMes">00:00</strong>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <button class="btn btn-ghost" id="btnSalvar" onclick="salvarEscala()">
+            <span>Salvar rascunho</span><span class="loader" id="loaderSalvar"></span>
+          </button>
+          <button class="btn btn-primary" id="btnPublicar" onclick="publicarEscala()">
+            <span>Publicar para aprovação</span><span class="loader" id="loaderPublicar"></span>
+          </button>
+        </div>
+      </div>
+      <div class="message" id="mensagem"></div>
+    </div>
+  </div>
+
+  <script>
+    const WEBHOOK_ESCALAS = 'https://n8n.upperfy.com.br/webhook/clockfy-escalas';
+    const WEBHOOK_SEARCH = 'https://n8n.upperfy.com.br/webhook/b9750986-24a2-46f5-820f-clockadminsearch';
+    const WEBHOOK_FERIADOS = 'https://n8n.upperfy.com.br/webhook/clockfy-feriados';
+
+    let funcionario = null;
+    let mesRef = null;              // 'YYYY-MM'
+    let marcacoes = {};             // { 'YYYY-MM-DD': 'folga' | 'reduzida' }
+    let feriados = new Set();
+    let statusEscala = 'inexistente';
+    let buscaTimer = null;
+
+    function getLocalStorageData() {
+      const d = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        d[k] = localStorage.getItem(k);
+      }
+      return d;
+    }
+    function idLogado() {
+      const direto = localStorage.getItem('id_funcionario');
+      if (direto) return direto;
+      try {
+        let u = JSON.parse(localStorage.getItem('usuario'));
+        if (typeof u === 'string') u = JSON.parse(u);
+        return u && u.id ? u.id : null;
+      } catch (e) { return null; }
+    }
+    const NOMES_MES = ['janeiro','fevereiro','março','abril','maio','junho',
+                       'julho','agosto','setembro','outubro','novembro','dezembro'];
+    const hojeSP = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+
+    // ---------- BUSCA DE FUNCIONÁRIO ----------
+    document.getElementById('buscaNome').addEventListener('input', (e) => {
+      const q = e.target.value.trim();
+      const box = document.getElementById('sugestoes');
+      if (q.length < 3) { box.classList.remove('show'); box.innerHTML = ''; return; }
+      clearTimeout(buscaTimer);
+      buscaTimer = setTimeout(() => buscarFuncionarios(q), 300);
+    });
+
+    async function buscarFuncionarios(q) {
+      const box = document.getElementById('sugestoes');
+      box.innerHTML = '<div class="vazio">Buscando...</div>';
+      box.classList.add('show');
+      try {
+        const resp = await fetch(WEBHOOK_SEARCH, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...getLocalStorageData(), tipo_busca: 'nome', busca: q })
+        });
+        const data = await resp.json();
+        const lista = Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []);
+        const validos = lista.filter(e => e && (e.id || e.id_funcionario));
+        if (!validos.length) { box.innerHTML = '<div class="vazio">Nenhum funcionário encontrado.</div>'; return; }
+        box.innerHTML = validos.map(e => {
+          const j = JSON.stringify(e).replace(/'/g, "&#39;");
+          return `<div class="suggestion-item" onclick='selecionar(${j})'>
+                    <div class="suggestion-name">${e.nome_completo || e.nome || 'Sem nome'}</div>
+                    <div class="suggestion-info">ID ${e.id || e.id_funcionario} · ${e.email || 'sem e-mail'} · ${e.role || 'funcionário'}</div>
+                  </div>`;
+        }).join('');
+      } catch (err) {
+        box.innerHTML = '<div class="vazio">Erro ao buscar funcionário.</div>';
+      }
+    }
+
+    function selecionar(emp) {
+      funcionario = {
+        id: emp.id || emp.id_funcionario,
+        nome: emp.nome_completo || emp.nome,
+        carga: Number(emp.carga_horaria_diaria || emp.carga_horaria || 8)
+      };
+      document.getElementById('selNome').textContent = funcionario.nome;
+      document.getElementById('selId').textContent = funcionario.id;
+      document.getElementById('selCarga').textContent = funcionario.carga;
+      document.getElementById('blocoBusca').classList.add('oculto');
+      document.getElementById('blocoSelecionado').classList.remove('oculto');
+      document.getElementById('cardMes').classList.remove('oculto');
+      document.getElementById('sugestoes').classList.remove('show');
+      document.getElementById('buscaNome').value = '';
+    }
+
+    function trocarFuncionario() {
+      funcionario = null; marcacoes = {}; statusEscala = 'inexistente';
+      document.getElementById('blocoBusca').classList.remove('oculto');
+      document.getElementById('blocoSelecionado').classList.add('oculto');
+      ['cardMes','cardCal','cardAcoes'].forEach(id => document.getElementById(id).classList.add('oculto'));
+      document.getElementById('boxStatus').innerHTML = '';
+    }
+
+    // ---------- SELETOR DE MÊS (só meses futuros) ----------
+    function montarSelectMes() {
+      const hoje = new Date();
+      const sel = document.getElementById('selectMes');
+      let html = '';
+      for (let i = 1; i <= 6; i++) {
+        const d = new Date(Date.UTC(hoje.getFullYear(), hoje.getMonth() + i, 1));
+        const v = d.toISOString().slice(0, 7);
+        html += `<option value="${v}">${NOMES_MES[d.getUTCMonth()]} de ${d.getUTCFullYear()}</option>`;
+      }
+      sel.innerHTML = html;
+    }
+
+    // ---------- CARREGAR ESCALA + FERIADOS ----------
+    async function carregarEscala() {
+      mesRef = document.getElementById('selectMes').value;
+      const btn = document.getElementById('btnCarregar');
+      const loader = document.getElementById('loaderCarregar');
+      btn.disabled = true; loader.classList.add('show');
+      marcacoes = {}; feriados = new Set(); statusEscala = 'inexistente';
+
+      try {
+        const [rEsc, rFer] = await Promise.all([
+          fetch(WEBHOOK_ESCALAS, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...getLocalStorageData(), acao: 'listar',
+              funcionario_id: funcionario.id, mes_ref: mesRef }) }),
+          fetch(WEBHOOK_FERIADOS, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...getLocalStorageData(), acao: 'listar',
+              ano: Number(mesRef.slice(0, 4)) }) })
+        ]);
+
+        const dEsc = await rEsc.json();
+        const dFer = await rFer.json();
+
+        if (dEsc && dEsc.escala) {
+          statusEscala = dEsc.escala.status || 'rascunho';
+          (dEsc.escala.dias || []).forEach(d => {
+            if (d.tipo === 'folga' || d.tipo === 'reduzida') marcacoes[d.data] = d.tipo;
+          });
+        }
+        (dFer && Array.isArray(dFer.feriados) ? dFer.feriados : []).forEach(f => feriados.add(f.data));
+
+        renderStatus();
+        renderCalendario();
+        document.getElementById('cardCal').classList.remove('oculto');
+        document.getElementById('cardAcoes').classList.remove('oculto');
+      } catch (e) {
+        mostrarMensagem('Não foi possível carregar a escala deste mês.', 'error');
+      } finally {
+        btn.disabled = false; loader.classList.remove('show');
+      }
+    }
+
+    // ---------- STATUS E BLOQUEIO ----------
+    function editavel() {
+      return ['inexistente','rascunho','recusada','expirada'].includes(statusEscala);
+    }
+
+    function renderStatus() {
+      const mapa = {
+        inexistente: ['Nova escala','st-rascunho'],
+        rascunho: ['Rascunho','st-rascunho'],
+        aguardando_aprovacao: ['Aguardando aprovação','st-aguardando'],
+        aprovada: ['Aprovada','st-aprovada'],
+        recusada: ['Recusada','st-recusada'],
+        expirada: ['Expirada','st-expirada']
+      };
+      const [txt, cls] = mapa[statusEscala] || ['—','st-rascunho'];
+      document.getElementById('boxStatus').innerHTML =
+        `<span class="status-badge ${cls}">${txt}</span>`;
+
+      const bloqueado = !editavel();
+      const aviso = document.getElementById('avisoBloqueio');
+      const texto = document.getElementById('textoBloqueio');
+
+      if (statusEscala === 'aguardando_aprovacao') {
+        texto.innerHTML = '<strong>Escala publicada e aguardando resposta do funcionário.</strong><br>' +
+          'Não é possível editar enquanto ele não responder. Se precisar mudar algo, peça que ele recuse a escala.';
+      } else if (statusEscala === 'aprovada') {
+        texto.innerHTML = '<strong>Escala já aprovada pelo funcionário.</strong><br>' +
+          'Escalas aprovadas ficam congeladas como documento do acordo e não podem ser alteradas.';
+      }
+      aviso.classList.toggle('show', bloqueado);
+
+      document.getElementById('btnSalvar').disabled = bloqueado;
+      document.getElementById('btnPublicar').disabled = bloqueado;
+      document.getElementById('btnLimpar').disabled = bloqueado;
+    }
+
+    // ---------- CALENDÁRIO ----------
+    function renderCalendario() {
+      const ano = Number(mesRef.slice(0, 4));
+      const mes = Number(mesRef.slice(5, 7));
+      document.getElementById('calMes').textContent = `${NOMES_MES[mes-1]} de ${ano}`;
+
+      document.getElementById('calDow').innerHTML =
+        ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+      const diasNoMes = new Date(Date.UTC(ano, mes, 0)).getUTCDate();
+      const offset = new Date(Date.UTC(ano, mes - 1, 1)).getUTCDay();
+
+      let html = '';
+      for (let i = 0; i < offset; i++) html += '<div class="cal-dia vazio-cel"></div>';
+
+      for (let dia = 1; dia <= diasNoMes; dia++) {
+        const iso = `${ano}-${String(mes).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+        const dow = new Date(iso + 'T12:00:00Z').getUTCDay();
+        const fds = (dow === 0 || dow === 6);
+        const ehFeriado = feriados.has(iso);
+        const marca = marcacoes[iso];
+
+        let classe = 'cal-dia';
+        let tag = '', meta = '';
+
+        if (marca === 'folga') { classe += ' folga'; tag = '<span class="cal-tag tag-folga">Folga</span>'; meta = '00:00'; }
+        else if (marca === 'reduzida') {
+          classe += ' reduzida'; tag = '<span class="cal-tag tag-reduzida">Reduzida</span>';
+          const m = Math.floor(funcionario.carga * 60 / 2);
+          meta = `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
+        }
+        else if (ehFeriado) { classe += ' feriado'; tag = '<span class="cal-tag tag-feriado">Feriado</span>'; meta = '00:00'; }
+        else if (fds) { classe += ' fds'; meta = '00:00'; }
+        else { meta = `${String(funcionario.carga).padStart(2,'0')}:00`; }
+
+        const clicavel = editavel() && !ehFeriado;
+        html += `<div class="${classe}" ${clicavel ? `onclick="alternar('${iso}')"` : 'style="cursor:default;"'}>
+                   <div class="cal-num">${dia}</div>
+                   <div>${tag}<div class="cal-meta">${meta}</div></div>
+                 </div>`;
+      }
+      document.getElementById('calGrid').innerHTML = html;
+      atualizarResumo();
+    }
+
+    function alternar(iso) {
+      if (!editavel()) return;
+      const atual = marcacoes[iso];
+      if (!atual) marcacoes[iso] = 'folga';
+      else if (atual === 'folga') marcacoes[iso] = 'reduzida';
+      else delete marcacoes[iso];
+      renderCalendario();
+    }
+
+    function limparMarcacoes() {
+      if (!editavel()) return;
+      marcacoes = {};
+      renderCalendario();
+    }
+
+    function atualizarResumo() {
+      const qtd = Object.keys(marcacoes).length;
+      document.getElementById('contadorExc').textContent = qtd;
+
+      // meta do mês pela precedência: feriado 0, fds 0, marcação, senão carga
+      const ano = Number(mesRef.slice(0,4)), mes = Number(mesRef.slice(5,7));
+      const diasNoMes = new Date(Date.UTC(ano, mes, 0)).getUTCDate();
+      const cargaMin = funcionario.carga * 60;
+      let total = 0;
+      for (let d = 1; d <= diasNoMes; d++) {
+        const iso = `${ano}-${String(mes).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const dow = new Date(iso + 'T12:00:00Z').getUTCDay();
+        if (feriados.has(iso)) continue;
+        if (marcacoes[iso] === 'folga') continue;
+        if (marcacoes[iso] === 'reduzida') { total += Math.floor(cargaMin/2); continue; }
+        if (dow === 0 || dow === 6) continue;
+        total += cargaMin;
+      }
+      document.getElementById('metaMes').textContent =
+        `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`;
+    }
+
+    // ---------- SALVAR / PUBLICAR ----------
+    function montarDias() {
+      return Object.entries(marcacoes).map(([data, tipo]) => ({ data, tipo }));
+    }
+
+    async function salvarEscala(silencioso) {
+      const btn = document.getElementById('btnSalvar');
+      const loader = document.getElementById('loaderSalvar');
+      btn.disabled = true; loader.classList.add('show');
+      try {
+        const resp = await fetch(WEBHOOK_ESCALAS, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...getLocalStorageData(), acao: 'salvar',
+            funcionario_id: funcionario.id, mes_ref: mesRef, dias: montarDias() })
+        });
+        const d = await resp.json();
+        if (d.sucesso) {
+          statusEscala = 'rascunho';
+          renderStatus();
+          if (!silencioso) mostrarMensagem(d.mensagem || 'Escala salva como rascunho.', 'success');
+          return true;
+        }
+        mostrarMensagem(d.mensagem || 'Não foi possível salvar.', 'error');
+        return false;
+      } catch (e) {
+        mostrarMensagem('Erro de comunicação ao salvar.', 'error');
+        return false;
+      } finally {
+        btn.disabled = false; loader.classList.remove('show');
+        renderStatus();
+      }
+    }
+
+    async function publicarEscala() {
+      const qtd = Object.keys(marcacoes).length;
+      const ok = confirm(
+        'Publicar a escala de ' + document.getElementById('calMes').textContent + ' para ' + funcionario.nome + '?\n\n' +
+        qtd + ' exceção(ões) marcada(s).\n\n' +
+        'O funcionário será avisado por e-mail e precisará aceitar ou recusar. ' +
+        'Enquanto ele não responder, a escala não poderá ser editada.'
+      );
+      if (!ok) return;
+
+      // salva antes de publicar, para garantir que o que está na tela é o que vai
+      const salvou = await salvarEscala(true);
+      if (!salvou) return;
+
+      const btn = document.getElementById('btnPublicar');
+      const loader = document.getElementById('loaderPublicar');
+      btn.disabled = true; loader.classList.add('show');
+      try {
+        const resp = await fetch(WEBHOOK_ESCALAS, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...getLocalStorageData(), acao: 'publicar',
+            funcionario_id: funcionario.id, mes_ref: mesRef })
+        });
+        const d = await resp.json();
+        if (d.sucesso) {
+          statusEscala = 'aguardando_aprovacao';
+          renderStatus(); renderCalendario();
+          mostrarMensagem(d.mensagem || 'Escala publicada.', 'success');
+        } else {
+          mostrarMensagem(d.mensagem || 'Não foi possível publicar.', 'error');
+        }
+      } catch (e) {
+        mostrarMensagem('Erro de comunicação ao publicar.', 'error');
+      } finally {
+        loader.classList.remove('show');
+        renderStatus();
+      }
+    }
+
+    function mostrarMensagem(txt, tipo) {
+      const el = document.getElementById('mensagem');
+      el.textContent = txt;
+      el.className = 'message ' + tipo + ' show';
+      setTimeout(() => el.classList.remove('show'), 7000);
+    }
+
+    function logout() {
+      if (confirm('Deseja realmente sair?')) {
+        localStorage.clear();
+        window.location.href = '../index.html';
+      }
+    }
+
+    montarSelectMes();
+    console.log('Tela de Escalas carregada');
+  </script>
+</body>
+</html>
