@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clockfy - Aprovar Escala</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23FF3D00'/%3E%3Cstop offset='100%25' stop-color='%23FF9200'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='%23270949'/%3E%3Ccircle cx='46' cy='46' r='24' fill='none' stroke='url(%23g)' stroke-width='5'/%3E%3Cpath d='M46 30V46L56 56' fill='none' stroke='url(%23g)' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='46' cy='46' r='3' fill='url(%23g)'/%3E%3Ccircle cx='72' cy='72' r='14' fill='url(%23g)'/%3E%3Cpath d='M66 72L70 76L78 68' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --roxo-escuro: #270949; --roxo-medio: #87148C; --roxo-vivo: #4F1295;
+      --laranja: #F93D00; --laranja-esc: #e03800; --branco: #fff;
+      --vidro: rgba(39, 9, 73, 0.6);
+    }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #270949 0%, #1a0430 100%);
+      min-height: 100vh; padding: 20px; color: #fff;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 30px; padding: 20px; background: var(--vidro);
+      backdrop-filter: blur(10px); border-radius: 20px;
+      border: 1px solid rgba(249, 61, 0, 0.1);
+    }
+    .header-left { display: flex; align-items: center; gap: 15px; }
+    .logo { width: 50px; height: 50px; }
+    .header-title { font-size: 28px; font-weight: 800; }
+    .header-title span { color: var(--laranja); }
+    .admin-badge {
+      background: var(--laranja); color: #fff; padding: 6px 12px;
+      border-radius: 8px; font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px; display: inline-block;
+    }
+    .btn {
+      border: none; border-radius: 12px; padding: 12px 24px; font-weight: 700;
+      font-size: 14px; cursor: pointer; transition: all 0.3s ease;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .btn-primary { background: var(--laranja); color: #fff; }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--laranja-esc); transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(249, 61, 0, 0.4);
+    }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-ghost { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,0.2); }
+    .btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.4); }
+    .btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-aceitar { background: #16a34a; color: #fff; }
+    .btn-aceitar:hover:not(:disabled) {
+      background: #15803d; transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(34,197,94,0.35);
+    }
+    .btn-aceitar:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-recusar { background: transparent; color: #fca5a5; border: 2px solid rgba(239,68,68,0.45); }
+    .btn-recusar:hover:not(:disabled) { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.8); }
+    .btn-recusar:disabled { opacity: 0.4; cursor: not-allowed; }
+    .card {
+      background: var(--vidro); backdrop-filter: blur(10px); border-radius: 20px;
+      padding: 24px; border: 1px solid rgba(249,61,0,0.1);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4); margin-bottom: 20px;
+    }
+    .card-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+    .card-subtitle { color: #a8a8a8; font-size: 14px; margin-bottom: 20px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #e0e0e0; }
+    .form-textarea {
+      width: 100%; padding: 12px 14px; border-radius: 10px;
+      border: 2px solid rgba(255,255,255,0.15); background: rgba(20,5,35,0.8);
+      color: #fff; font-family: 'Montserrat', sans-serif; font-size: 14px;
+      resize: vertical; min-height: 90px;
+    }
+    .form-textarea:focus { outline: none; border-color: var(--laranja); }
+    /* CALENDÁRIO */
+    .cal-topo { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; }
+    .cal-mes { font-size: 17px; font-weight: 700; text-transform: capitalize; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: #a8a8a8; text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 4px; }
+    .cal-dia {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 6px; cursor: default; display: flex;
+      flex-direction: column; justify-content: space-between; min-height: 62px;
+    }
+    .cal-dia.vazio-cel { background: transparent; border: none; }
+    .cal-dia.fds { background: rgba(255,255,255,0.02); border-style: dashed; color: #777; }
+    .cal-dia.folga { background: rgba(79,18,149,0.45); border-color: rgba(150,110,240,0.6); }
+    .cal-dia.reduzida { background: rgba(255,145,0,0.22); border-color: rgba(255,145,0,0.55); }
+    .cal-dia.ferias { background: rgba(34,197,94,0.20); border-color: rgba(34,197,94,0.55); }
+    .cal-num { font-size: 14px; font-weight: 700; }
+    .cal-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+    .tag-folga { color: #c4a8f0; }
+    .tag-reduzida { color: #ffc98a; }
+    .tag-ferias { color: #86efac; }
+    .cal-meta { font-size: 9px; color: #999; }
+    .legenda { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; font-size: 12px; color: #cfcfcf; }
+    .leg-item { display: flex; align-items: center; gap: 6px; }
+    .leg-cor { width: 14px; height: 14px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); }
+    /* STATUS E AVISOS */
+    .status-badge {
+      display: inline-block; padding: 5px 12px; border-radius: 8px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .st-aguardando { background: rgba(255,145,0,0.2); color: #ffc98a; }
+    .warning-box {
+      background: rgba(255,145,0,0.1); border: 1px solid rgba(255,145,0,0.4);
+      border-radius: 12px; padding: 16px; margin-bottom: 20px;
+      display: none; align-items: flex-start; gap: 12px;
+    }
+    .warning-box.show { display: flex; }
+    .warning-text { font-size: 13px; color: #e0e0e0; line-height: 1.5; }
+    .warning-text strong { color: #ff9100; }
+    .prova-box {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px; padding: 16px; display: flex; align-items: flex-start; gap: 12px;
+    }
+    .prova-text { font-size: 13px; color: #cfcfcf; line-height: 1.6; }
+    .gps-chip {
+      display: inline-flex; align-items: center; gap: 8px; margin-top: 12px;
+      padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 600;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cfcfcf;
+    }
+    .gps-chip.ok { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: #86efac; }
+    .gps-chip.erro { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+    .message { padding: 12px 16px; border-radius: 10px; font-size: 14px; margin-top: 16px; display: none; }
+    .message.show { display: block; }
+    .message.success { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.4); color: #86efac; }
+    .message.error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; }
+    .barra { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-top: 20px; }
+    .contador { font-size: 13px; color: #cfcfcf; font-weight: 600; }
+    .contador strong { color: var(--laranja); font-size: 16px; }
+    .meta-info { font-size: 13px; color: #a8a8a8; margin-bottom: 4px; }
+    .meta-info strong { color: #e0e0e0; }
+    .vazio { text-align: center; color: #a8a8a8; font-size: 14px; padding: 30px 10px; line-height: 1.7; }
+    .loader {
+      width: 16px; height: 16px; border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite;
+      display: none; vertical-align: middle; margin-left: 6px;
+    }
+    .loader.show { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .oculto { display: none !important; }
+    @media (max-width: 720px) {
+      .header { flex-direction: column; gap: 16px; align-items: flex-start; }
+      .cal-dia { min-height: 52px; padding: 4px; }
+      .cal-num { font-size: 12px; }
+      .cal-tag, .cal-meta { font-size: 8px; }
+      .barra { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    (function guarda() {
+      let ok = false;
+      if (localStorage.getItem('id_funcionario')) ok = true;
+      else {
+        try {
+          let u = JSON.parse(localStorage.getItem('usuario'));
+          if (typeof u === 'string') u = JSON.parse(u);
+          if (u && u.id) ok = true;
+        } catch (e) {}
+      }
+      if (!ok) {
+        alert('Sessão não identificada. Faça login para responder à sua escala.');
+        window.location.href = '../index.html';
+      }
+    })();
+  </script>
+
+  <div class="container">
+    <header class="header">
+      <div class="header-left">
+        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+          <path fill="#270949" d="M50,5L25,35h50L50,5z"/>
+          <circle fill="#f93d00" cx="50" cy="60" r="35"/>
+          <circle fill="#270949" cx="50" cy="60" r="28"/>
+          <circle fill="#fff" cx="50" cy="60" r="23"/>
+        </svg>
+        <div>
+          <div class="header-title">Clock<span>fy</span></div>
+          <div class="admin-badge">Minhas Escalas</div>
+        </div>
+      </div>
+      <div>
+        <button class="btn btn-ghost" onclick="window.location.href='painel.html'" style="margin-right:10px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Voltar ao Painel
+        </button>
+        <button class="btn btn-primary" onclick="logout()">Sair</button>
+      </div>
+    </header>
+
+    <!-- PROVA DE ACEITE -->
+    <div class="card oculto" id="cardProva">
+      <h2 class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+        Registro do aceite
+      </h2>
+      <p class="card-subtitle">O aceite da escala é um documento. Confira os dados antes de responder.</p>
+      <div class="prova-box">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <div class="prova-text">
+          Ao aceitar, ficam registrados o seu usuário, a data e a hora, o endereço IP, o navegador e as
+          coordenadas de localização do dispositivo. <strong>Aceitar exige liberar a localização;</strong>
+          recusar, não.
+          <div class="gps-chip" id="gpsChip">Solicitando localização...</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;">
+        <button class="btn btn-ghost" id="btnGps" onclick="pedirLocalizacao()" style="padding:8px 16px;font-size:13px;">Tentar obter a localização novamente</button>
+      </div>
+    </div>
+
+    <!-- LISTA DE ESCALAS -->
+    <div id="listaEscalas"></div>
+
+    <div class="card" id="cardCarregando">
+      <div class="vazio">Carregando as suas escalas...</div>
+    </div>
+
+    <div class="message" id="mensagem"></div>
+  </div>
+
+  <script>
+    const WEBHOOK_ESCALAS = 'https://n8n.upperfy.com.br/webhook/clockfy-escalas';
+
+    const NOMES_MES = ['janeiro','fevereiro','março','abril','maio','junho',
+                       'julho','agosto','setembro','outubro','novembro','dezembro'];
+
+    let escalas = [];
+    let coords = { lat: null, lng: null };
+    let enviando = false;
+
+    function getLocalStorageData() {
+      const d = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        d[k] = localStorage.getItem(k);
+      }
+      return d;
+    }
+
+    function idLogado() {
+      const direto = localStorage.getItem('id_funcionario');
+      if (direto) return direto;
+      try {
+        let u = JSON.parse(localStorage.getItem('usuario'));
+        if (typeof u === 'string') u = JSON.parse(u);
+        return u && u.id ? u.id : null;
+      } catch (e) { return null; }
+    }
+
+    function fmtMin(m) {
+      const n = Number(m) || 0;
+      return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
+    }
+
+    function esc(t) {
+      return String(t == null ? '' : t)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function mostrarMensagem(txt, tipo) {
+      const el = document.getElementById('mensagem');
+      el.textContent = txt;
+      el.className = 'message ' + tipo + ' show';
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      setTimeout(() => el.classList.remove('show'), 9000);
+    }
+
+    function logout() {
+      if (confirm('Deseja realmente sair?')) {
+        localStorage.clear();
+        window.location.href = '../index.html';
+      }
+    }
+
+    // ---------- LOCALIZAÇÃO ----------
+    function setGps(texto, classe) {
+      const chip = document.getElementById('gpsChip');
+      chip.textContent = texto;
+      chip.className = 'gps-chip' + (classe ? ' ' + classe : '');
+    }
+
+    function pedirLocalizacao() {
+      if (!navigator.geolocation) {
+        setGps('Este navegador não oferece localização. O aceite não poderá ser registrado aqui.', 'erro');
+        return;
+      }
+      setGps('Solicitando localização...', '');
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          coords.lat = pos.coords.latitude;
+          coords.lng = pos.coords.longitude;
+          setGps(`Localização obtida (${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)})`, 'ok');
+          atualizarBotoesAceite();
+        },
+        (err) => {
+          coords.lat = null; coords.lng = null;
+          let msg = 'Não foi possível obter a localização.';
+          if (err.code === 1) msg = 'Permissão de localização negada. Libere o acesso no cadeado da barra de endereço para poder aceitar.';
+          if (err.code === 2) msg = 'Sinal de localização indisponível no momento.';
+          if (err.code === 3) msg = 'Tempo esgotado ao buscar a localização.';
+          setGps(msg, 'erro');
+          atualizarBotoesAceite();
+        },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+      );
+    }
+
+    function temLocal() {
+      return coords.lat !== null && coords.lng !== null;
+    }
+
+    function atualizarBotoesAceite() {
+      document.querySelectorAll('[data-aceitar]').forEach(b => {
+        b.disabled = enviando || !temLocal();
+        b.title = temLocal() ? '' : 'Libere a localização para poder aceitar a escala.';
+      });
+    }
+
+    // ---------- CARREGAR PENDENTES ----------
+    async function carregarPendentes() {
+      document.getElementById('cardCarregando').classList.remove('oculto');
+      document.getElementById('listaEscalas').innerHTML = '';
+      try {
+        const resp = await fetch(WEBHOOK_ESCALAS, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...getLocalStorageData(), acao: 'pendentes', id_funcionario: idLogado() })
+        });
+        const d = await resp.json();
+        if (d && d.sucesso === false) {
+          document.getElementById('cardCarregando').classList.add('oculto');
+          document.getElementById('cardProva').classList.add('oculto');
+          document.getElementById('listaEscalas').innerHTML =
+            `<div class="card"><div class="vazio">${esc(d.mensagem || 'Não foi possível carregar as suas escalas.')}</div></div>`;
+          return;
+        }
+        escalas = (d && Array.isArray(d.escalas)) ? d.escalas : [];
+        renderLista();
+      } catch (e) {
+        document.getElementById('cardCarregando').classList.add('oculto');
+        document.getElementById('listaEscalas').innerHTML =
+          '<div class="card"><div class="vazio">Erro de comunicação ao carregar as suas escalas. Tente novamente em instantes.</div></div>';
+      }
+    }
+
+    // ---------- RENDER ----------
+    function renderLista() {
+      document.getElementById('cardCarregando').classList.add('oculto');
+      const box = document.getElementById('listaEscalas');
+
+      if (!escalas.length) {
+        document.getElementById('cardProva').classList.add('oculto');
+        box.innerHTML = `
+          <div class="card">
+            <h2 class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+              Nenhuma escala aguardando resposta
+            </h2>
+            <div class="vazio">
+              Você não tem escalas pendentes de aceite no momento.<br>
+              Quando o RH publicar uma nova escala, você receberá um e-mail e ela aparecerá aqui.
+            </div>
+          </div>`;
+        return;
+      }
+
+      document.getElementById('cardProva').classList.remove('oculto');
+      box.innerHTML = escalas.map(cardEscala).join('');
+      atualizarBotoesAceite();
+    }
+
+    function cardEscala(e) {
+      const ano = Number(e.mes_ref.slice(0, 4));
+      const mes = Number(e.mes_ref.slice(5, 7));
+      const dias = Array.isArray(e.dias) ? e.dias : [];
+      const mapa = {};
+      dias.forEach(d => { mapa[d.data] = d; });
+
+      const qtdFerias = dias.filter(d => d.tipo === 'ferias').length;
+      const qtdExc = dias.length - qtdFerias;
+
+      const diasNoMes = new Date(Date.UTC(ano, mes, 0)).getUTCDate();
+      const offset = new Date(Date.UTC(ano, mes - 1, 1)).getUTCDay();
+
+      let grade = '';
+      for (let i = 0; i < offset; i++) grade += '<div class="cal-dia vazio-cel"></div>';
+
+      for (let dia = 1; dia <= diasNoMes; dia++) {
+        const iso = `${ano}-${String(mes).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+        const dow = new Date(iso + 'T12:00:00Z').getUTCDay();
+        const fds = (dow === 0 || dow === 6);
+        const reg = mapa[iso];
+
+        let classe = 'cal-dia', tag = '', meta = '';
+
+        if (reg && reg.tipo === 'folga') {
+          classe += ' folga'; tag = '<span class="cal-tag tag-folga">Folga</span>'; meta = '00:00';
+        } else if (reg && reg.tipo === 'reduzida') {
+          classe += ' reduzida'; tag = '<span class="cal-tag tag-reduzida">Reduzida</span>'; meta = fmtMin(reg.meta_minutos);
+        } else if (reg && reg.tipo === 'ferias') {
+          classe += ' ferias'; tag = '<span class="cal-tag tag-ferias">Férias</span>'; meta = '00:00';
+        } else if (reg) {
+          meta = fmtMin(reg.meta_minutos);
+        } else if (fds) {
+          classe += ' fds';
+        }
+
+        grade += `<div class="${classe}">
+                    <div class="cal-num">${dia}</div>
+                    <div>${tag}<div class="cal-meta">${meta}</div></div>
+                  </div>`;
+      }
+
+      const cabecalhoDow = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']
+        .map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+      return `
+      <div class="card" id="escala-${e.id}">
+        <h2 class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--laranja)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Escala de ${NOMES_MES[mes-1]} de ${ano}
+        </h2>
+        <p class="card-subtitle">
+          Publicada por ${esc(e.criada_por_nome || 'RH')} em ${esc(e.publicada_br || '-')}
+          &nbsp;<span class="status-badge st-aguardando">Aguardando sua resposta</span>
+        </p>
+
+        <div class="warning-box show">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffb020" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+          <div class="warning-text">
+            <strong>Confira o mês inteiro antes de responder.</strong><br>
+            Os dias em branco seguem a sua carga horária normal. Fins de semana e feriados da empresa
+            não cobram meta. Depois de aceita, a escala fica congelada como documento do acordo.
+          </div>
+        </div>
+
+        <div class="cal-topo">
+          <div class="cal-mes">${NOMES_MES[mes-1]} de ${ano}</div>
+        </div>
+        <div class="cal-grid">${cabecalhoDow}</div>
+        <div class="cal-grid" style="margin-top:8px;">${grade}</div>
+
+        <div class="legenda">
+          <div class="leg-item"><span class="leg-cor" style="background:rgba(255,255,255,0.06);"></span> Dia útil (cumpre carga)</div>
+          <div class="leg-item"><span class="leg-cor" style="background:rgba(255,255,255,0.02);border-style:dashed;"></span> Fim de semana</div>
+          <div class="leg-item"><span class="leg-cor" style="background:rgba(79,18,149,0.45);"></span> Folga</div>
+          <div class="leg-item"><span class="leg-cor" style="background:rgba(255,145,0,0.22);"></span> Escala reduzida</div>
+          <div class="leg-item"><span class="leg-cor" style="background:rgba(34,197,94,0.20);"></span> Férias</div>
+        </div>
+
+        <div class="barra">
+          <div class="contador">
+            <strong>${qtdExc}</strong> exceção(ões)${qtdFerias ? ` · <strong>${qtdFerias}</strong> dia(s) de férias` : ''}
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <button class="btn btn-recusar" onclick="abrirRecusa(${e.id})">Recusar escala</button>
+            <button class="btn btn-aceitar" data-aceitar="${e.id}" onclick="aceitar(${e.id})" disabled>
+              <span>Aceitar escala</span><span class="loader" id="loaderAceitar-${e.id}"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="oculto" id="boxRecusa-${e.id}" style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1);">
+          <label class="form-label">Por que você está recusando esta escala?</label>
+          <textarea class="form-textarea" id="motivoRecusa-${e.id}" placeholder="Descreva o que precisa ser ajustado. O RH recebe esta justificativa por e-mail."></textarea>
+          <div style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;">
+            <button class="btn btn-recusar" onclick="confirmarRecusa(${e.id})">
+              <span>Confirmar recusa</span><span class="loader" id="loaderRecusar-${e.id}"></span>
+            </button>
+            <button class="btn btn-ghost" onclick="fecharRecusa(${e.id})">Cancelar</button>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // ---------- RECUSA ----------
+    function abrirRecusa(id) {
+      document.getElementById('boxRecusa-' + id).classList.remove('oculto');
+      document.getElementById('motivoRecusa-' + id).focus();
+    }
+
+    function fecharRecusa(id) {
+      document.getElementById('boxRecusa-' + id).classList.add('oculto');
+    }
+
+    function confirmarRecusa(id) {
+      const motivo = document.getElementById('motivoRecusa-' + id).value.trim();
+      if (motivo.length < 10) {
+        mostrarMensagem('Descreva o motivo da recusa com pelo menos 10 caracteres. O RH precisa saber o que ajustar.', 'error');
+        return;
+      }
+      const ok = confirm('Confirmar a recusa desta escala?\n\nO RH será avisado por e-mail com a sua justificativa e a escala voltará a ficar editável.');
+      if (!ok) return;
+      responder(id, 'recusar', motivo, 'loaderRecusar-' + id);
+    }
+
+    // ---------- ACEITE ----------
+    function aceitar(id) {
+      if (!temLocal()) {
+        mostrarMensagem('Libere a localização do navegador para registrar o aceite.', 'error');
+        return;
+      }
+      const e = escalas.find(x => String(x.id) === String(id));
+      const mes = e ? `${NOMES_MES[Number(e.mes_ref.slice(5,7))-1]} de ${e.mes_ref.slice(0,4)}` : 'este mês';
+      const ok = confirm(
+        `Aceitar a escala de ${mes}?\n\n` +
+        'Ao confirmar, você declara que leu e concorda com os dias apresentados.\n' +
+        'Serão registrados o seu usuário, a data e a hora, o endereço IP, o navegador e as coordenadas de localização.\n\n' +
+        'Depois de aceita, a escala não pode mais ser alterada.'
+      );
+      if (!ok) return;
+      responder(id, 'aceitar', '', 'loaderAceitar-' + id);
+    }
+
+    // ---------- ENVIO ----------
+    async function responder(id, decisao, observacao, loaderId) {
+      if (enviando) return;
+      enviando = true;
+      travarBotoes(true);
+      const loader = document.getElementById(loaderId);
+      if (loader) loader.classList.add('show');
+
+      const payload = {
+        ...getLocalStorageData(),
+        acao: 'responder',
+        id_funcionario: idLogado(),
+        escala_id: id,
+        decisao: decisao,
+        observacao: observacao || ''
+      };
+      if (decisao === 'aceitar') {
+        payload.latitude = coords.lat;
+        payload.longitude = coords.lng;
+      }
+
+      try {
+        const resp = await fetch(WEBHOOK_ESCALAS, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const d = await resp.json();
+        if (d && d.sucesso) {
+          mostrarMensagem(d.mensagem || 'Resposta registrada.', 'success');
+          await carregarPendentes();
+        } else {
+          mostrarMensagem((d && d.mensagem) || 'Não foi possível registrar a sua resposta.', 'error');
+        }
+      } catch (err) {
+        mostrarMensagem('Erro de comunicação ao enviar a resposta. Tente novamente.', 'error');
+      } finally {
+        if (loader) loader.classList.remove('show');
+        enviando = false;
+        travarBotoes(false);
+      }
+    }
+
+    function travarBotoes(travar) {
+      document.querySelectorAll('.btn-recusar').forEach(b => { b.disabled = travar; });
+      atualizarBotoesAceite();
+    }
+
+    pedirLocalizacao();
+    carregarPendentes();
+    console.log('Tela de Aprovação de Escala carregada');
+  </script>
+</body>
+</html>
