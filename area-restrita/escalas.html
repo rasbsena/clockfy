@@ -105,11 +105,13 @@
     .cal-dia.feriado { background: rgba(135,20,140,0.25); border-color: rgba(135,20,140,0.5); }
     .cal-dia.folga { background: rgba(79,18,149,0.45); border-color: rgba(150,110,240,0.6); }
     .cal-dia.reduzida { background: rgba(255,145,0,0.22); border-color: rgba(255,145,0,0.55); }
+    .cal-dia.ferias { background: rgba(34,197,94,0.20); border-color: rgba(34,197,94,0.55); }
     .cal-num { font-size: 14px; font-weight: 700; }
     .cal-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
     .tag-folga { color: #c4a8f0; }
     .tag-reduzida { color: #ffc98a; }
     .tag-feriado { color: #e6a8e9; }
+    .tag-ferias { color: #86efac; }
     .cal-meta { font-size: 9px; color: #999; }
     .legenda { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; font-size: 12px; color: #cfcfcf; }
     .leg-item { display: flex; align-items: center; gap: 6px; }
@@ -259,6 +261,7 @@
       </h2>
       <p class="card-subtitle">
         Clique num dia para alternar entre <strong>normal → folga → escala reduzida</strong>.
+        Férias entram pelo botão de período — clicar num dia de férias limpa aquele dia.
         Dias sem marcação seguem o padrão: dia útil cumpre a carga, fim de semana e feriado não cobram meta.
       </p>
 
@@ -269,7 +272,26 @@
 
       <div class="cal-topo">
         <div class="cal-mes" id="calMes">-</div>
-        <button class="btn-ghost btn" id="btnLimpar" onclick="limparMarcacoes()" style="padding:8px 16px;font-size:13px;">Limpar marcações</button>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn-ghost btn" id="btnFerias" onclick="abrirFerias()" style="padding:8px 16px;font-size:13px;">Marcar período de férias</button>
+          <button class="btn-ghost btn" id="btnLimpar" onclick="limparMarcacoes()" style="padding:8px 16px;font-size:13px;">Limpar marcações</button>
+        </div>
+      </div>
+
+      <div id="boxFerias" class="oculto" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.35);border-radius:12px;padding:16px;margin-bottom:16px;">
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+          <div style="min-width:190px;">
+            <label class="form-label">Primeiro dia de férias</label>
+            <input type="date" class="form-input" id="feriasInicio">
+          </div>
+          <div style="width:140px;">
+            <label class="form-label">Dias corridos</label>
+            <input type="number" class="form-input" id="feriasDias" value="30" min="1" max="30">
+          </div>
+          <button class="btn btn-primary" onclick="aplicarFerias()" style="padding:10px 20px;font-size:13px;">Aplicar</button>
+          <button class="btn btn-ghost" onclick="fecharFerias()" style="padding:10px 20px;font-size:13px;">Cancelar</button>
+        </div>
+        <div id="feriasPreview" style="font-size:12px;color:#cfcfcf;margin-top:12px;line-height:1.6;"></div>
       </div>
 
       <div class="cal-grid" id="calDow"></div>
@@ -281,6 +303,7 @@
         <div class="leg-item"><span class="leg-cor" style="background:rgba(135,20,140,0.25);"></span> Feriado</div>
         <div class="leg-item"><span class="leg-cor" style="background:rgba(79,18,149,0.45);"></span> Folga</div>
         <div class="leg-item"><span class="leg-cor" style="background:rgba(255,145,0,0.22);"></span> Escala reduzida</div>
+        <div class="leg-item"><span class="leg-cor" style="background:rgba(34,197,94,0.20);"></span> Férias</div>
       </div>
     </div>
 
@@ -288,7 +311,7 @@
     <div class="card oculto" id="cardAcoes">
       <div class="barra">
         <div class="contador">
-          <strong id="contadorExc">0</strong> exceção(ões) marcada(s) ·
+         <strong id="contadorExc">0</strong> exceção(ões) marcada(s)<span id="contadorFerias"></span> ·
           meta do mês: <strong id="metaMes">00:00</strong>
         </div>
         <div style="display:flex;gap:12px;">
@@ -314,6 +337,7 @@
     let marcacoes = {};             // { 'YYYY-MM-DD': 'folga' | 'reduzida' }
     let feriados = new Set();
     let statusEscala = 'inexistente';
+    let continuacaoFerias = null;
     let buscaTimer = null;
 
     function getLocalStorageData() {
@@ -432,7 +456,7 @@
         if (dEsc && dEsc.escala) {
           statusEscala = dEsc.escala.status || 'rascunho';
           (dEsc.escala.dias || []).forEach(d => {
-            if (d.tipo === 'folga' || d.tipo === 'reduzida') marcacoes[d.data] = d.tipo;
+            if (['folga','reduzida','ferias'].includes(d.tipo)) marcacoes[d.data] = d.tipo;
           });
         }
         (dFer && Array.isArray(dFer.feriados) ? dFer.feriados : []).forEach(f => feriados.add(f.data));
@@ -482,6 +506,8 @@
       document.getElementById('btnSalvar').disabled = bloqueado;
       document.getElementById('btnPublicar').disabled = bloqueado;
       document.getElementById('btnLimpar').disabled = bloqueado;
+      document.getElementById('btnFerias').disabled = bloqueado;
+      if (bloqueado) fecharFerias();
     }
 
     // ---------- CALENDÁRIO ----------
@@ -516,6 +542,7 @@
           meta = `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
         }
         else if (ehFeriado) { classe += ' feriado'; tag = '<span class="cal-tag tag-feriado">Feriado</span>'; meta = '00:00'; }
+        else if (marca === 'ferias') { classe += ' ferias'; tag = '<span class="cal-tag tag-ferias">Férias</span>'; meta = '00:00'; }
         else if (fds) { classe += ' fds'; meta = '00:00'; }
         else { meta = `${String(funcionario.carga).padStart(2,'0')}:00`; }
 
@@ -541,12 +568,114 @@
     function limparMarcacoes() {
       if (!editavel()) return;
       marcacoes = {};
+      continuacaoFerias = null;
       renderCalendario();
     }
 
+    // ---------- FÉRIAS ----------
+    function somaDias(iso, n) {
+      const d = new Date(iso + 'T12:00:00Z');
+      d.setUTCDate(d.getUTCDate() + n);
+      return d.toISOString().slice(0, 10);
+    }
+
+    const brData = s => s.split('-').reverse().join('/');
+
+    function abrirFerias() {
+      if (!editavel()) return;
+      const ano = Number(mesRef.slice(0,4)), mes = Number(mesRef.slice(5,7));
+      const ultimo = new Date(Date.UTC(ano, mes, 0)).getUTCDate();
+      const ini = document.getElementById('feriasInicio');
+      ini.min = `${mesRef}-01`;
+      ini.max = `${mesRef}-${String(ultimo).padStart(2,'0')}`;
+      if (!ini.value || !ini.value.startsWith(mesRef)) ini.value = `${mesRef}-01`;
+      document.getElementById('boxFerias').classList.remove('oculto');
+      previewFerias();
+    }
+
+    function fecharFerias() {
+      document.getElementById('boxFerias').classList.add('oculto');
+    }
+
+    function calcularFerias() {
+      const inicio = document.getElementById('feriasInicio').value;
+      const dias   = Number(document.getElementById('feriasDias').value);
+      if (!inicio || !inicio.startsWith(mesRef) || !dias || dias < 1) return null;
+
+      const ano = Number(mesRef.slice(0,4)), mes = Number(mesRef.slice(5,7));
+      const ultimo = new Date(Date.UTC(ano, mes, 0)).getUTCDate();
+      const fimMes = `${mesRef}-${String(ultimo).padStart(2,'0')}`;
+      const fim    = somaDias(inicio, dias - 1);
+      const cabem  = ultimo - Number(inicio.slice(8)) + 1;
+      const cruza  = dias > cabem;
+
+      return {
+        inicio, dias, fim, fimMes, cruza,
+        diasNoMes:   cruza ? cabem : dias,
+        restantes:   cruza ? dias - cabem : 0,
+        mesSeguinte: somaDias(fimMes, 1).slice(0, 7)
+      };
+    }
+
+    function previewFerias() {
+      const c = calcularFerias();
+      const el = document.getElementById('feriasPreview');
+      if (!c) { el.innerHTML = ''; return; }
+
+      let txt = `Período: <strong>${brData(c.inicio)} a ${brData(c.fim)}</strong> — ${c.dias} dia(s) corridos.`;
+
+      if (c.cruza) {
+        txt += `<br><span style="color:#ff9100;">Este período termina no mês seguinte. ` +
+               `Serão lançados ${c.diasNoMes} dia(s) nesta escala e os ${c.restantes} restantes ` +
+               `(01 a ${brData(c.fim)}) na escala de ${NOMES_MES[Number(c.mesSeguinte.slice(5,7))-1]}.</span>`;
+      }
+
+      const diff = Math.round(
+        (new Date(c.inicio + 'T12:00:00Z') - new Date(hojeSP() + 'T12:00:00Z')) / 86400000
+      );
+      if (diff < 30) {
+        txt += `<br><span style="color:#ff9100;">Faltam ${diff} dia(s) para o início. ` +
+               `O aviso de férias deve ser dado com no mínimo 30 dias de antecedência (CLT art. 135).</span>`;
+      }
+
+      el.innerHTML = txt;
+    }
+
+    function aplicarFerias() {
+      if (!editavel()) return;
+      const c = calcularFerias();
+      if (!c) { mostrarMensagem('Informe a data inicial dentro do mês e a quantidade de dias.', 'error'); return; }
+
+      if (c.cruza) {
+        const ok = confirm(
+          `O período de férias vai de ${brData(c.inicio)} a ${brData(c.fim)}.\n\n` +
+          `Só cabem ${c.diasNoMes} dia(s) nesta escala. Os ${c.restantes} dia(s) restantes ` +
+          `precisam ser lançados na escala do mês seguinte.\n\n` +
+          `Ao publicar esta escala, o sistema abre o mês seguinte já com esses dias marcados. ` +
+          `Revise os dias posteriores a ${brData(c.fim)} antes de publicar o mês seguinte.\n\nConfirma?`
+        );
+        if (!ok) return;
+        continuacaoFerias = { mes: c.mesSeguinte, ate: c.fim, inicioPeriodo: c.inicio, totalDias: c.dias };
+      } else {
+        continuacaoFerias = null;
+      }
+
+      let cursor = c.inicio;
+      for (let i = 0; i < c.diasNoMes; i++) {
+        if (!feriados.has(cursor)) marcacoes[cursor] = 'ferias';
+        cursor = somaDias(cursor, 1);
+      }
+      fecharFerias();
+      renderCalendario();
+      mostrarMensagem(`${c.diasNoMes} dia(s) de férias marcados nesta escala.`, 'success');
+    }
+
     function atualizarResumo() {
-      const qtd = Object.keys(marcacoes).length;
-      document.getElementById('contadorExc').textContent = qtd;
+      const tipos = Object.values(marcacoes);
+      const qtdFerias = tipos.filter(t => t === 'ferias').length;
+      document.getElementById('contadorExc').textContent = tipos.length - qtdFerias;
+      document.getElementById('contadorFerias').innerHTML =
+        qtdFerias ? ` · <strong>${qtdFerias}</strong> dia(s) de férias` : '';
 
       // meta do mês pela precedência: feriado 0, fds 0, marcação, senão carga
       const ano = Number(mesRef.slice(0,4)), mes = Number(mesRef.slice(5,7));
@@ -557,7 +686,7 @@
         const iso = `${ano}-${String(mes).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const dow = new Date(iso + 'T12:00:00Z').getUTCDay();
         if (feriados.has(iso)) continue;
-        if (marcacoes[iso] === 'folga') continue;
+        if (marcacoes[iso] === 'folga' || marcacoes[iso] === 'ferias') continue;
         if (marcacoes[iso] === 'reduzida') { total += Math.floor(cargaMin/2); continue; }
         if (dow === 0 || dow === 6) continue;
         total += cargaMin;
@@ -651,6 +780,9 @@
         window.location.href = '../index.html';
       }
     }
+
+    document.getElementById('feriasInicio').addEventListener('change', previewFerias);
+    document.getElementById('feriasDias').addEventListener('input', previewFerias);
 
     montarSelectMes();
     console.log('Tela de Escalas carregada');
