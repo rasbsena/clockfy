@@ -265,6 +265,11 @@
         Dias sem marcação seguem o padrão: dia útil cumpre a carga, fim de semana e feriado não cobram meta.
       </p>
 
+      <div class="warning-box" id="avisoContinuacao">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffb020" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        <div class="warning-text" id="textoContinuacao"></div>
+      </div>
+
       <div class="warning-box" id="avisoBloqueio">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffb020" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
         <div class="warning-text" id="textoBloqueio"></div>
@@ -756,6 +761,12 @@
           statusEscala = 'aguardando_aprovacao';
           renderStatus(); renderCalendario();
           mostrarMensagem(d.mensagem || 'Escala publicada.', 'success');
+          if (continuacaoFerias) {
+            sessionStorage.setItem('clockfy_continuacao_ferias',
+              JSON.stringify({ ...continuacaoFerias, funcionario: funcionario }));
+            continuacaoFerias = null;
+            setTimeout(() => { window.location.href = 'escalas.html'; }, 1500);
+          }
         } else {
           mostrarMensagem(d.mensagem || 'Não foi possível publicar.', 'error');
         }
@@ -781,10 +792,54 @@
       }
     }
 
+    async function retomarContinuacaoFerias() {
+      const bruto = sessionStorage.getItem('clockfy_continuacao_ferias');
+      if (!bruto) return;
+      sessionStorage.removeItem('clockfy_continuacao_ferias');
+
+      let c;
+      try { c = JSON.parse(bruto); } catch (e) { return; }
+      if (!c || !c.mes || !c.ate || !c.funcionario) return;
+
+      selecionar({
+        id: c.funcionario.id,
+        nome_completo: c.funcionario.nome,
+        carga_horaria_diaria: c.funcionario.carga
+      });
+
+      const sel = document.getElementById('selectMes');
+      if (![...sel.options].some(o => o.value === c.mes)) {
+        sel.insertAdjacentHTML('afterbegin',
+          `<option value="${c.mes}">${NOMES_MES[Number(c.mes.slice(5,7))-1]} de ${c.mes.slice(0,4)}</option>`);
+      }
+      sel.value = c.mes;
+
+      await carregarEscala();
+
+      if (!editavel()) {
+        mostrarMensagem('A escala deste mês já está publicada ou aprovada e não pode receber os dias de férias. Peça a recusa para editar.', 'error');
+        return;
+      }
+
+      let cursor = `${c.mes}-01`, n = 0;
+      while (cursor <= c.ate) {
+        if (!feriados.has(cursor)) { marcacoes[cursor] = 'ferias'; n++; }
+        cursor = somaDias(cursor, 1);
+      }
+      renderCalendario();
+
+      document.getElementById('textoContinuacao').innerHTML =
+        `<strong>Continuação das férias de ${brData(c.inicioPeriodo)} a ${brData(c.ate)} — ${c.totalDias} dias.</strong><br>` +
+        `${n} dia(s) já marcados nesta escala. <strong>Revise os dias a partir de ${brData(somaDias(c.ate, 1))}</strong> ` +
+        `— retorno ao trabalho, folgas e escala reduzida — antes de publicar.`;
+      document.getElementById('avisoContinuacao').classList.add('show');
+    }
+
     document.getElementById('feriasInicio').addEventListener('change', previewFerias);
     document.getElementById('feriasDias').addEventListener('input', previewFerias);
 
     montarSelectMes();
+    retomarContinuacaoFerias();
     console.log('Tela de Escalas carregada');
   </script>
 </body>
